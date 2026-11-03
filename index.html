@@ -166,6 +166,29 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 #cut label{display:revert;font-size:inherit}
 #cut input,#cut select{width:auto}
 #cut .field input,#cut .field select,#cut .foodform input{width:100%}
+#cut .tpl-list{display:flex;flex-direction:column;gap:8px}
+#cut .tpl{border:1px solid var(--line);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;background:var(--bg)}
+#cut .tpl.on{border-color:var(--accent);box-shadow:inset 3px 0 0 var(--accent)}
+#cut .tpl-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#cut .tpl b{font-size:.95rem}
+#cut .tpl small{color:var(--muted);font-size:.8rem}
+#cut .wdseg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+#cut .wdseg button{padding:8px 0;font-size:.85rem}
+#cut .wdseg button[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#cut .ed-row{display:grid;grid-template-columns:1fr 96px auto;gap:6px;align-items:center;padding:6px 0;border-top:1px solid var(--line)}
+#cut .ed-row:first-child{border-top:0}
+#cut .ed-row .nm{font-size:.9rem;min-width:0;overflow-wrap:anywhere}
+#cut .ed-row input{width:100%;padding:5px 8px}
+#cut .ed-btns{display:flex;gap:2px}
+#cut .ed-btns button{padding:4px 8px;font-size:.8rem}
+#cut .lib-list{display:flex;flex-direction:column;max-height:320px;overflow-y:auto;border:1px solid var(--line);border-radius:10px;padding:0 10px}
+#cut .lib-item{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:.9rem}
+#cut .lib-item:first-child{border-top:0}
+#cut .lib-item .meta{font-size:.75rem;color:var(--muted)}
+#cut .chips{display:flex;flex-wrap:wrap;gap:6px}
+#cut .chip{border-radius:999px;padding:5px 11px;font-size:.82rem}
+#cut .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+#cut .field textarea{width:100%;font:inherit;font-size:.9rem;padding:7px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
 #cut .bodygrid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 #cut .goalseg{display:flex;width:100%}#cut .goalseg button{flex:1;border:none;border-radius:0;padding:9px}#cut .goalseg button[aria-pressed="true"]{background:var(--accent);color:#fff}
 #cut .pcalc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
@@ -438,6 +461,30 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </h2>
     <ul class="ex" id="exList"></ul>
     <p class="note" id="trainNote"></p>
+    <div class="row"><button type="button" id="editPlanBtn">编辑训练计划 / 换一套搭配</button><span class="note" id="planName"></span></div>
+  </section>
+
+  <section class="panel" id="planEditor" hidden>
+    <h2>训练计划设置 <small>改完自动保存，过去的记录不受影响</small></h2>
+    <h3>推荐搭配 <small class="note">点「使用这套」会替换整周安排，之后还能继续改</small></h3>
+    <div class="tpl-list" id="tplList"></div>
+    <h3>每周安排</h3>
+    <div class="wdseg" id="wdSeg" role="group" aria-label="选择星期"></div>
+    <div id="dayEdit"></div>
+    <h3>动作库 <small class="note">点「＋」加到上面选中的那一天</small></h3>
+    <div class="row">
+      <select id="libG" aria-label="适合人群"><option value="all">全部动作</option><option value="f">女生常用</option><option value="m">男生常用</option></select>
+      <input type="text" id="libQ" placeholder="搜索动作" style="flex:1;min-width:120px">
+    </div>
+    <div class="chips" id="libM"></div>
+    <div class="lib-list" id="libList"></div>
+    <h3>自定义动作</h3>
+    <form class="row" id="customEx">
+      <input type="text" id="cxName" placeholder="动作名称" maxlength="30" required style="flex:2;min-width:140px">
+      <input type="text" id="cxSets" placeholder="组×次数，如 3×10–12" maxlength="20" style="flex:1;min-width:120px">
+      <button type="submit" class="primary">添加</button>
+    </form>
+    <p class="note">组数写成「4×8–10」这样，系统才能判断你是否做满、提示加重。也可以写「3×45秒」「3×力竭」。</p>
   </section>
 
   <section class="panel">
@@ -1071,6 +1118,63 @@ const PLAN = {
   0:{name:"完全休息",type:"rest",ex:[],
      cardio:"只保留日常步数，好好休息。"}
 };
+const PLAN_ORIG=PLAN;
+/* exercise library: [name, muscle, default sets, who: f=women favour, m=men favour, a=everyone] */
+const MUSCLES={chest:"胸",back:"背",shoulder:"肩",arm:"手臂",leg:"腿",glute:"臀",core:"核心",cond:"有氧 / 恢复"};
+const DB=[
+ ["杠铃卧推","chest","4×6–8","m"],["哑铃卧推","chest","3×8–10","a"],["上斜哑铃卧推","chest","3×8–10","a"],["俯卧撑（可上斜）","chest","4×力竭前1–2个","a"],["跪姿俯卧撑","chest","3×8–12","f"],["双杠臂屈伸","chest","3×6–10","m"],["器械推胸","chest","3×10–12","a"],["绳索夹胸","chest","3×12–15","a"],["哑铃飞鸟","chest","3×12","a"],
+ ["引体向上","back","4×5–8","m"],["离心引体 / 弹力带辅助引体","back","4×5–8","f"],["悬挂：双手→单手辅助","back","3×最大时长","a"],["高位下拉","back","3×10–12","a"],["杠铃划船","back","4×6–8","m"],["哑铃单臂划船","back","3×8–10/侧","a"],["坐姿绳索划船","back","3×10–12","a"],["面拉","back","3×12–15","a"],["直臂下压","back","3×12–15","a"],["传统硬拉","back","3×3–5","m"],["反向划船","back","3×10","a"],
+ ["站姿杠铃推举","shoulder","4×5–8","m"],["坐姿哑铃推举","shoulder","3×8–10","a"],["阿诺德推举","shoulder","3×10","a"],["侧平举","shoulder","3×12–15","a"],["绳索侧平举","shoulder","3×12–15","a"],["俯身飞鸟","shoulder","3×12–15","a"],
+ ["杠铃弯举","arm","3×8–10","m"],["哑铃弯举","arm","2×12","a"],["锤式弯举","arm","3×10–12","a"],["绳索下压","arm","2×12","a"],["窄距卧推","arm","3×6–8","m"],["过头臂屈伸","arm","3×10–12","a"],
+ ["杠铃深蹲 / 高脚杯深蹲","leg","4×6–10","a"],["杠铃深蹲","leg","4×5–8","m"],["高脚杯深蹲","leg","3×10–12","f"],["前蹲","leg","3×5–8","m"],["腿举","leg","3×10–12","a"],["保加利亚分腿蹲","leg","3×10/侧","a"],["行走弓步","leg","3×12/侧","a"],["罗马尼亚硬拉","leg","3×8–10","a"],["腿弯举","leg","3×12","a"],["腿屈伸","leg","3×12–15","a"],["提踵","leg","3×15","a"],
+ ["杠铃臀推","glute","4×8–10","f"],["单腿臀桥","glute","3×12/侧","f"],["臀桥","glute","3×15","f"],["器械髋外展","glute","3×15","f"],["绳索后踢腿","glute","3×12–15/侧","f"],["相扑深蹲","glute","3×10–12","f"],["弹力带蚌式开合","glute","3×15/侧","f"],["箱式登阶","glute","3×10/侧","f"],["45° 背伸（臀部发力）","glute","3×12–15","f"],
+ ["平板支撑","core","3×45秒","a"],["侧平板","core","3×30秒/侧","a"],["悬垂举腿","core","3×10","a"],["死虫","core","3×10/侧","a"],["绳索卷腹","core","3×12–15","a"],["健腹轮","core","3×8–12","m"],["农夫行走","core","3×30米","m"],
+ ["散步 / 拉伸 / 泡沫轴","cond","15–20 分钟","a"],["壶铃摇摆","cond","3×15","a"],["波比跳","cond","3×10","a"],["坡度走","cond","30–40 分钟","a"],["单车 HIIT","cond","6–8 轮","a"]
+];
+const dbSets=n=>{const e=DB.find(x=>x[0]===n);return e?e[2]:"3×10"};
+const TR=(name,list,cardio)=>({name,type:"train",ex:list.map(n=>[n,dbSets(n)]),cardio:cardio||"今天不加额外有氧，保证步数即可。"});
+const REC={name:"主动恢复",type:"rest",ex:[["散步 / 拉伸 / 泡沫轴","15–20 分钟"]],cardio:"坡度走 30–40 分钟，心率保持最大心率的 60–70%。"};
+const CAR={name:"有氧日",type:"rest",ex:[],cardio:"坡度走 30–40 分钟；状态好可改做 HIIT：单车 30 秒冲刺 + 90 秒慢速 × 6–8 轮。"};
+const OFF={name:"完全休息",type:"rest",ex:[],cardio:"只保留日常步数，好好休息。"};
+const TEMPLATES=[
+ {id:"orig",name:"原有搭配：上下肢 + 臀腿",who:"通用 · 每周 4 练",desc:"拉 / 深蹲 / 推 / 臀，中间穿插恢复和有氧。你之前一直在用的这套。",days:PLAN_ORIG},
+ {id:"fglute",name:"女生 · 臀腿塑形",who:"女生 · 每周 4 练",desc:"两天臀腿 + 两天上肢，臀部训练量最高，适合想练翘臀、改善体态。",days:{
+   1:TR("臀腿 A · 臀推",["杠铃臀推","罗马尼亚硬拉","保加利亚分腿蹲","器械髋外展","平板支撑"]),
+   2:TR("上肢 · 背肩",["高位下拉","哑铃单臂划船","坐姿哑铃推举","侧平举","面拉"]),
+   3:REC,
+   4:TR("臀腿 B · 深蹲",["高脚杯深蹲","单腿臀桥","绳索后踢腿","腿弯举","箱式登阶"]),
+   5:TR("上肢 + 核心",["离心引体 / 弹力带辅助引体","上斜哑铃卧推","俯身飞鸟","绳索下压","死虫"]),
+   6:CAR,0:OFF}},
+ {id:"ffull",name:"女生 · 全身 + 臀（新手友好）",who:"女生 · 每周 3 练",desc:"每次都练全身，额外加一个臀部动作。时间少、刚开始练的首选。",days:{
+   1:TR("全身 A",["高脚杯深蹲","哑铃卧推","高位下拉","臀桥","平板支撑"]),
+   2:CAR,
+   3:TR("全身 B",["罗马尼亚硬拉","坐姿哑铃推举","坐姿绳索划船","弹力带蚌式开合","死虫"]),
+   4:REC,
+   5:TR("全身 C",["腿举","跪姿俯卧撑","哑铃单臂划船","杠铃臀推","侧平板"]),
+   6:CAR,0:OFF}},
+ {id:"mppl",name:"男生 · 推拉腿（PPL）",who:"男生 · 每周 6 练",desc:"推、拉、腿各练两次，训练量大，适合有一定基础、以增肌为主。",days:{
+   1:TR("推 A · 胸",["杠铃卧推","站姿杠铃推举","上斜哑铃卧推","侧平举","绳索下压"]),
+   2:TR("拉 A · 背",["引体向上","杠铃划船","坐姿绳索划船","面拉","杠铃弯举"]),
+   3:TR("腿 A · 深蹲",["杠铃深蹲","罗马尼亚硬拉","腿举","腿弯举","提踵"]),
+   4:TR("推 B · 肩",["哑铃卧推","坐姿哑铃推举","双杠臂屈伸","绳索侧平举","过头臂屈伸"]),
+   5:TR("拉 B · 背宽",["高位下拉","哑铃单臂划船","直臂下压","俯身飞鸟","锤式弯举"]),
+   6:TR("腿 B · 前蹲",["前蹲","保加利亚分腿蹲","腿屈伸","腿弯举","悬垂举腿"]),
+   0:OFF}},
+ {id:"mul",name:"男生 · 上下肢四分化",who:"男生 · 每周 4 练",desc:"两天偏力量（重量大、次数少），两天偏肌肥大（次数多），兼顾力量和围度。",days:{
+   1:TR("上肢 · 力量",["杠铃卧推","杠铃划船","站姿杠铃推举","引体向上","窄距卧推"]),
+   2:TR("下肢 · 力量",["杠铃深蹲","传统硬拉","腿举","提踵","健腹轮"]),
+   3:REC,
+   4:TR("上肢 · 肌肥大",["上斜哑铃卧推","坐姿绳索划船","侧平举","绳索夹胸","杠铃弯举","绳索下压"]),
+   5:TR("下肢 · 肌肥大",["保加利亚分腿蹲","罗马尼亚硬拉","腿屈伸","腿弯举","悬垂举腿"]),
+   6:CAR,0:OFF}},
+ {id:"full3",name:"新手全身（男女通用）",who:"通用 · 每周 3 练",desc:"一、三、五练全身，只用最基础的动作，先把动作学标准。",days:{
+   1:TR("全身 A",["杠铃深蹲 / 高脚杯深蹲","哑铃卧推","高位下拉","平板支撑"]),
+   2:OFF,
+   3:TR("全身 B",["罗马尼亚硬拉","坐姿哑铃推举","坐姿绳索划船","死虫"]),
+   4:REC,
+   5:TR("全身 C",["腿举","俯卧撑（可上斜）","哑铃单臂划船","侧平举"]),
+   6:CAR,0:OFF}}
+];
 const PRESETS=[["燕麦酸奶早餐",410,24],["米饭鸡胸午餐",440,37],["香蕉+牛奶",190,8],["三文鱼红薯晚餐",440,27],["蛋白粉 1 勺",120,24]];
 const WD=["周日","周一","周二","周三","周四","周五","周六"];
 const FLOOR=1400;
@@ -1090,7 +1194,13 @@ function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return
 function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 
 const planIdx=d=>(d&&d.planDay!=null?d.planDay:null);
-const planOf=(rec,date)=>PLAN[planIdx(rec)??date.getDay()];
+const plans=()=>settings.plans||PLAN_ORIG;
+const planOf=(rec,date)=>{
+  const k=planIdx(rec)??date.getDay();
+  if(keyOf(date)===todayKey)return plans()[k]||OFF;
+  if(rec&&rec.snap)return rec.snap;          // what was planned that day
+  return PLAN_ORIG[k];                        // records made before plans were editable
+};
 const curPlan=()=>planOf(day,now);
 const isTrain=()=>curPlan().type==="train";
 const GOALCFG={
@@ -1125,8 +1235,9 @@ const kcalT=()=>kOf(isTrain());
 const waterT=()=>isTrain()?2500:2000;
 const proT=()=>settings.proT||110;
 
+function snap(){try{const p=curPlan();day.snap={name:p.name,type:p.type,ex:p.ex.map(e=>[e[0],e[1]]),cardio:p.cardio}}catch(e){}}
 function save(){
-  allDays[todayKey]=day; render();
+  snap();allDays[todayKey]=day; render();
   try{window.__cutHook&&window.__cutHook(totals(day).pro,proT())}catch(e){}
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
@@ -1369,8 +1480,10 @@ function render(){
 
   // plan select
   const sel=$("planSel");
-  if(!sel.options.length){[1,2,3,4,5,6,0].forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=PLAN[k].name+(k===now.getDay()?"（今天原计划）":"");sel.appendChild(o)})}
+  const sig=[1,2,3,4,5,6,0].map(k=>plans()[k].name).join("|");
+  if(sel.dataset.sig!==sig){sel.dataset.sig=sig;sel.innerHTML="";[1,2,3,4,5,6,0].forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=WD[k]+"："+plans()[k].name+(k===now.getDay()?"（今天原计划）":"");sel.appendChild(o)})}
   sel.value=String(planIdx(day)??now.getDay());
+  {const t=TEMPLATES.find(x=>x.id===(settings.plans?settings.tpl:"orig"));$("planName").textContent=t?"当前搭配："+t.name:"当前搭配：自定义";}
 
   // exercises
   $("exList").innerHTML=plan.ex.length?plan.ex.map((e,i)=>{
@@ -1479,7 +1592,7 @@ $("exList").addEventListener("input",e=>{
   if(t.dataset.lr!=null){(day.lifts[t.dataset.lr]=day.lifts[t.dataset.lr]||{}).r=t.value;allDays[todayKey]=day;queueSave()}
 });
 $("exList").addEventListener("focusout",e=>{if(e.target.dataset.lw!=null||e.target.dataset.lr!=null)save()});
-function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{lsSet("cut-day-"+todayKey,day);if(col){try{await col.doc(todayKey).set(day)}catch(e){}}},800)}
+function queueSave(){snap();clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{lsSet("cut-day-"+todayKey,day);if(col){try{await col.doc(todayKey).set(day)}catch(e){}}},800)}
 $("weight").addEventListener("change",e=>{const v=parseFloat(e.target.value);day.weight=(v>20&&v<300)?Math.round(v*10)/10:null;save()});
 $("waist").addEventListener("change",e=>{const v=parseFloat(e.target.value);day.waist=(v>30&&v<200)?v:null;save()});
 ["hip","thigh","arm"].forEach(f=>$(f).addEventListener("change",e=>{const v=parseFloat(e.target.value);day[f]=(v>10&&v<200)?v:null;save()}));
@@ -1504,6 +1617,73 @@ $("adviceActions").addEventListener("click",e=>{
   if(e.target.id==="resetOff"){settings.offset=0;settings.applied=null;saveSettings()}
 });
 setInterval(()=>{if(!document.activeElement||!document.activeElement.closest("#exList,.calc,#foodForm"))render()},60000);
+
+/* ---------- plan editor ---------- */
+let edDay=now.getDay(), libM="all", libG=null;
+const ORDER=[1,2,3,4,5,6,0];
+const myPlans=()=>{if(!settings.plans)settings.plans=JSON.parse(JSON.stringify(PLAN_ORIG));return settings.plans};
+function mutate(k,fn){
+  const P=myPlans(), todayK=planIdx(day)??now.getDay();
+  const before=k===todayK?P[k].ex.map(e=>e[0]):null;
+  fn(P[k]); settings.tpl=null;
+  if(before){ // keep today's ticks and weights attached to the same exercises
+    const ex={},lifts={};
+    P[k].ex.forEach((e,i)=>{const j=before.indexOf(e[0]);if(j>=0){if(day.ex[j])ex[i]=day.ex[j];if(day.lifts[j])lifts[i]=day.lifts[j]}});
+    day.ex=ex;day.lifts=lifts;save();
+  }
+  saveSettings();renderEditor();
+}
+function renderEditor(){
+  if($("planEditor").hidden)return;
+  const P=plans();
+  $("tplList").innerHTML=TEMPLATES.map(t=>`<div class="tpl ${settings.tpl===t.id||(!settings.plans&&t.id==="orig")?"on":""}"><div class="tpl-top"><b>${esc(t.name)}</b><button type="button" data-tpl="${t.id}">${settings.tpl===t.id||(!settings.plans&&t.id==="orig")?"正在使用":"使用这套"}</button></div><small>${esc(t.who)}</small><span class="note">${esc(t.desc)}</span><span class="note">${ORDER.map(k=>WD[k].slice(1)+" "+t.days[k].name).join(" · ")}</span></div>`).join("");
+  $("wdSeg").innerHTML=ORDER.map(k=>`<button type="button" data-wd="${k}" aria-pressed="${k===edDay}">${WD[k].slice(1)}</button>`).join("");
+  const d=P[edDay];
+  $("dayEdit").innerHTML=`<div class="pcalc" style="grid-template-columns:2fr 1fr">
+      <div class="field"><label for="edName">${WD[edDay]}叫什么</label><input type="text" id="edName" maxlength="20" value="${esc(d.name)}"></div>
+      <div class="field"><label for="edType">类型</label><select id="edType"><option value="train"${d.type==="train"?" selected":""}>训练日</option><option value="rest"${d.type==="rest"?" selected":""}>休息日</option></select></div></div>
+    <div>${d.ex.length?d.ex.map((e,i)=>`<div class="ed-row"><span class="nm">${esc(e[0])}</span><input type="text" data-sets="${i}" value="${esc(e[1])}" aria-label="${esc(e[0])} 组数"><span class="ed-btns"><button type="button" data-up="${i}" aria-label="上移"${i===0?" disabled":""}>↑</button><button type="button" data-down="${i}" aria-label="下移"${i===d.ex.length-1?" disabled":""}>↓</button><button type="button" data-rm="${i}" aria-label="删除">×</button></span></div>`).join(""):`<p class="note">这天还没有动作。从下面的动作库添加，或者保持为休息日。</p>`}</div>
+    <div class="field"><label for="edCardio">有氧 / 备注</label><textarea id="edCardio" rows="2" maxlength="200">${esc(d.cardio||"")}</textarea></div>
+    <p class="note">训练日和休息日的热量目标不一样。改了「类型」，这天的热量目标也会跟着变。</p>`;
+  if(libG===null)libG=settings.sex||"all";
+  $("libG").value=libG;
+  $("libM").innerHTML=[["all","全部"],...Object.entries(MUSCLES)].map(([k,v])=>`<button type="button" class="chip" data-m="${k}" aria-pressed="${k===libM}">${v}</button>`).join("");
+  renderLib();
+}
+function renderLib(){
+  const q=$("libQ").value.trim(), have=new Set(plans()[edDay].ex.map(e=>e[0]));
+  const list=DB.filter(e=>(libM==="all"||e[1]===libM)&&(libG==="all"||e[3]===libG||e[3]==="a")&&(!q||e[0].includes(q)));
+  const tag={f:"女生常用",m:"男生常用",a:"通用"};
+  $("libList").innerHTML=list.length?list.map(e=>`<div class="lib-item"><div><div>${esc(e[0])}</div><div class="meta">${MUSCLES[e[1]]} · ${tag[e[3]]} · ${esc(e[2])}</div></div><span></span><button type="button" data-add="${esc(e[0])}"${have.has(e[0])?" disabled":""} aria-label="添加 ${esc(e[0])}">${have.has(e[0])?"已加":"＋"}</button></div>`).join(""):`<p class="note" style="padding:10px 0">没找到，可以在下面自己添加。</p>`;
+}
+$("editPlanBtn").addEventListener("click",()=>{const ed=$("planEditor");ed.hidden=!ed.hidden;$("editPlanBtn").textContent=ed.hidden?"编辑训练计划 / 换一套搭配":"收起训练计划设置";if(!ed.hidden){edDay=planIdx(day)??now.getDay();renderEditor();ed.scrollIntoView({behavior:"smooth",block:"start"})}});
+$("planEditor").addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.tpl){const t=TEMPLATES.find(x=>x.id===b.dataset.tpl);if(!t||settings.tpl===t.id)return;
+    if(!confirm(`换成「${t.name}」？整周安排会被替换，已经记下的训练记录不会变。`))return;
+    const todayK=planIdx(day)??now.getDay(), before=plans()[todayK].ex.map(x=>x[0]);
+    settings.plans=JSON.parse(JSON.stringify(t.days));settings.tpl=t.id;
+    const ex={},lifts={};settings.plans[todayK].ex.forEach((x,i)=>{const j=before.indexOf(x[0]);if(j>=0){if(day.ex[j])ex[i]=day.ex[j];if(day.lifts[j])lifts[i]=day.lifts[j]}});day.ex=ex;day.lifts=lifts;
+    save();saveSettings();renderEditor();return}
+  if(b.dataset.wd!=null){edDay=+b.dataset.wd;renderEditor();return}
+  if(b.dataset.m){libM=b.dataset.m;renderEditor();return}
+  if(b.dataset.add){const n=b.dataset.add;const m=(DB.find(x=>x[0]===n)||[])[1];mutate(edDay,d=>{d.ex.push([n,dbSets(n)]);if(m!=="cond")d.type="train"});return}
+  if(b.dataset.rm!=null){const i=+b.dataset.rm;mutate(edDay,d=>d.ex.splice(i,1));return}
+  if(b.dataset.up!=null){const i=+b.dataset.up;if(i>0)mutate(edDay,d=>{[d.ex[i-1],d.ex[i]]=[d.ex[i],d.ex[i-1]]});return}
+  if(b.dataset.down!=null){const i=+b.dataset.down;mutate(edDay,d=>{if(i<d.ex.length-1)[d.ex[i+1],d.ex[i]]=[d.ex[i],d.ex[i+1]]});return}
+});
+$("planEditor").addEventListener("change",e=>{
+  const t=e.target;
+  if(t.id==="edName"){const v=t.value.trim();if(v)mutate(edDay,d=>d.name=v);else t.value=plans()[edDay].name;return}
+  if(t.id==="edType"){mutate(edDay,d=>d.type=t.value);return}
+  if(t.id==="edCardio"){mutate(edDay,d=>d.cardio=t.value.trim());return}
+  if(t.dataset.sets!=null){const i=+t.dataset.sets,v=t.value.trim();if(v)mutate(edDay,d=>d.ex[i][1]=v);return}
+  if(t.id==="libG"){libG=t.value;renderLib();return}
+});
+$("libQ").addEventListener("input",renderLib);
+$("customEx").addEventListener("submit",e=>{e.preventDefault();const n=$("cxName").value.trim();if(!n)return;const st=$("cxSets").value.trim()||"3×10";
+  if(plans()[edDay].ex.some(x=>x[0]===n)){$("cxName").select();return}
+  mutate(edDay,d=>{d.ex.push([n,st]);if(d.type!=="train")d.type="train"});$("cxName").value="";$("cxSets").value=""});
 
 /* ---------- load ---------- */
 const local=lsGet("cut-day-"+todayKey); if(local)day=Object.assign(blank(),local);
