@@ -118,6 +118,12 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 
 /* forms */
 .form{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.aes-list{display:flex;flex-direction:column;gap:10px}
+.aes-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);position:relative}
+.aes-row .full{grid-column:1/-1}
+.aes-row .x{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--bad);font-size:1.1rem;cursor:pointer;padding:4px 8px}
+.aes-row .nm{padding-right:34px}
+.aes-row input,.aes-row select{background:var(--paper)}
 .form .full{grid-column:1/-1}
 label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;min-width:0}
 input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
@@ -284,17 +290,13 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 
   <section class="card">
     <h2>你的医美价格</h2>
-    <p class="note" style="margin:0 0 12px">"减脂健身 → 医美"那一组的金额都按这里换算。改价格或次数，金额会自动更新。</p>
-    <div class="form" id="aesForm">
-      <label>肉毒每次 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-botox"></label>
-      <label>一年打几次<input type="number" min="0" step="1" id="a-botoxN"></label>
-      <label>少女针每针 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-sculptra"></label>
-      <label>一年打几针<input type="number" min="0" step="1" id="a-sculptraN"></label>
-      <label>美超每次 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-ulthera"></label>
-      <label>每次几 lines<input type="number" min="1" step="10" id="a-ultheraLines"></label>
-      <label>美超一年做几次<input type="number" min="0" step="1" id="a-ultheraN"></label>
-      <label>每年医美合计<input type="text" id="a-total" readonly></label>
+    <p class="note" style="margin:0 0 12px">"减脂健身 → 医美"那一组的金额都按这里换算。项目名称、价格、次数都可以改，也可以添加或删除项目。</p>
+    <div class="aes-list" id="aesList"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <button class="btn" type="button" id="aesAdd">+ 添加项目</button>
+      <span class="note" style="margin:0" id="aesTotal"></span>
     </div>
+    <p class="note">类型决定这个项目算进哪些习惯：防晒、戴墨镜主要对应「肉毒类」；蛋白质、减脂节奏对应「填充类」和「紧致类」；睡眠、训练、卸妆等按全部项目计算。不确定就选「其他」。</p>
   </section>
 
   <section class="card">
@@ -568,20 +570,32 @@ const GROUPS=[
 ];
 const BASE_MS=[{name:"一次物理治疗复诊",amt:97},{name:"一次洗牙检查",amt:300},{name:"一次补牙",amt:310},{name:"一个疗程的腰背物理治疗",amt:720},{name:"一颗牙冠",amt:2250},{name:"一次根管 + 牙冠",amt:4650}];
 const AES_DEFAULT={botox:800,botoxN:3,sculptra:1350,sculptraN:1,ulthera:900,ultheraLines:300,ultheraN:1};
-function aesYear(a){return {botox:a.botox*a.botoxN,sculptra:a.sculptra*a.sculptraN,ulthera:a.ulthera*a.ultheraN}}
+const AES_TYPES={botox:"肉毒类（除皱、瘦脸）",fill:"填充类（少女针、玻尿酸等）",lift:"紧致类（美超、热玛吉等）",other:"其他"};
+function aesItems(a){
+  a=a||settings.aes;
+  if(Array.isArray(a.items))return a.items;
+  return [{id:"botox",name:"肉毒",type:"botox",price:+a.botox||0,n:+a.botoxN||0},
+          {id:"sculptra",name:"少女针",type:"fill",price:+a.sculptra||0,n:+a.sculptraN||0},
+          {id:"ulthera",name:"美超",type:"lift",price:+a.ulthera||0,n:+a.ultheraN||0}];
+}
+function aesYear(a){
+  const y={botox:0,sculptra:0,ulthera:0,other:0};
+  aesItems(a).forEach(it=>{const v=(+it.price||0)*(+it.n||0);const k={botox:"botox",fill:"sculptra",lift:"ulthera"}[it.type]||"other";y[k]+=v});
+  y.all=y.botox+y.sculptra+y.ulthera+y.other;return y;
+}
 // share of yearly 医美 spend each habit is credited with, and how often it happens
 const LINKS={
- sun:{per:365,calc:y=>(y.botox+y.ulthera)*0.4,why:"肉毒 + 美超每年花费的 40%（紫外线是皮肤老化最大的外因）÷ 365 天"},
- sleep:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.15,why:"全部医美年花费的 15% ÷ 365 天"},
- protein:{per:365,calc:y=>(y.sculptra+y.ulthera)*0.1,why:"少女针 + 美超年花费的 10%（支持肌肉和皮肤修复）÷ 365 天"},
- train:{per:208,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.1,why:"全部医美年花费的 10% ÷ 每年约 208 次训练（每周 4 次）"},
- shades:{per:365,calc:y=>y.botox*0.1,why:"少眯眼、少晒眼周，眼周是肉毒常打的部位；按肉毒年花费的 10% ÷ 365 天"},
- cleanse:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.05,why:"减少闭口和痘痘，以后少做祛痘类项目；按全部医美年花费的 5% ÷ 365 天"},
- nophone:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.05,why:"提高睡眠质量；按全部医美年花费的 5% ÷ 365 天"},
- pace:{per:52,calc:y=>(y.sculptra+y.ulthera)*0.3,why:"减脂太快容易让脸部凹陷、皮肤松，常见的补救就是少女针和美超；按这两项年花费的 30% ÷ 52 周，每周记一次"}
+ sun:{per:365,calc:y=>(y.botox+y.ulthera)*0.4,why:"肉毒类 + 紧致类每年花费的 40%（紫外线是皮肤老化最大的外因）÷ 365 天"},
+ sleep:{per:365,calc:y=>y.all*0.15,why:"全部医美年花费的 15% ÷ 365 天"},
+ protein:{per:365,calc:y=>(y.sculptra+y.ulthera)*0.1,why:"填充类 + 紧致类年花费的 10%（支持肌肉和皮肤修复）÷ 365 天"},
+ train:{per:208,calc:y=>y.all*0.1,why:"全部医美年花费的 10% ÷ 每年约 208 次训练（每周 4 次）"},
+ shades:{per:365,calc:y=>y.botox*0.1,why:"少眯眼、少晒眼周，眼周是肉毒常打的部位；按肉毒类年花费的 10% ÷ 365 天"},
+ cleanse:{per:365,calc:y=>y.all*0.05,why:"减少闭口和痘痘，以后少做祛痘类项目；按全部医美年花费的 5% ÷ 365 天"},
+ nophone:{per:365,calc:y=>y.all*0.05,why:"提高睡眠质量；按全部医美年花费的 5% ÷ 365 天"},
+ pace:{per:52,calc:y=>(y.sculptra+y.ulthera)*0.3,why:"减脂太快容易让脸部凹陷、皮肤松，常见的补救就是填充和紧致项目；按这两类年花费的 30% ÷ 52 周，每周记一次"}
 };
 function linkVal(k){const L=LINKS[k];return Math.round(L.calc(aesYear(settings.aes))/L.per*100)/100}
-function milestones(){const a=settings.aes;return [...BASE_MS,{name:"一次肉毒",amt:a.botox},{name:"一次美超（"+a.ultheraLines+" lines）",amt:a.ulthera},{name:"一针少女针",amt:a.sculptra}].sort((x,y)=>x.amt-y.amt)}
+function milestones(){return [...BASE_MS,...aesItems().filter(it=>+it.price>0&&it.name).map(it=>({name:"一次"+it.name,amt:+it.price}))].sort((x,y)=>x.amt-y.amt)}
 const KIND_LABEL={"cash":"当场省","future":"以后少花","count":"只记次数","bad-cash":"坏·当场多花","bad-future":"坏·以后多花"};
 
 const $=id=>document.getElementById(id);
@@ -730,7 +744,7 @@ function render(){
   $("groups").appendChild(wrap);
 
   // milestones on all-time net
-  $("lines").textContent=all.net>0?`累计净省下的钱相当于美超 ${Math.floor(all.net/(settings.aes.ulthera/settings.aes.ultheraLines))} lines`:"";
+  {const its=aesItems().filter(it=>+it.price>0&&it.name);$("lines").textContent=all.net>0&&its.length?"累计净省下的钱够做："+its.map(it=>`${it.name} ${Math.floor(all.net/it.price)} 次`).join(" · "):""}
   $("ms").innerHTML=milestones().map(m=>{const p=Math.max(0,Math.min(1,all.net/m.amt));
     return `<div class="ms-row"><div class="ms-top"><span>${m.name}（${money(m.amt)}）</span><span class="num ${p>=1?"done":""}">${p>=1?"✓ 已够":Math.round(p*100)+"%"}</span></div><div class="bar"><span style="width:${p*100}%"></span></div></div>`}).join("");
 
@@ -787,12 +801,44 @@ function renderChart(map){
   if(worst)html+=`<div class="top-row" style="color:var(--bad)"><span>!</span><span>扣得最多：${esc(map[worst[0]]?.name||"已删除的习惯")}</span><span class="num">${money(worst[1])}</span></div>`;
   $("top").innerHTML=html;
 }
-const AES_MONEY=new Set(["botox","sculptra","ulthera"]);
+let aesSig="", aesTm;
+function aesSetItems(items){settings={...settings,aes:{items}};renderRules();render();clearTimeout(aesTm);aesTm=setTimeout(saveSettings,800)}
+function aesTotalText(){const y=aesYear(settings.aes);$("aesTotal").textContent="每年合计 "+money(y.all)}
 function renderAes(){
-  for(const k of Object.keys(AES_DEFAULT)){const el=$("a-"+k);if(el&&document.activeElement!==el)el.value=AES_MONEY.has(k)?r2(settings.aes[k]*fx()):settings.aes[k]}
-  const y=aesYear(settings.aes);$("a-total").value=money(y.botox+y.sculptra+y.ulthera)+(settings.aes.ultheraLines?` · 美超 ${money(settings.aes.ulthera/settings.aes.ultheraLines)}/line`:"");
+  const items=aesItems(), sig=items.map(i=>i.id).join("|")+"|"+settings.cur+"|"+fx();
+  if(sig!==aesSig||!$("aesList").children.length&&items.length){
+    aesSig=sig;
+    const opts=t=>Object.entries(AES_TYPES).map(([k,v])=>`<option value="${k}"${k===t?" selected":""}>${v}</option>`).join("");
+    $("aesList").innerHTML=items.length?items.map(it=>`<div class="aes-row" data-id="${esc(it.id)}">
+      <label class="full nm">项目名称<input type="text" maxlength="20" data-f="name" value="${esc(it.name||"")}" placeholder="例如 热玛吉"></label>
+      <label class="full">类型<select data-f="type">${opts(it.type)}</select></label>
+      <label><span>每次价格（<span class="cur-label">${curName()}</span>）</span><input type="number" min="0" step="10" inputmode="decimal" data-f="price" value="${r2((+it.price||0)*fx())}"></label>
+      <label>一年做几次<input type="number" min="0" step="1" inputmode="decimal" data-f="n" value="${+it.n||0}"></label>
+      <button type="button" class="x" data-del aria-label="删除 ${esc(it.name||"项目")}">×</button></div>`).join("")
+      :`<p class="note" style="margin:0">还没有项目。点「+ 添加项目」加上你常做的医美。</p>`;
+  }
+  aesTotalText();
 }
-Object.keys(AES_DEFAULT).forEach(k=>{let tm;$("a-"+k).addEventListener("input",e=>{const v=parseFloat(e.target.value);if(isNaN(v)||v<0||(k==="ultheraLines"&&v<1))return;settings={...settings,aes:{...settings.aes,[k]:AES_MONEY.has(k)?v/fx():v}};renderAes();renderRules();render();clearTimeout(tm);tm=setTimeout(saveSettings,800)})});
+$("aesList").addEventListener("input",e=>{
+  const f=e.target.dataset.f, row=e.target.closest(".aes-row"); if(!f||!row)return;
+  const items=aesItems().map(x=>({...x}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
+  if(f==="name")it.name=e.target.value.trim();
+  else if(f==="type")it.type=e.target.value;
+  else{const v=parseFloat(e.target.value);if(isNaN(v)||v<0)return;it[f]=f==="price"?v/fx():v}
+  aesSetItems(items);
+});
+$("aesList").addEventListener("change",e=>{if(e.target.dataset.f==="type")e.target.dispatchEvent(new Event("input",{bubbles:true}))});
+$("aesList").addEventListener("click",e=>{
+  if(e.target.dataset.del===undefined)return;const row=e.target.closest(".aes-row");
+  const it=aesItems().find(x=>x.id===row.dataset.id);
+  if(!confirm(`删除「${it&&it.name||"这个项目"}」？`))return;
+  aesSetItems(aesItems().filter(x=>x.id!==row.dataset.id));
+});
+$("aesAdd").addEventListener("click",()=>{
+  const id="a"+Date.now().toString(36);
+  aesSetItems([...aesItems().map(x=>({...x})),{id,name:"",type:"other",price:0,n:1}]);
+  const inp=document.querySelector(`.aes-row[data-id="${id}"] [data-f=name]`);if(inp)inp.focus();
+});
 function renderCur(){
   document.querySelectorAll(".cur-label").forEach(e=>e.textContent=curName());
   $("curAUD").setAttribute("aria-pressed",settings.cur!=="CNY");$("curCNY").setAttribute("aria-pressed",settings.cur==="CNY");
