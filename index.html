@@ -124,6 +124,9 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .aes-row .x{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--bad);font-size:1.1rem;cursor:pointer;padding:4px 8px}
 .aes-row .nm{padding-right:34px}
 .aes-row input,.aes-row select{background:var(--paper)}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 11px;font-size:.82rem;cursor:pointer;color:var(--muted)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
 .form .full{grid-column:1/-1}
 label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;min-width:0}
 input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
@@ -289,14 +292,14 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   </section>
 
   <section class="card">
-    <h2>你的医美价格</h2>
-    <p class="note" style="margin:0 0 12px">"减脂健身 → 医美"那一组的金额都按这里换算。项目名称、价格、次数都可以改，也可以添加或删除项目。</p>
+    <h2>你的价格清单</h2>
+    <p class="note" style="margin:0 0 12px">填你以后可能要花钱的项目：医美、护肤、牙科、理疗、健身课、按摩都可以。勾选它和哪些习惯有关，「健康 · 外貌习惯」那一组每次打卡的金额就按这里自动换算。</p>
     <div class="aes-list" id="aesList"></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
       <button class="btn" type="button" id="aesAdd">+ 添加项目</button>
       <span class="note" style="margin:0" id="aesTotal"></span>
     </div>
-    <p class="note">类型决定这个项目算进哪些习惯：防晒、戴墨镜主要对应「肉毒类」；蛋白质、减脂节奏对应「填充类」和「紧致类」；睡眠、训练、卸妆等按全部项目计算。不确定就选「其他」。</p>
+    <p class="note">算法：每个习惯每打卡一次 = 勾选了它的项目一年总花费 × 这个习惯的比例 ÷ 一年做这件事的次数。比例：防晒 40%、减脂节奏 30%、早睡 15%、蛋白质 / 训练 / 墨镜各 10%、卸妆 / 睡前不刷手机各 5%。具体每个习惯怎么算，可以在页面最下面「每个数字是怎么算的」里看到。</p>
   </section>
 
   <section class="card">
@@ -563,38 +566,39 @@ const BUILTIN=[
 ];
 const GROUPS=[
  {id:"cash",title:"当场省下钱",hint:"真的留在你手里的钱"},
- {id:"aes",title:"减脂健身 → 医美",hint:"按你的医美价格换算"},
+ {id:"aes",title:"健康 · 外貌习惯",hint:"按你的价格清单换算"},
  {id:"future",title:"以后少花钱",hint:"估算的少损失"},
  {id:"count",title:"情绪和时间",hint:"只记次数"},
  {id:"bad",title:"坏习惯",hint:"会从总数里扣掉"}
 ];
 const BASE_MS=[{name:"一次物理治疗复诊",amt:97},{name:"一次洗牙检查",amt:300},{name:"一次补牙",amt:310},{name:"一个疗程的腰背物理治疗",amt:720},{name:"一颗牙冠",amt:2250},{name:"一次根管 + 牙冠",amt:4650}];
 const AES_DEFAULT={botox:800,botoxN:3,sculptra:1350,sculptraN:1,ulthera:900,ultheraLines:300,ultheraN:1};
-const AES_TYPES={botox:"肉毒类（除皱、瘦脸）",fill:"填充类（少女针、玻尿酸等）",lift:"紧致类（美超、热玛吉等）",other:"其他"};
+// share of an item's yearly cost credited to each linked habit, and how often that habit happens
+const LINKS={
+ sun:{label:"防晒",pct:40,per:365,unit:"365 天",why:"紫外线是皮肤老化最大的外因"},
+ sleep:{label:"早睡",pct:15,per:365,unit:"365 天",why:"睡眠影响皮肤和整体状态"},
+ protein:{label:"蛋白质",pct:10,per:365,unit:"365 天",why:"支持肌肉和皮肤修复"},
+ train:{label:"训练",pct:10,per:208,unit:"每年约 208 次训练（每周 4 次）",why:"保持体态和身体机能"},
+ shades:{label:"墨镜 / 帽子",pct:10,per:365,unit:"365 天",why:"少眯眼、少晒眼周"},
+ cleanse:{label:"卸妆洁面",pct:5,per:365,unit:"365 天",why:"减少闭口和痘痘"},
+ nophone:{label:"睡前不刷手机",pct:5,per:365,unit:"365 天",why:"提高睡眠质量"},
+ pace:{label:"减脂节奏",pct:30,per:52,unit:"52 周，每周记一次",why:"减脂太快容易让脸部凹陷、皮肤松"}
+};
+const TYPE_LINKS={botox:["sun","sleep","train","shades","cleanse","nophone"],fill:["sleep","protein","train","cleanse","nophone","pace"],lift:["sun","sleep","protein","train","cleanse","nophone","pace"],other:["sleep","train","cleanse","nophone"]};
 function aesItems(a){
   a=a||settings.aes;
-  if(Array.isArray(a.items))return a.items;
-  return [{id:"botox",name:"肉毒",type:"botox",price:+a.botox||0,n:+a.botoxN||0},
-          {id:"sculptra",name:"少女针",type:"fill",price:+a.sculptra||0,n:+a.sculptraN||0},
-          {id:"ulthera",name:"美超",type:"lift",price:+a.ulthera||0,n:+a.ultheraN||0}];
+  const raw=Array.isArray(a.items)?a.items:[
+    {id:"botox",name:"肉毒",type:"botox",price:+a.botox||0,n:+a.botoxN||0},
+    {id:"sculptra",name:"少女针",type:"fill",price:+a.sculptra||0,n:+a.sculptraN||0},
+    {id:"ulthera",name:"美超",type:"lift",price:+a.ulthera||0,n:+a.ultheraN||0}];
+  return raw.map(it=>Array.isArray(it.links)?it:{...it,links:TYPE_LINKS[it.type]||TYPE_LINKS.other});
 }
-function aesYear(a){
-  const y={botox:0,sculptra:0,ulthera:0,other:0};
-  aesItems(a).forEach(it=>{const v=(+it.price||0)*(+it.n||0);const k={botox:"botox",fill:"sculptra",lift:"ulthera"}[it.type]||"other";y[k]+=v});
-  y.all=y.botox+y.sculptra+y.ulthera+y.other;return y;
-}
-// share of yearly 医美 spend each habit is credited with, and how often it happens
-const LINKS={
- sun:{per:365,calc:y=>(y.botox+y.ulthera)*0.4,why:"肉毒类 + 紧致类每年花费的 40%（紫外线是皮肤老化最大的外因）÷ 365 天"},
- sleep:{per:365,calc:y=>y.all*0.15,why:"全部医美年花费的 15% ÷ 365 天"},
- protein:{per:365,calc:y=>(y.sculptra+y.ulthera)*0.1,why:"填充类 + 紧致类年花费的 10%（支持肌肉和皮肤修复）÷ 365 天"},
- train:{per:208,calc:y=>y.all*0.1,why:"全部医美年花费的 10% ÷ 每年约 208 次训练（每周 4 次）"},
- shades:{per:365,calc:y=>y.botox*0.1,why:"少眯眼、少晒眼周，眼周是肉毒常打的部位；按肉毒类年花费的 10% ÷ 365 天"},
- cleanse:{per:365,calc:y=>y.all*0.05,why:"减少闭口和痘痘，以后少做祛痘类项目；按全部医美年花费的 5% ÷ 365 天"},
- nophone:{per:365,calc:y=>y.all*0.05,why:"提高睡眠质量；按全部医美年花费的 5% ÷ 365 天"},
- pace:{per:52,calc:y=>(y.sculptra+y.ulthera)*0.3,why:"减脂太快容易让脸部凹陷、皮肤松，常见的补救就是填充和紧致项目；按这两类年花费的 30% ÷ 52 周，每周记一次"}
-};
-function linkVal(k){const L=LINKS[k];return Math.round(L.calc(aesYear(settings.aes))/L.per*100)/100}
+const itemYear=it=>(+it.price||0)*(+it.n||0);
+function aesYear(a){const y={all:0};aesItems(a).forEach(it=>y.all+=itemYear(it));return y}
+function linkedItems(k){return aesItems().filter(it=>it.links.includes(k)&&itemYear(it)>0)}
+function linkVal(k){const L=LINKS[k];const sum=linkedItems(k).reduce((a,it)=>a+itemYear(it),0);return Math.round(sum*L.pct/100/L.per*100)/100}
+function linkWhy(k){const L=LINKS[k],its=linkedItems(k);
+  return its.length?`${L.why}；按「${its.map(i=>i.name||"未命名").join("、")}」每年花费的 ${L.pct}% ÷ ${L.unit}`:`在「你的价格清单」里还没有项目勾选「${L.label}」，所以暂时是 $0`}
 function milestones(){return [...BASE_MS,...aesItems().filter(it=>+it.price>0&&it.name).map(it=>({name:"一次"+it.name,amt:+it.price}))].sort((x,y)=>x.amt-y.amt)}
 const KIND_LABEL={"cash":"当场省","future":"以后少花","count":"只记次数","bad-cash":"坏·当场多花","bad-future":"坏·以后多花"};
 
@@ -620,7 +624,7 @@ let db=null, uid=null, mode="loading";
 const pending={};
 
 function habits(){
-  return [...BUILTIN,...settings.custom].map(h=>h.link?{...h,val:linkVal(h.link),why:LINKS[h.link].why+(h.kind.startsWith("bad")?"，反过来扣":"")}:{...h,val:settings.vals[h.id]??h.val});
+  return [...BUILTIN,...settings.custom].map(h=>h.link?{...h,val:linkVal(h.link),why:linkWhy(h.link)+(h.kind.startsWith("bad")?"，反过来扣":"")}:{...h,val:settings.vals[h.id]??h.val});
 }
 function hMap(){return Object.fromEntries(habits().map(h=>[h.id,h]))}
 // signed value of one occurrence, split into cash / future
@@ -808,27 +812,28 @@ function renderAes(){
   const items=aesItems(), sig=items.map(i=>i.id).join("|")+"|"+settings.cur+"|"+fx();
   if(sig!==aesSig||!$("aesList").children.length&&items.length){
     aesSig=sig;
-    const opts=t=>Object.entries(AES_TYPES).map(([k,v])=>`<option value="${k}"${k===t?" selected":""}>${v}</option>`).join("");
     $("aesList").innerHTML=items.length?items.map(it=>`<div class="aes-row" data-id="${esc(it.id)}">
-      <label class="full nm">项目名称<input type="text" maxlength="20" data-f="name" value="${esc(it.name||"")}" placeholder="例如 热玛吉"></label>
-      <label class="full">类型<select data-f="type">${opts(it.type)}</select></label>
+      <label class="full nm">项目名称<input type="text" maxlength="20" data-f="name" value="${esc(it.name||"")}" placeholder="例如 热玛吉 / 洗牙 / 私教课"></label>
       <label><span>每次价格（<span class="cur-label">${curName()}</span>）</span><input type="number" min="0" step="10" inputmode="decimal" data-f="price" value="${r2((+it.price||0)*fx())}"></label>
       <label>一年做几次<input type="number" min="0" step="1" inputmode="decimal" data-f="n" value="${+it.n||0}"></label>
+      <div class="full"><div style="font-size:.85rem;margin-bottom:6px">跟哪些习惯有关</div><div class="chips">${Object.entries(LINKS).map(([k,L])=>`<button type="button" class="chip" data-link="${k}" aria-pressed="${it.links.includes(k)}">${L.label}</button>`).join("")}</div></div>
       <button type="button" class="x" data-del aria-label="删除 ${esc(it.name||"项目")}">×</button></div>`).join("")
-      :`<p class="note" style="margin:0">还没有项目。点「+ 添加项目」加上你常做的医美。</p>`;
+      :`<p class="note" style="margin:0">还没有项目。点「+ 添加项目」加上你以后可能要花钱的项目。</p>`;
   }
   aesTotalText();
 }
 $("aesList").addEventListener("input",e=>{
   const f=e.target.dataset.f, row=e.target.closest(".aes-row"); if(!f||!row)return;
-  const items=aesItems().map(x=>({...x}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
+  const items=aesItems().map(x=>({...x,links:[...x.links]}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
   if(f==="name")it.name=e.target.value.trim();
-  else if(f==="type")it.type=e.target.value;
   else{const v=parseFloat(e.target.value);if(isNaN(v)||v<0)return;it[f]=f==="price"?v/fx():v}
   aesSetItems(items);
 });
-$("aesList").addEventListener("change",e=>{if(e.target.dataset.f==="type")e.target.dispatchEvent(new Event("input",{bubbles:true}))});
+
 $("aesList").addEventListener("click",e=>{
+  const ch=e.target.closest("[data-link]");
+  if(ch){const row=ch.closest(".aes-row"),k=ch.dataset.link;const items=aesItems().map(x=>({...x,links:[...x.links]}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
+    it.links=it.links.includes(k)?it.links.filter(x=>x!==k):[...it.links,k];ch.setAttribute("aria-pressed",String(it.links.includes(k)));aesSetItems(items);return}
   if(e.target.dataset.del===undefined)return;const row=e.target.closest(".aes-row");
   const it=aesItems().find(x=>x.id===row.dataset.id);
   if(!confirm(`删除「${it&&it.name||"这个项目"}」？`))return;
@@ -836,7 +841,7 @@ $("aesList").addEventListener("click",e=>{
 });
 $("aesAdd").addEventListener("click",()=>{
   const id="a"+Date.now().toString(36);
-  aesSetItems([...aesItems().map(x=>({...x})),{id,name:"",type:"other",price:0,n:1}]);
+  aesSetItems([...aesItems().map(x=>({...x,links:[...x.links]})),{id,name:"",price:0,n:1,links:["sleep","train"]}]);
   const inp=document.querySelector(`.aes-row[data-id="${id}"] [data-f=name]`);if(inp)inp.focus();
 });
 function renderCur(){
