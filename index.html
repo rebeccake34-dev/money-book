@@ -358,7 +358,25 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   <section class="panel" aria-label="目标设置">
     <h2>现在的目标 <small>热量、蛋白质和每周建议都会跟着变</small></h2>
     <div class="seg goalseg" id="goalSeg" role="group" aria-label="选择目标"><button type="button" data-goal="cut">减脂</button><button type="button" data-goal="gain">增肌</button><button type="button" data-goal="keep">维持</button></div>
-    <div class="row"><label for="tdee" class="note">你的维持热量</label><input type="number" id="tdee" min="1200" max="4000" step="50" inputmode="numeric" style="width:100px"><span class="note">kcal/天</span></div>
+    <div class="pcalc">
+      <div class="field"><label for="bSex">性别</label><select id="bSex"><option value="">请选择</option><option value="f">女</option><option value="m">男</option></select></div>
+      <div class="field"><label for="bAge">年龄</label><input type="number" id="bAge" min="14" max="90" step="1" inputmode="numeric" placeholder="例如 25"></div>
+      <div class="field"><label for="bH">身高 (cm)</label><input type="number" id="bH" min="100" max="230" step="0.5" inputmode="decimal" placeholder="例如 160"></div>
+    </div>
+    <div class="field"><label for="bAct">平时活动量（不算有氧）</label><select id="bAct">
+      <option value="1.2">很少运动，久坐为主</option>
+      <option value="1.375">每周练 1–3 次</option>
+      <option value="1.55">每周练 3–5 次</option>
+      <option value="1.725">每周练 6–7 次，或工作要一直站着走动</option>
+      <option value="1.9">体力劳动 + 每天训练</option></select></div>
+    <div class="pres">
+      <div class="stat"><b id="bW">–</b><span>计算用体重 kg</span></div>
+      <div class="stat"><b id="bBmr">–</b><span>基础代谢 kcal</span></div>
+      <div class="stat"><b id="bTdee">–</b><span>维持热量 kcal</span></div>
+      <div class="stat"><b id="bMode">自动</b><span>计算方式</span></div>
+    </div>
+    <label class="note" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="tdeeManual">我知道自己的维持热量，手动填写</label>
+    <div class="row" id="tdeeRow" hidden><label for="tdee" class="note">维持热量</label><input type="number" id="tdee" min="1200" max="4000" step="50" inputmode="numeric" style="width:100px"><span class="note">kcal/天</span></div>
     <p class="note" id="goalNote"></p>
   </section>
 
@@ -1063,7 +1081,7 @@ const dayAgo=i=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i
 const now=new Date(), todayKey=keyOf(now);
 const blank=()=>({ex:{},lifts:{},water:[],food:[],steps:null,cardio:false,weight:null,waist:null,hip:null,thigh:null,arm:null,planDay:null});
 
-let day=blank(), allDays={}, settings={offset:0,applied:null,proT:110,height:null,goal:"cut",tdee:1900};
+let day=blank(), allDays={}, settings={offset:0,applied:null,proT:110,height:null,goal:"cut",tdee:1900,sex:"",age:null,act:1.375,tdeeManual:false};
 let col=null, saveTimer=null, setTimer=null;
 
 const $=id=>document.getElementById(id);
@@ -1076,14 +1094,33 @@ const planOf=(rec,date)=>PLAN[planIdx(rec)??date.getDay()];
 const curPlan=()=>planOf(day,now);
 const isTrain=()=>curPlan().type==="train";
 const GOALCFG={
-  cut:{name:"减脂",tr:-300,rs:-450,floor:1400,fat:45},
-  gain:{name:"增肌",tr:250,rs:100,floor:1600,fat:55},
-  keep:{name:"维持",tr:50,rs:-50,floor:1500,fat:50}};
+  cut:{name:"减脂",tr:-0.15,rs:-0.22,floor:1400,fat:0.8},
+  gain:{name:"增肌",tr:0.12,rs:0.05,floor:1600,fat:0.9},
+  keep:{name:"维持",tr:0.03,rs:-0.03,floor:1500,fat:0.85}};
 const goal=()=>GOALCFG[settings.goal]?settings.goal:"cut";
 const cfg=()=>GOALCFG[goal()];
-const tdee=()=>(+settings.tdee>=1200&&+settings.tdee<=4000)?+settings.tdee:1900;
-const baseK=train=>tdee()+(train?cfg().tr:cfg().rs);
-const kOf=train=>Math.max(cfg().floor,baseK(train)+(settings.offset||0));
+/* weight used for calorie maths: 7-day average, else most recent weigh-in */
+function calcWeight(){
+  const w=[];for(let i=0;i<=6;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.weight)w.push(+r.weight)}
+  if(w.length)return avg(w);
+  for(let i=7;i<=42;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.weight)return +r.weight}
+  return null;
+}
+/* Mifflin-St Jeor basal metabolic rate */
+function bmr(){
+  const w=calcWeight(),h=+settings.height,a=+settings.age,sx=settings.sex;
+  if(!(w>0)||!(h>=100)||!(a>=14)||!sx)return null;
+  return 10*w+6.25*h-5*a+(sx==="m"?5:-161);
+}
+const autoTdee=()=>{const b=bmr();return b?Math.round(b*(+settings.act||1.375)/10)*10:null};
+const isAuto=()=>!settings.tdeeManual&&autoTdee()!=null;
+const manualTdee=()=>(+settings.tdee>=1200&&+settings.tdee<=4000)?+settings.tdee:1900;
+const tdee=()=>isAuto()?autoTdee():manualTdee();
+const r10=v=>Math.round(v/10)*10;
+const floorK=()=>{const b=bmr();return goal()==="cut"?Math.max(1200,b?r10(b):cfg().floor):(b?r10(b):cfg().floor)};
+const baseK=train=>r10(tdee()*(1+(train?cfg().tr:cfg().rs)));
+const kOf=train=>Math.max(floorK(),baseK(train)+(settings.offset||0));
+const fatG=()=>{const w=calcWeight();return w?Math.round(w*cfg().fat):({cut:45,gain:55,keep:50})[goal()]};
 const kcalT=()=>kOf(isTrain());
 const waterT=()=>isTrain()?2500:2000;
 const proT=()=>settings.proT||110;
@@ -1168,8 +1205,8 @@ function advice(){
   if(st===null||st<10000){
     return {cls:"warn",text:`已连续 2 周每周下降不到 0.2 kg。第一步：每天多走 2,000 步（近 7 天平均 ${st?Math.round(st):"未记录"} 步）。`,actions};
   }
-  if(baseK(false)+(settings.offset||0)-150<cfg().floor){
-    return {cls:"bad",text:`连续 2 周不动，但热量已经接近 ${cfg().floor} kcal 下限。不再减热量：建议吃 1–2 周维持热量（约 ${tdee()} kcal）做饮食休息。`,actions};
+  if(baseK(false)+(settings.offset||0)-150<floorK()){
+    return {cls:"bad",text:`连续 2 周不动，但热量已经接近 ${floorK()} kcal 下限（不低于基础代谢）。不再减热量：建议吃 1–2 周维持热量（约 ${tdee()} kcal）做饮食休息。`,actions};
   }
   actions.push(["每天 −150 kcal（从碳水减）",-150]);
   return {cls:"warn",text:`连续 2 周下降不到 0.2 kg，且步数已够。第二步：每天减 100–150 kcal，从碳水里减。`,actions};
@@ -1239,12 +1276,21 @@ function adviceKeep(){
 }
 function renderGoal(){
   document.querySelectorAll("#goalSeg [data-goal]").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.goal===goal())));
-  if(document.activeElement!==$("tdee"))$("tdee").value=tdee();
+  if(document.activeElement!==$("tdee"))$("tdee").value=manualTdee();
+  if(document.activeElement!==$("bSex"))$("bSex").value=settings.sex||"";
+  if(document.activeElement!==$("bAge"))$("bAge").value=settings.age??"";
+  if(document.activeElement!==$("bH"))$("bH").value=settings.height??"";
+  $("bAct").value=String(settings.act||1.375);
+  $("tdeeManual").checked=!!settings.tdeeManual;$("tdeeRow").hidden=!settings.tdeeManual;
+  const cw=calcWeight(), b=bmr();
+  $("bW").textContent=cw?cw.toFixed(1):"–";$("bBmr").textContent=b?Math.round(b):"–";$("bTdee").textContent=tdee();
+  $("bMode").textContent=isAuto()?"自动":"手动";
   const g=goal(), T=kOf(true), Rs=kOf(false);
+  const pctTxt={cut:"比维持少 15–22%",gain:"比维持多 5–12%，慢速增肌",keep:"维持 ±3%"}[g];
   $("goalNote").textContent={
-    cut:`减脂：训练日 ${T} kcal、休息日 ${Rs} kcal（比维持少 300–450）。目标每周体重下降 0.2–0.7 kg，力量尽量保持。`,
-    gain:`增肌：训练日 ${T} kcal、休息日 ${Rs} kcal（比维持多 100–250，慢速增肌）。目标每周体重上涨 0.25–0.5%，力量持续进步，腰围基本不变。`,
-    keep:`维持：训练日 ${T} kcal、休息日 ${Rs} kcal。目标体重每周变化不超过 ±0.3%。`}[g]+" 维持热量不知道的话先用 1900；吃这个热量 2 周体重不变，就说明填对了。";
+    cut:`减脂：训练日 ${T} kcal、休息日 ${Rs} kcal（${pctTxt}，不低于基础代谢）。目标每周体重下降 0.2–0.7 kg，力量尽量保持。`,
+    gain:`增肌：训练日 ${T} kcal、休息日 ${Rs} kcal（${pctTxt}）。目标每周体重上涨 0.25–0.5%，力量持续进步，腰围基本不变。`,
+    keep:`维持：训练日 ${T} kcal、休息日 ${Rs} kcal（${pctTxt}）。目标体重每周变化不超过 ±0.3%。`}[g]+(isAuto()?` 维持热量 = 基础代谢 × 活动量系数，体重用近 7 天平均，每次称重后自动更新。`:settings.tdeeManual?" 现在用的是你手动填的维持热量，不会随体重变化。":" 填好性别、年龄、身高并记录体重后，会改为按你的体重自动计算。现在先用 "+manualTdee()+" kcal。");
 }
 function renderMuscle(){
   const R=weeklyRates(), st=strength(), wc=seriesChange("waist",28), lsN=liftStats(0,6), lsP=liftStats(7,13);
@@ -1370,7 +1416,7 @@ function render(){
     :`<tr><td colspan="5" class="note">还没有记录。点上面的常吃餐快速添加，或手动输入。</td></tr>`;
 
   // macro targets
-  const fatT=cfg().fat, carbT=Math.round((KT-proT()*4-fatT*9)/4);
+  const fatT=fatG(), carbT=Math.round((KT-proT()*4-fatT*9)/4);
   $("macroTarget").textContent=`今天的目标：蛋白质 ${proT()} g（${proT()*4} kcal）· 脂肪 ${fatT} g（${fatT*9} kcal）· 碳水约 ${carbT} g（${carbT*4} kcal）。`;
 
   renderWeek();
@@ -1438,7 +1484,12 @@ $("weight").addEventListener("change",e=>{const v=parseFloat(e.target.value);day
 $("waist").addEventListener("change",e=>{const v=parseFloat(e.target.value);day.waist=(v>30&&v<200)?v:null;save()});
 ["hip","thigh","arm"].forEach(f=>$(f).addEventListener("change",e=>{const v=parseFloat(e.target.value);day[f]=(v>10&&v<200)?v:null;save()}));
 $("goalSeg").addEventListener("click",e=>{const b=e.target.closest("[data-goal]");if(!b||b.dataset.goal===goal())return;settings.goal=b.dataset.goal;settings.offset=0;settings.applied=null;$("pGoal").value=goal();saveSettings();pcalc()});
-$("tdee").addEventListener("change",e=>{const v=+e.target.value;if(v>=1200&&v<=4000){settings.tdee=Math.round(v);saveSettings()}else e.target.value=tdee()});
+$("tdee").addEventListener("change",e=>{const v=+e.target.value;if(v>=1200&&v<=4000){settings.tdee=Math.round(v);saveSettings()}else e.target.value=manualTdee()});
+$("bSex").addEventListener("change",e=>{settings.sex=e.target.value;saveSettings()});
+$("bAge").addEventListener("change",e=>{const v=+e.target.value;settings.age=(v>=14&&v<=90)?Math.round(v):null;saveSettings()});
+$("bH").addEventListener("change",e=>{const v=parseFloat(e.target.value);settings.height=(v>=100&&v<=230)?v:null;if(settings.height)$("pH").value=settings.height;saveSettings()});
+$("bAct").addEventListener("change",e=>{settings.act=+e.target.value;saveSettings()});
+$("tdeeManual").addEventListener("change",e=>{settings.tdeeManual=e.target.checked;saveSettings()});
 $("steps").addEventListener("change",e=>{day.steps=e.target.value===""?null:Math.max(0,+e.target.value);save()});
 $("cardioDone").addEventListener("change",e=>{day.cardio=e.target.checked;save()});
 document.querySelectorAll("[data-ml]").forEach(b=>b.addEventListener("click",()=>{day.water.push({ml:+b.dataset.ml,t:Date.now()});save()}));
@@ -1472,7 +1523,7 @@ render();calc();
     const c=db.collection("data/users/"+uid).doc("cut").collection("days");
     const snap=await c.get();
     let remoteToday=null;
-    snap.docs.forEach(s=>{if(!s.exists)return;if(s.id==="settings")settings=Object.assign({offset:0,applied:null,proT:110,goal:"cut",tdee:1900},s.data());else{allDays[s.id]=s.data();if(s.id===todayKey)remoteToday=s.data()}});
+    snap.docs.forEach(s=>{if(!s.exists)return;if(s.id==="settings")settings=Object.assign({offset:0,applied:null,proT:110,goal:"cut",tdee:1900,sex:"",age:null,act:1.375,tdeeManual:false},s.data());else{allDays[s.id]=s.data();if(s.id===todayKey)remoteToday=s.data()}});
     if(remoteToday){
       const rc=(remoteToday.food||[]).length+(remoteToday.water||[]).length, lc=day.food.length+day.water.length;
       if(!local||rc>=lc)day=Object.assign(blank(),remoteToday);
