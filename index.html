@@ -1,0 +1,1276 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>好习惯省钱账本</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Layout: two-money ledger on top, habit tiles grouped by kind, weekly review chart, milestones, then settings (custom habits + the rules behind each number) */
+:root{
+  --bg:#eef3ef; --paper:#ffffff; --ink:#17251d; --muted:#5d6d63; --line:#d3ded6;
+  --accent:#1f7a52; --accent-soft:#dcefe4; --gold:#a8701a; --gold-soft:#f6ead4;
+  --bad:#b8483c; --bad-soft:#f6e0dc; --calm:#4b5fa8; --calm-soft:#e1e5f5;
+  --display:"Noto Serif SC","Songti SC",serif;
+  --body:"Noto Sans SC","PingFang SC","Microsoft YaHei",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111915; --paper:#1a241f; --ink:#e6eee9; --muted:#9bada2; --line:#2c3a32;
+  --accent:#5cc493; --accent-soft:#1b3328; --gold:#e3ad55; --gold-soft:#372a15;
+  --bad:#ec8276; --bad-soft:#3a201c; --calm:#9aaaf0; --calm-soft:#22284a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111915; --paper:#1a241f; --ink:#e6eee9; --muted:#9bada2; --line:#2c3a32;
+  --accent:#5cc493; --accent-soft:#1b3328; --gold:#e3ad55; --gold-soft:#372a15;
+  --bad:#ec8276; --bad-soft:#3a201c; --calm:#9aaaf0; --calm-soft:#22284a; color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:24px 64px}
+.wrap{max-width:660px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-family:var(--display);font-weight:900;font-size:1.9rem;margin:0;text-wrap:balance}
+header p{margin:4px 0 0;color:var(--muted);font-size:.9rem}
+h2{font-size:.78rem;letter-spacing:.14em;color:var(--muted);margin:0 0 10px;font-weight:700}
+h3{font-size:.95rem;margin:0 0 8px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+/* ledger */
+.ledger{background:var(--accent);color:#fff;border-radius:14px;padding:18px 20px;display:flex;flex-direction:column;gap:14px}
+.ledger .head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.ledger small{font-size:.8rem;opacity:.85;display:block}
+.ledger .big{font-size:2.2rem;line-height:1.1}
+.money2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.money2>div{background:rgba(255,255,255,.12);border-radius:10px;padding:10px 12px;min-width:0}
+.money2 .num{font-size:1.25rem}
+.money2 .sub{font-size:.78rem;opacity:.85;font-family:var(--mono)}
+.save-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;color:var(--ink);border-radius:10px;padding:10px 12px;font-size:.9rem}
+.save-row .btn{background:var(--accent);color:#fff;border:none}
+.status{font-size:.8rem;color:var(--muted);min-height:1.2em;margin-top:-12px}
+
+/* tiles */
+.group{display:flex;flex-direction:column;gap:8px}
+.group-head{display:flex;align-items:baseline;gap:8px}
+.group-head span{font-size:.8rem;color:var(--muted)}
+.tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.tile{text-align:left;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:4px;min-width:0;position:relative}
+.tile:hover{border-color:var(--accent)}
+.tile:active{transform:scale(.98)}
+.tile b{font-size:.95rem;padding-right:52px;line-height:1.4}
+.tile .val{font-family:var(--mono);font-size:.82rem}
+.tile .streak{font-size:.78rem;color:var(--muted)}
+.tile .cnt{position:absolute;top:10px;right:10px;font-family:var(--mono);font-size:.75rem;border-radius:999px;padding:1px 9px}
+.k-cash .val{color:var(--accent)} .k-cash .cnt{background:var(--accent-soft);color:var(--accent)}
+.k-future .val{color:var(--gold)} .k-future .cnt{background:var(--gold-soft);color:var(--gold)}
+.k-count .val{color:var(--calm)} .k-count .cnt{background:var(--calm-soft);color:var(--calm)}
+.k-bad{border-style:dashed}
+.k-bad .val{color:var(--bad)} .k-bad .cnt{background:var(--bad-soft);color:var(--bad)}
+.k-bad:hover{border-color:var(--bad)}
+.cnt[data-zero]{background:transparent!important;color:var(--muted)!important}
+.cur-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:10px;font-size:.85rem}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;background:var(--paper)}
+.seg button{border:none;background:transparent;padding:6px 12px;cursor:pointer;font-size:.85rem}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff}
+.rate{flex-direction:row;align-items:center;gap:6px;color:var(--muted)}
+.rate input{width:5.5em;padding:5px 8px;font-family:var(--mono)}
+.group-head{flex-wrap:wrap;align-items:center}
+.gtoggle{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px;cursor:pointer;text-align:left}
+.gtoggle:hover{border-color:var(--accent)}
+.chev{color:var(--muted);width:1em;display:inline-block}
+.gtitle{font-size:.98rem;font-weight:700;color:var(--ink)!important}
+.ghint{font-size:.8rem;color:var(--muted)}
+.gsum{margin-left:auto;font-size:.8rem;font-weight:500}
+.add-grp h3{margin-bottom:10px}
+.manage-bar{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.85rem;color:var(--muted)}
+.tile.managing{border-color:var(--bad);border-style:solid}
+.tile.managing .cnt{display:none}
+.del-chip{display:inline-block;background:var(--bad);color:#fff;border-radius:6px;padding:2px 10px;font-size:.8rem;font-weight:500}
+.gone{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.gone-row{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.9rem}
+.undo{font-size:.75rem;color:var(--muted);background:none;border:none;padding:0;cursor:pointer;align-self:flex-start;text-decoration:underline}
+
+/* cards */
+.card{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.chart-wrap{position:relative}
+svg{display:block;width:100%;height:auto;overflow:visible}
+.readout{font-size:.88rem;min-height:1.5em;margin-top:6px}
+.top{display:flex;flex-direction:column;gap:6px;margin-top:12px}
+.top-row{display:grid;grid-template-columns:1.2em 1fr auto;gap:8px;font-size:.9rem;align-items:baseline}
+.top-row .num{font-size:.88rem}
+.split{display:flex;gap:16px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin-top:8px}
+.split b{color:var(--ink);font-family:var(--mono)}
+.ms{display:flex;flex-direction:column;gap:12px}
+.ms-row{display:flex;flex-direction:column;gap:4px}
+.ms-top{display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
+.bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
+.bar span{display:block;height:100%;background:var(--gold);transition:width .3s}
+.done{color:var(--gold);font-weight:700}
+
+/* forms */
+.form{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.form .full{grid-column:1/-1}
+label{display:flex;flex-direction:column;gap:4px;font-size:.85rem;min-width:0}
+input,select{font:inherit;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%}
+input[type=number]{font-family:var(--mono)}
+.btn{padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-weight:500}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.danger{color:var(--bad);border-color:var(--bad);background:transparent;padding:4px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:default}
+.formmsg{font-size:.82rem;color:var(--bad);min-height:1.2em}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
+th{color:var(--muted);font-weight:500;white-space:nowrap}
+td input{width:5.5em;padding:4px 6px}
+.tbl{overflow-x:auto}
+.note{font-size:.8rem;color:var(--muted);margin:10px 0 0}
+details summary{cursor:pointer;font-weight:500}
+details[open] summary{margin-bottom:10px}
+.tag{font-size:.72rem;border-radius:4px;padding:1px 6px;white-space:nowrap}
+textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink);width:100%;resize:vertical}
+.note-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
+.note-meta{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--muted)}
+.note-act{display:flex;gap:12px}
+.note-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem;margin-top:4px}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;z-index:30;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+.sheet-box{background:var(--paper);color:var(--ink);border-radius:14px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:12px 18px;border-radius:12px;font-size:.92rem;width:max-content;max-width:min(92vw,480px);box-shadow:0 8px 24px rgba(0,0,0,.2);z-index:20}
+@media (max-width:420px){.ledger .big{font-size:1.8rem}.money2 .num{font-size:1.05rem}.tile b{font-size:.9rem}}
+@media (prefers-reduced-motion:reduce){.bar span{transition:none}.tile:active{transform:none}}
+#cut{--panel:var(--paper);--water:#2b6cb0;--water-soft:#e4eef9;--warn:#b7791f;--warn-soft:#fbf1dd;
+  --f-display:"Barlow Condensed","Arial Narrow",system-ui,sans-serif;--f-body:var(--body);font-size:15px;line-height:1.55;display:flex;flex-direction:column;gap:16px}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cut{--water:#6aa8ea;--water-soft:#1b2c40;--warn:#e0a84a;--warn-soft:#3a2e17}}
+:root[data-theme="dark"] #cut{--water:#6aa8ea;--water-soft:#1b2c40;--warn:#e0a84a;--warn-soft:#3a2e17}
+.tabs{display:flex;gap:6px;background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:4px}
+.tabs button{flex:1;border:none;background:transparent;border-radius:9px;padding:10px;cursor:pointer;font-weight:500;color:var(--muted)}
+.tabs button[aria-selected="true"]{background:var(--accent);color:#fff}
+#cut .panel h2{color:var(--ink);letter-spacing:0}
+#cut label{display:revert;font-size:inherit}
+#cut input,#cut select{width:auto}
+#cut .field input,#cut .field select,#cut .foodform input{width:100%}
+#cut .pcalc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#cut .pres{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:520px){#cut .pcalc{grid-template-columns:1fr 1fr}#cut .pres{grid-template-columns:1fr 1fr}}
+#cut .cut-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px}
+#cut .cut-head h1{font-family:var(--f-display);font-weight:700;font-size:2.1rem;letter-spacing:.01em;margin:0;line-height:1}
+#cut .date{color:var(--muted);font-size:.9rem}
+#cut .pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.8rem;font-weight:500;background:var(--accent-soft);color:var(--accent)}
+#cut .pill.rest{background:var(--warn-soft);color:var(--warn)}
+#cut .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+#cut .panel h2{margin:0;font-size:1rem;font-weight:700;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:4px 8px}
+#cut .panel h2 small{font-weight:400;color:var(--muted);font-size:.82rem}
+#cut .panel h3{margin:4px 0 0;font-size:.85rem;font-weight:500;color:var(--muted);letter-spacing:.04em}
+#cut .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+#cut .stat{display:flex;flex-direction:column;gap:2px;min-width:0}
+#cut .stat b{font-family:var(--f-display);font-size:1.7rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+#cut .stat span{font-size:.75rem;color:var(--muted);letter-spacing:.04em}
+#cut .bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
+#cut .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+#cut .bar.water i{background:var(--water)}
+#cut .bar.over i{background:var(--bad)}
+#cut ul.ex{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+#cut ul.ex li{display:grid;grid-template-columns:24px 1fr auto;gap:4px 10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+#cut ul.ex li:first-child{border-top:0}
+#cut ul.ex li.done .name{text-decoration:line-through;color:var(--muted)}
+#cut .sets{font-family:var(--f-display);font-size:1.05rem;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+#cut .lift{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:6px 8px;align-items:center;font-size:.82rem;color:var(--muted)}
+#cut .lift input{width:76px;padding:4px 8px}
+#cut .lift input.reps{width:120px}
+#cut .tag{display:inline-block;padding:1px 8px;border-radius:999px;font-size:.75rem;background:var(--accent-soft);color:var(--accent);font-weight:500}
+#cut input[type=checkbox]{width:20px;height:20px;accent-color:var(--accent)}
+#cut .note{font-size:.85rem;color:var(--muted);margin:0}
+#cut .banner{padding:10px 12px;border-radius:8px;background:var(--water-soft);color:var(--water);font-size:.9rem;font-weight:500}
+#cut .banner.late,#cut .banner.warn{background:var(--warn-soft);color:var(--warn)}
+#cut .banner.ok{background:var(--accent-soft);color:var(--accent)}
+#cut .banner.bad{background:var(--bad-soft);color:var(--bad)}
+#cut .banner.plain{background:var(--bg);color:var(--muted);font-weight:400}
+#cut .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+#cut button,#cut select{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;cursor:pointer}
+#cut button:hover{border-color:var(--accent)}
+#cut button:focus-visible,#cut input:focus-visible,#cut select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#cut button.primary{background:var(--accent);border-color:var(--accent);color:var(--panel);font-weight:500}
+#cut button.waterbtn{border-color:var(--water);color:var(--water)}
+#cut input[type=text],#cut input[type=number]{font:inherit;font-size:.9rem;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 10px;min-width:0}
+#cut .foodform{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:8px}
+#cut table{width:100%;border-collapse:collapse;font-size:.9rem}
+#cut td,#cut th{padding:7px 4px;border-top:1px solid var(--line);text-align:left}
+#cut th{font-weight:500;color:var(--muted);font-size:.78rem;border-top:0}
+#cut td.n,#cut th.n{text-align:right;font-variant-numeric:tabular-nums}
+#cut td.x{width:28px;text-align:right}
+#cut td.x button{padding:2px 8px;font-size:.8rem}
+#cut .tablewrap{overflow-x:auto}
+#cut .week{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+#cut .day{border:1px solid var(--line);border-radius:8px;padding:8px 2px;text-align:center;font-size:.72rem;color:var(--muted);display:flex;flex-direction:column;gap:2px;min-width:0}
+#cut .day.today{border-color:var(--accent)}
+#cut .day b{font-family:var(--f-display);font-size:1rem;color:var(--ink);font-weight:600}
+#cut .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--line);margin:0 1px}
+#cut .dot.on{background:var(--accent)}
+#cut .dot.w{background:var(--water)}
+#cut .bodygrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 16px}
+#cut .field{display:flex;flex-direction:column;gap:4px;min-width:0}
+#cut .field label{font-size:.8rem;color:var(--muted)}
+#cut .chartwrap{overflow-x:auto}
+#cut svg text{font-family:var(--f-display);font-size:11px;fill:var(--muted)}
+#cut .calc{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+#cut .calc .field b{font-family:var(--f-display);font-size:1.3rem;font-weight:600;font-variant-numeric:tabular-nums}
+#cut .total{font-family:var(--f-display);font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
+#cut .sync{font-size:.78rem;color:var(--muted);text-align:center}
+@media (max-width:520px){#cut .stats{grid-template-columns:repeat(2,1fr)}#cut .foodform{grid-template-columns:1fr 1fr}#cut .foodform input:first-child{grid-column:1/-1}}
+@media (prefers-reduced-motion:reduce){#cut .bar i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>好习惯省钱账本</h1>
+    <p>做了好习惯就点一下，坏习惯也老实记一下。金额按悉尼价格估算，单位 <span class="cur-label">AUD</span>。</p>
+    <div class="cur-row"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
+  </header>
+
+  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">减脂打卡</button></div>
+
+  <div id="ledgerView" style="display:flex;flex-direction:column;gap:22px">
+
+  <div class="ledger" aria-live="polite">
+    <div class="head">
+      <div><small>本周净省下</small><span class="num big" id="wNet">$0.00</span></div>
+      <div style="text-align:right"><small>今天</small><span class="num" id="dNet">$0.00</span></div>
+    </div>
+    <div class="money2">
+      <div><small>当场省下的钱</small><span class="num" id="wCash">$0.00</span><div class="sub" id="aCash">累计 $0.00</div></div>
+      <div><small>估算少损失的钱</small><span class="num" id="wFut">$0.00</span><div class="sub" id="aFut">累计 $0.00</div></div>
+    </div>
+    <div class="save-row">
+      <span id="saveText">本周当场省下的钱，可以转进储蓄。</span>
+      <button class="btn" id="saveBtn" type="button">已转入</button>
+    </div>
+  </div>
+  <div class="status" id="status">正在读取你的记录…</div>
+
+  <section id="groups"></section>
+
+  <section class="card">
+    <h2>每周回顾</h2>
+    <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 220" role="img" aria-label="最近 8 周每周净省下的金额"></svg></div>
+    <div class="readout" id="readout">点或指向柱子，看那一周的明细。</div>
+    <div class="split" id="split"></div>
+    <div class="top" id="top"></div>
+  </section>
+
+  <section class="card">
+    <h2>累计净省下的钱已经够付</h2>
+    <p id="lines" class="num" style="margin:0 0 12px;color:var(--gold)"></p>
+    <div class="ms" id="ms"></div>
+  </section>
+
+  <section class="card">
+    <h2>便签</h2>
+    <form id="noteForm" style="display:flex;flex-direction:column;gap:10px">
+      <textarea id="noteText" rows="3" maxlength="2000" placeholder="写点什么：今天的感受、忍住没买的东西、想调整的习惯…" aria-label="便签内容"></textarea>
+      <div style="display:flex;gap:10px"><button class="btn primary" id="noteSave" type="submit">保存便签</button><button class="btn" id="noteCancel" type="button" hidden>取消编辑</button></div>
+    </form>
+    <div id="noteList" style="display:flex;flex-direction:column;gap:10px;margin-top:14px"></div>
+  </section>
+
+  <section class="card">
+    <h2>你的医美价格</h2>
+    <p class="note" style="margin:0 0 12px">"减脂健身 → 医美"那一组的金额都按这里换算。改价格或次数，金额会自动更新。</p>
+    <div class="form" id="aesForm">
+      <label>肉毒每次 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-botox"></label>
+      <label>一年打几次<input type="number" min="0" step="1" id="a-botoxN"></label>
+      <label>少女针每针 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-sculptra"></label>
+      <label>一年打几针<input type="number" min="0" step="1" id="a-sculptraN"></label>
+      <label>美超每次 <span class="cur-label">AUD</span><input type="number" min="0" step="10" id="a-ulthera"></label>
+      <label>每次几 lines<input type="number" min="1" step="10" id="a-ultheraLines"></label>
+      <label>美超一年做几次<input type="number" min="0" step="1" id="a-ultheraN"></label>
+      <label>每年医美合计<input type="text" id="a-total" readonly></label>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>添加自己的习惯</h2>
+    <form class="form" id="addForm" novalidate>
+      <label class="full">名称<input id="newName" type="text" maxlength="30" placeholder="例如：自己泡咖啡，不买外带"></label>
+      <label class="full">放在哪个板块<select id="newGrp"></select></label>
+      <label>类型
+        <select id="newKind">
+          <option value="cash">好习惯 · 当场省下钱</option>
+          <option value="future">好习惯 · 以后少花钱（估算）</option>
+          <option value="count">好习惯 · 只记次数</option>
+          <option value="bad-cash">坏习惯 · 当场多花钱</option>
+          <option value="bad-future">坏习惯 · 以后多花钱（估算）</option>
+        </select>
+      </label>
+      <label>每次金额 <span class="cur-label">AUD</span><input id="newVal" type="number" min="0" step="0.05" value="5"></label>
+      <label class="full" style="flex-direction:row;align-items:center;gap:8px"><input id="newAsk" type="checkbox" style="width:auto">每次点的时候自己填金额（适合每次不一样的，比如没买的东西）</label>
+      <div class="full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" type="submit">添加</button>
+        <span class="formmsg" id="formMsg"></span>
+      </div>
+    </form>
+  </section>
+
+  <section class="card">
+    <details>
+      <summary>每个数字是怎么算的（可以改金额、删除自己加的习惯）</summary>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>习惯</th><th>每次</th><th>依据</th></tr></thead>
+          <tbody id="rules"></tbody>
+        </table>
+      </div>
+      <p class="note">"依据"里的价格都是澳元。"以后少花"的金额是把十年内可能避免的治疗费，按需要做这件事的次数平均摊开。这是降低风险的估算，不是保证。改了金额后，过去的记录会按新金额重新计算。</p>
+    </details>
+  </section>
+  </div>
+
+  <div id="cut" hidden>
+  <div class="cut-head">
+    <div>
+      <h1>减脂打卡板</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <span class="pill" id="dayType"></span>
+  </div>
+
+  <section class="panel" aria-label="今日汇总">
+    <div class="stats">
+      <div class="stat"><b id="sKcal">0</b><span>热量 / <em id="sKcalT">1600</em> kcal</span></div>
+      <div class="stat"><b id="sPro">0</b><span>蛋白质 / <em id="sProT">110</em> g</span></div>
+      <div class="stat"><b id="sWater">0</b><span>喝水 / <em id="sWaterT">2500</em> ml</span></div>
+      <div class="stat"><b id="sTrain">0/0</b><span>训练动作完成</span></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>本周调整建议 <small>按计划里的规则自动判断</small></h2>
+    <div class="banner plain" id="advice"></div>
+    <div class="row" id="adviceActions"></div>
+    <p class="note" id="offsetNote"></p>
+  </section>
+
+  <section class="panel">
+    <h2>体重与腰围 <small>早上空腹称，每周至少 3 次</small></h2>
+    <div class="bodygrid">
+      <div class="field"><label for="weight">今日体重 (kg)</label><input type="number" id="weight" step="0.1" inputmode="decimal" placeholder="例如 55.8"></div>
+      <div class="field"><label for="waist">腰围 (cm，肚脐高度，每周 1 次)</label><input type="number" id="waist" step="0.5" inputmode="decimal" placeholder="例如 68"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="avgNow">–</b><span>近 7 天平均 kg</span></div>
+      <div class="stat"><b id="avgPrev">–</b><span>前 7 天平均 kg</span></div>
+      <div class="stat"><b id="avgDiff">–</b><span>周变化 kg</span></div>
+      <div class="stat"><b id="waistNow">–</b><span>最近腰围 cm</span></div>
+    </div>
+    <div class="chartwrap" id="wchart"></div>
+  </section>
+
+  <section class="panel">
+    <h2>今日训练
+      <small><label for="planSel">今天练：</label><select id="planSel"></select></small>
+    </h2>
+    <ul class="ex" id="exList"></ul>
+    <p class="note" id="trainNote"></p>
+  </section>
+
+  <section class="panel">
+    <h2>有氧建议 <small>目标 8,000–10,000 步</small></h2>
+    <p style="margin:0" id="cardioText"></p>
+    <div class="row">
+      <label for="steps" class="note">今日步数</label>
+      <input type="number" id="steps" inputmode="numeric" placeholder="例如 8500" style="width:120px">
+      <label class="row note" style="gap:6px"><input type="checkbox" id="cardioDone">有氧已完成</label>
+    </div>
+    <div class="bar" id="stepBar"><i></i></div>
+  </section>
+
+  <section class="panel">
+    <h2>喝水 <small>每 90 分钟喝一次，08:00–21:00</small></h2>
+    <div class="banner" id="waterBanner"></div>
+    <div class="bar water"><i id="waterFill"></i></div>
+    <div class="row">
+      <button class="waterbtn" data-ml="250" type="button">+250 ml</button>
+      <button class="waterbtn" data-ml="500" type="button">+500 ml</button>
+      <button type="button" id="waterUndo">撤销上一杯</button>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>饮食摄入 <small id="kcalLeft"></small></h2>
+    <div class="bar" id="kcalBar"><i></i></div>
+    <div class="row" id="presets"></div>
+    <form class="foodform" id="foodForm">
+      <input type="text" id="fName" placeholder="吃了什么" required>
+      <input type="number" id="fKcal" placeholder="kcal" inputmode="numeric" required min="0">
+      <input type="number" id="fPro" placeholder="蛋白质 g" inputmode="numeric" min="0">
+      <button class="primary" type="submit">添加</button>
+    </form>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>时间</th><th>食物</th><th class="n">kcal</th><th class="n">蛋白质</th><th></th></tr></thead>
+        <tbody id="foodBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>营养素热量换算 <small>蛋白质 4 · 碳水 4 · 脂肪 9 kcal/g</small></h2>
+    <h3>克数 → 热量</h3>
+    <div class="calc">
+      <div class="field"><label for="cP">蛋白质 (g)</label><input type="number" id="cP" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cPk">0 kcal</b></div>
+      <div class="field"><label for="cC">碳水 (g)</label><input type="number" id="cC" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cCk">0 kcal</b></div>
+      <div class="field"><label for="cF">脂肪 (g)</label><input type="number" id="cF" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cFk">0 kcal</b></div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <span>合计 <span class="total" id="cTotal">0</span> kcal</span>
+      <div class="row">
+        <input type="text" id="cName" placeholder="食物名称（可选）" style="width:150px">
+        <button type="button" id="cAdd" class="primary">加入今日饮食</button>
+      </div>
+    </div>
+    <h3>热量 → 克数</h3>
+    <div class="row">
+      <input type="number" id="rK" min="0" inputmode="numeric" placeholder="kcal" style="width:100px">
+      <select id="rM" aria-label="营养素">
+        <option value="4">蛋白质</option><option value="4">碳水</option><option value="9">脂肪</option>
+      </select>
+      <span>= <span class="total" id="rG">0</span> g</span>
+    </div>
+    <p class="note" id="macroTarget"></p>
+  </section>
+
+
+  <section class="panel">
+    <h2>蛋白质需求计算 <small>按身高体重和目标算每天该吃多少</small></h2>
+    <div class="pcalc">
+      <div class="field"><label for="pH">身高 (cm)</label><input type="number" id="pH" min="100" max="230" step="0.5" inputmode="decimal" placeholder="例如 160"></div>
+      <div class="field"><label for="pW">体重 (kg)</label><input type="number" id="pW" min="25" max="250" step="0.1" inputmode="decimal" placeholder="例如 56"></div>
+      <div class="field"><label for="pGoal">目标</label><select id="pGoal"><option value="cut">减脂（保肌肉）</option><option value="gain">增肌</option><option value="keep">维持</option></select></div>
+    </div>
+    <div class="pres">
+      <div class="stat"><b id="pBmi">–</b><span>BMI</span></div>
+      <div class="stat"><b id="pRef">–</b><span>计算用体重 kg</span></div>
+      <div class="stat"><b id="pRange">–</b><span>每天范围 g</span></div>
+      <div class="stat"><b id="pRec">–</b><span>建议每天 g</span></div>
+    </div>
+    <div class="banner plain" id="pText">填好身高和体重就会显示结果。</div>
+    <div class="row"><button type="button" class="primary" id="pSet">设为每日蛋白质目标</button><span class="note" id="pNow"></span></div>
+    <p class="note">公式：每天蛋白质 = 计算用体重 × 系数。减脂 1.6–2.2 g/kg，增肌 1.6–2.2 g/kg，维持 1.2–1.6 g/kg。BMI 超过 25 时，用 BMI 25 对应的体重（身高² × 25）来算，避免把脂肪也算进去。这是给健康成年人的一般参考，有肾病等情况先问医生。</p>
+  </section>
+
+  <section class="panel">
+    <h2>最近 7 天 <small>圆点：训练 · 有氧 · 喝水达标</small></h2>
+    <div class="week" id="week"></div>
+  </section>
+
+  <div class="sync" id="sync">正在连接…</div>
+  </div>
+</div>
+<div class="sheet" id="ask" hidden>
+  <form class="sheet-box" id="askForm" novalidate>
+    <b id="askTitle"></b>
+    <label><span id="askLabel"></span><input id="askVal" type="number" min="0" step="0.5" inputmode="decimal" placeholder="金额"></label>
+    <span class="formmsg" id="askMsg"></span>
+    <div style="display:flex;gap:10px"><button class="btn primary" type="submit">记录</button><button class="btn" type="button" id="askCancel">取消</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+/* kind: cash | future | count | bad-cash | bad-future */
+const BUILTIN=[
+ {id:"meal",kind:"cash",name:"自己带饭，不点外卖",val:13,why:"外卖一顿约 $20，自己做约 $7"},
+ {id:"nosugar",kind:"cash",name:"忍住没买含糖饮料",val:8,why:"直接省下一杯的钱（按 $8 估）"},
+ {id:"snack",kind:"cash",name:"忍住没买零食",val:4,why:"按一次 $4 估"},
+ {id:"alcohol",kind:"cash",name:"少喝一杯酒",val:13,why:"悉尼酒吧一杯约 $12–15"},
+ {id:"walk",kind:"cash",name:"短距离走路，不打车不坐车",val:4,why:"按一次车费 $4 估，改成你的实际车费"},
+ {id:"coffee",kind:"cash",name:"自己泡咖啡，不买外带",val:5.5,why:"悉尼一杯外带咖啡约 $5–6"},
+ {id:"water",kind:"cash",name:"自带水瓶，不买瓶装水",val:3.5,why:"一瓶约 $3–4"},
+ {id:"nobuy",kind:"cash",ask:true,name:"想买的东西等了 48 小时，最后没买",val:0,askLabel:"没买的东西多少钱？",why:"每次自己填那件东西的价格"},
+ {id:"subcancel",kind:"cash",ask:true,mult:12,name:"取消了一个不用的订阅",val:0,askLabel:"这个订阅每月多少钱？会按一年 12 个月计入",why:"每次自己填月费，按一年 12 个月计入"},
+ {id:"floss",kind:"future",name:"用牙线 / 认真刷牙",val:1.5,why:"十年内少做一颗根管 + 牙冠（约 $4,650）和 3 次补牙（约 $930），共约 $5,580 ÷ 3,650 天"},
+ {id:"sun",kind:"future",grp:"aes",link:"sun",name:"出门涂防晒",val:0},
+ {id:"sleep",kind:"future",grp:"aes",link:"sleep",name:"23 点前睡觉",val:0},
+ {id:"protein",kind:"future",grp:"aes",link:"protein",name:"蛋白质吃够了",val:0},
+ {id:"shades",kind:"future",grp:"aes",link:"shades",name:"出门戴墨镜 / 帽子",val:0},
+ {id:"cleanse",kind:"future",grp:"aes",link:"cleanse",name:"晚上认真卸妆洁面",val:0},
+ {id:"nophone",kind:"future",grp:"aes",link:"nophone",name:"睡前一小时不刷手机",val:0},
+ {id:"train",kind:"future",grp:"aes",link:"train",name:"完成一次训练",val:0},
+ {id:"pace",kind:"future",grp:"aes",link:"pace",name:"本周减脂节奏稳（掉秤不超过体重 1%）",val:0,weekly:true},
+ {id:"warmup",kind:"future",name:"训练前热身、动作做标准",val:0.7,why:"十年内少两次腰背物理治疗（共约 $1,440）÷ 约 2,000 次训练"},
+ {id:"stretch",kind:"future",name:"训练后拉伸放松",val:0.35,why:"同热身的算法，按一半贡献算"},
+ {id:"stand",kind:"future",name:"久坐一小时后起来活动",val:0.15,why:"每五年少一次腰背治疗（约 $720）÷ 约 5,000 次"},
+ {id:"feet",kind:"future",name:"站着工作穿支撑鞋、下班拉伸小腿",val:0.4,why:"十年内少看约 10 次足科（每次按 $100 估，共约 $1,000）÷ 约 2,500 个工作日"},
+ {id:"eyes",kind:"future",name:"看屏幕 20 分钟远眺 20 秒",val:0.05,why:"主要好处是减少眼疲劳，金额按很低估算"},
+ {id:"checkup",kind:"future",name:"按时洗牙 / 体检",val:150,why:"早发现问题：一次补牙（约 $310）比根管 + 牙冠便宜很多，按每次避免约半次补牙费估"},
+ {id:"noprocrast",kind:"count",name:"今天没拖延，完成了一件挂着的事",val:0,why:"情绪上的好处很难换算成钱，只记次数"},
+ {id:"saidno",kind:"count",name:"拒绝了一件不想做的事",val:0,why:"只记次数"},
+ {id:"study",kind:"count",name:"学习了 30 分钟",val:0,why:"备考、准备面试等；长期回报很大，但没法按次算钱，只记次数"},
+ {id:"connect",kind:"count",name:"主动联系了一个朋友或家人",val:0,why:"只记次数"},
+ {id:"win",kind:"count",name:"写下了今天做成的一件事",val:0,why:"对抗内耗和自我怀疑，只记次数"},
+ {id:"b-sugar",kind:"bad-cash",name:"买了奶茶 / 含糖饮料",val:8,why:"按一杯 $8 扣"},
+ {id:"b-meal",kind:"bad-cash",name:"点了外卖",val:13,why:"跟自己带饭比，多花约 $13"},
+ {id:"b-snack",kind:"bad-cash",name:"买了零食",val:4,why:"按一次 $4 扣"},
+ {id:"b-sleep",kind:"bad-future",link:"sleep",name:"熬夜过了 0 点",val:0},
+ {id:"b-pace",kind:"bad-future",link:"pace",name:"这周掉秤太快（超过体重 1%）",val:0,weekly:true},
+ {id:"b-warm",kind:"bad-future",name:"训练没热身就上重量",val:0.7,why:"跟热身同一个算法，反过来扣"}
+];
+const GROUPS=[
+ {id:"cash",title:"当场省下钱",hint:"真的留在你手里的钱"},
+ {id:"aes",title:"减脂健身 → 医美",hint:"按你的医美价格换算"},
+ {id:"future",title:"以后少花钱",hint:"估算的少损失"},
+ {id:"count",title:"情绪和时间",hint:"只记次数"},
+ {id:"bad",title:"坏习惯",hint:"会从总数里扣掉"}
+];
+const BASE_MS=[{name:"一次物理治疗复诊",amt:97},{name:"一次洗牙检查",amt:300},{name:"一次补牙",amt:310},{name:"一个疗程的腰背物理治疗",amt:720},{name:"一颗牙冠",amt:2250},{name:"一次根管 + 牙冠",amt:4650}];
+const AES_DEFAULT={botox:800,botoxN:3,sculptra:1350,sculptraN:1,ulthera:900,ultheraLines:300,ultheraN:1};
+function aesYear(a){return {botox:a.botox*a.botoxN,sculptra:a.sculptra*a.sculptraN,ulthera:a.ulthera*a.ultheraN}}
+// share of yearly 医美 spend each habit is credited with, and how often it happens
+const LINKS={
+ sun:{per:365,calc:y=>(y.botox+y.ulthera)*0.4,why:"肉毒 + 美超每年花费的 40%（紫外线是皮肤老化最大的外因）÷ 365 天"},
+ sleep:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.15,why:"全部医美年花费的 15% ÷ 365 天"},
+ protein:{per:365,calc:y=>(y.sculptra+y.ulthera)*0.1,why:"少女针 + 美超年花费的 10%（支持肌肉和皮肤修复）÷ 365 天"},
+ train:{per:208,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.1,why:"全部医美年花费的 10% ÷ 每年约 208 次训练（每周 4 次）"},
+ shades:{per:365,calc:y=>y.botox*0.1,why:"少眯眼、少晒眼周，眼周是肉毒常打的部位；按肉毒年花费的 10% ÷ 365 天"},
+ cleanse:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.05,why:"减少闭口和痘痘，以后少做祛痘类项目；按全部医美年花费的 5% ÷ 365 天"},
+ nophone:{per:365,calc:y=>(y.botox+y.sculptra+y.ulthera)*0.05,why:"提高睡眠质量；按全部医美年花费的 5% ÷ 365 天"},
+ pace:{per:52,calc:y=>(y.sculptra+y.ulthera)*0.3,why:"减脂太快容易让脸部凹陷、皮肤松，常见的补救就是少女针和美超；按这两项年花费的 30% ÷ 52 周，每周记一次"}
+};
+function linkVal(k){const L=LINKS[k];return Math.round(L.calc(aesYear(settings.aes))/L.per*100)/100}
+function milestones(){const a=settings.aes;return [...BASE_MS,{name:"一次肉毒",amt:a.botox},{name:"一次美超（"+a.ultheraLines+" lines）",amt:a.ulthera},{name:"一针少女针",amt:a.sculptra}].sort((x,y)=>x.amt-y.amt)}
+const KIND_LABEL={"cash":"当场省","future":"以后少花","count":"只记次数","bad-cash":"坏·当场多花","bad-future":"坏·以后多花"};
+
+const $=id=>document.getElementById(id);
+const fx=()=>1;
+const sym=()=>settings.cur==="CNY"?"¥":"$";
+const curName=()=>settings.cur==="CNY"?"人民币":"AUD";
+const money=n=>(n<0?"−":"")+sym()+(Math.abs(n)*fx()).toFixed(2);
+const r2=n=>Math.round(n*100)/100;
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const dayKey=d=>{const z=new Date(d.getTime()-d.getTimezoneOffset()*60000);return z.toISOString().slice(0,10)};
+const parseDay=k=>{const [y,m,d]=k.split("-").map(Number);return new Date(y,m-1,d)};
+const addDays=(k,n)=>{const d=parseDay(k);d.setDate(d.getDate()+n);return dayKey(d)};
+const today=()=>dayKey(new Date());
+const weekStart=k=>{const d=parseDay(k);const w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return dayKey(d)};
+
+let settings={vals:{},custom:[],transfers:{},aes:{...AES_DEFAULT},hidden:[],groups:[],hiddenGroups:[],cur:"AUD",rate:4.68};
+let manage=false;  // transfers: {"2026-11-02": 34.5}
+let days={};
+let amts={};   // {"2026-11-04": {nobuy:[45,20]}}
+let notes=[]; // [{id,text,at}]
+let db=null, uid=null, mode="loading";
+const pending={};
+
+function habits(){
+  return [...BUILTIN,...settings.custom].map(h=>h.link?{...h,val:linkVal(h.link),why:LINKS[h.link].why+(h.kind.startsWith("bad")?"，反过来扣":"")}:{...h,val:settings.vals[h.id]??h.val});
+}
+function hMap(){return Object.fromEntries(habits().map(h=>[h.id,h]))}
+// signed value of one occurrence, split into cash / future
+function effect(h){
+  if(h.kind==="cash")return {cash:h.val,fut:0};
+  if(h.kind==="future")return {cash:0,fut:h.val};
+  if(h.kind==="bad-cash")return {cash:-h.val,fut:0};
+  if(h.kind==="bad-future")return {cash:0,fut:-h.val};
+  return {cash:0,fut:0};
+}
+function sumDays(keys,map){
+  let cash=0,fut=0;const per={};
+  for(const k of keys){const c=days[k];if(!c)continue;
+    for(const [id,n] of Object.entries(c)){const h=map[id];if(!h||!n)continue;const e=effect(h);
+      let cv=e.cash*n,fv=e.fut*n;
+      if(h.ask){const tot=(amts[k]?.[id]||[]).reduce((a,b)=>a+b,0),sg=h.kind.startsWith("bad")?-1:1;
+        if(h.kind.endsWith("cash")){cv=sg*tot;fv=0}else{fv=sg*tot;cv=0}}
+      cash+=cv;fut+=fv;per[id]=(per[id]||0)+cv+fv}}
+  return {cash,fut,net:cash+fut,per};
+}
+function weekKeys(ws){return Array.from({length:7},(_,i)=>addDays(ws,i))}
+
+// streaks
+function firstDay(){const ks=Object.keys(days).filter(k=>Object.values(days[k]||{}).some(n=>n>0)).sort();return ks[0]||null}
+function streakText(h){
+  const t=today();
+  const has=k=>(days[k]?.[h.id]||0)>0;
+  if(h.kind.startsWith("bad")){
+    const f=firstDay(); if(!f)return "";
+    if(has(t))return "今天发生了";
+    let k=addDays(t,-1),n=1;
+    while(k>=f&&!has(k)){n++;k=addDays(k,-1)}
+    return `已经 ${n} 天没有`;
+  }
+  let k=has(t)?t:addDays(t,-1),n=0;
+  while(has(k)){n++;k=addDays(k,-1)}
+  if(!n)return "";
+  return has(t)?`连续 ${n} 天`:`连续 ${n} 天，今天还没做`;
+}
+
+// ---------- render ----------
+function render(){
+  const map=hMap(),t=today(),ws=weekStart(t);
+  const all=sumDays(Object.keys(days),map), wk=sumDays(weekKeys(ws),map), dy=sumDays([t],map);
+  $("wNet").textContent=money(wk.net); $("dNet").textContent=money(dy.net);
+  $("wCash").textContent=money(wk.cash); $("wFut").textContent=money(wk.fut);
+  $("aCash").textContent="累计 "+money(all.cash); $("aFut").textContent="累计 "+money(all.fut);
+  const done=settings.transfers[ws], totalT=Object.values(settings.transfers).reduce((a,b)=>a+b,0);
+  if(done!=null){$("saveText").innerHTML=`本周已转入储蓄 <b class="num">${money(done)}</b> · 累计已转入 <b class="num">${money(totalT)}</b>`;$("saveBtn").textContent="撤销";$("saveBtn").disabled=false}
+  else if(wk.cash>0){$("saveText").innerHTML=`本周当场省下 <b class="num">${money(wk.cash)}</b>，可以转进储蓄`+(totalT?` · 累计已转入 <b class="num">${money(totalT)}</b>`:"");$("saveBtn").textContent=`已转入 ${money(wk.cash)}`;$("saveBtn").disabled=false}
+  else{$("saveText").textContent="本周还没有当场省下的钱。"+(totalT?` 累计已转入 ${money(totalT)}`:"");$("saveBtn").textContent="已转入";$("saveBtn").disabled=true}
+
+  // tiles
+  const c=days[t]||{}, hidden=new Set(settings.hidden||[]), all0=habits(), hs=all0.filter(h=>!hidden.has(h.id));
+  $("groups").innerHTML="";
+  const wrap=document.createElement("div");wrap.style.cssText="display:flex;flex-direction:column;gap:18px";
+  const bar=document.createElement("div");bar.className="manage-bar";
+  bar.innerHTML=manage?`<span>可以删除习惯或整个板块，也可以在最下面新增板块</span>`:`<span></span>`;
+  const visG=allGroups().filter(g=>!(settings.hiddenGroups||[]).includes(g.id));
+  const allOpen=visG.every(g=>!isCollapsed(g.id));
+  const tb=document.createElement("button");tb.type="button";tb.className="btn";tb.textContent=allOpen?"全部收起":"全部展开";
+  tb.onclick=()=>{setCollapsed(allOpen?visG.map(g=>g.id):[]);render()};
+  if(!manage){bar.innerHTML="";bar.appendChild(tb)}
+  const mb=document.createElement("button");mb.type="button";mb.className="btn"+(manage?" primary":"");mb.textContent=manage?"完成":"管理习惯";
+  mb.onclick=()=>{manage=!manage;render()};bar.appendChild(mb);wrap.appendChild(bar);
+  const hidG=new Set(settings.hiddenGroups||[]);
+  allGroups().filter(g=>!hidG.has(g.id)).forEach(g=>{
+    const list=hs.filter(h=>groupOf(h)===g.id);
+    if(!list.length&&!g.custom&&!manage)return;
+    const sec=document.createElement("div");sec.className="group";
+    const closed=isCollapsed(g.id);
+    const dsum=sumDays([t],map);let gn=0,gm=0;list.forEach(h=>{gn+=c[h.id]||0;gm+=dsum.per[h.id]||0});
+    const sumTxt=gn?`今天 ${gn} 次`+(gm?` · ${gm>0?"+":""}${money(gm)}`:""):"今天还没记";
+    sec.innerHTML=`<div class="group-head"><button type="button" class="gtoggle" aria-expanded="${!closed}"><span class="chev" aria-hidden="true">${closed?"▸":"▾"}</span><span class="gtitle">${esc(g.title)}</span><span class="ghint">${esc(g.hint||"")}</span><span class="gsum num" style="color:${!gn?"var(--muted)":gm<0?"var(--bad)":"var(--accent)"}!important">${sumTxt}</span></button></div><div class="tiles"${closed?" hidden":""}></div>`;
+    sec.querySelector(".gtoggle").onclick=()=>{const cur=getCollapsed();setCollapsed(closed?cur.filter(x=>x!==g.id):[...cur,g.id]);render()};
+    if(manage){const db_=document.createElement("button");db_.type="button";db_.className="btn danger";db_.style.marginLeft="auto";db_.textContent="删除板块";db_.onclick=()=>hideGroup(g);sec.querySelector(".group-head").appendChild(db_)}
+    if(!list.length&&!closed){const e=document.createElement("p");e.className="note";e.style.margin="0";e.textContent="这个板块还没有习惯。在下方「添加自己的习惯」里选这个板块就能加进来。";sec.appendChild(e)}
+    const grid=sec.querySelector(".tiles");
+    list.forEach(h=>{
+      const n=c[h.id]||0, bad=h.kind.startsWith("bad");
+      const cls=bad?"k-bad":"k-"+h.kind;
+      const unit=h.weekly?"每周":"每次";const cp=h.id==="protein"&&window.__cutProtein?window.__cutProtein():null;const valText=cp?`${unit} +${money(h.val)} · 今天 ${cp.pro}/${cp.target} g`:h.kind==="count"?"记一次":h.ask?(n?`今天共 ${money(((amts[t]?.[h.id])||[]).reduce((a,b)=>a+b,0))}`:"每次自己填金额"):bad?`${unit}扣 ${money(h.val)}`:`${unit} +${money(h.val)}`;
+      const b=document.createElement("button");b.type="button";b.className="tile "+cls;
+      b.innerHTML=`<span class="cnt" ${n?"":"data-zero"}>${n?"×"+n:"今天 0"}</span><b>${esc(h.name)}</b><span class="val">${valText}</span><span class="streak">${streakText(h)}</span>`;
+      if(manage){b.classList.add("managing");b.querySelector(".streak").innerHTML=`<span class="del-chip">删除</span>`;
+        b.onclick=()=>hideHabit(h);b.setAttribute("aria-label","删除 "+h.name);grid.appendChild(b);return}
+      b.onclick=()=>h.ask?openAsk(h):log(h,1);
+      if(n){const u=document.createElement("button");u.type="button";u.className="undo";u.textContent="撤销一次";u.onclick=e=>{e.stopPropagation();log(h,-1)};b.appendChild(u)}
+      grid.appendChild(b);
+    });
+    wrap.appendChild(sec);
+  });
+  if(manage){
+    const f=document.createElement("form");f.className="card add-grp";f.noValidate=true;
+    f.innerHTML=`<h3>新增板块</h3><div class="form"><label>板块名称<input id="grpName" type="text" maxlength="20" placeholder="例如：学习成长"></label><label>说明（可不填）<input id="grpHint" type="text" maxlength="30" placeholder="例如：只记次数"></label><div class="full" style="display:flex;gap:10px;align-items:center"><button class="btn primary" type="submit">添加板块</button><span class="formmsg" id="grpMsg"></span></div></div>`;
+    f.addEventListener("submit",e=>{e.preventDefault();const name=f.querySelector("#grpName").value.trim(),hint=f.querySelector("#grpHint").value.trim();
+      if(!name){f.querySelector("#grpMsg").textContent="请填写板块名称。";return}
+      if(allGroups().some(g=>g.title===name)){f.querySelector("#grpMsg").textContent="已经有同名的板块了。";return}
+      settings={...settings,groups:[...(settings.groups||[]),{id:"g_"+Date.now().toString(36),title:name,hint,custom:true}]};
+      renderGrpSelect();render();saveSettings();toast(`已添加板块「${name}」`)});
+    wrap.appendChild(f);
+  }
+  const goneG=allGroups().filter(g=>hidG.has(g.id));
+  if(goneG.length){
+    const d=document.createElement("details");d.className="card";if(manage)d.open=true;
+    d.innerHTML=`<summary>已删除的板块（${goneG.length}）</summary><div class="gone"></div><p class="note">删除板块会把里面的习惯一起隐藏，过去的记录还会计入总数。</p>`;
+    const box=d.querySelector(".gone");
+    goneG.forEach(g=>{const r=document.createElement("div");r.className="gone-row";r.innerHTML=`<span>${esc(g.title)}</span>`;
+      const rb=document.createElement("button");rb.type="button";rb.className="btn";rb.textContent="恢复";rb.onclick=()=>restoreGroup(g);r.appendChild(rb);box.appendChild(r)});
+    wrap.appendChild(d);
+  }
+  const gone=all0.filter(h=>hidden.has(h.id)&&!hidG.has(groupOf(h)));
+  if(gone.length){
+    const d=document.createElement("details");d.className="card";if(manage)d.open=true;
+    d.innerHTML=`<summary>已删除的习惯（${gone.length}）</summary><div class="gone"></div><p class="note">删除只是不再显示，过去的记录还会计入总数。点「恢复」可以加回来。</p>`;
+    const box=d.querySelector(".gone");
+    gone.forEach(h=>{const r=document.createElement("div");r.className="gone-row";r.innerHTML=`<span>${esc(h.name)}</span>`;
+      const rb=document.createElement("button");rb.type="button";rb.className="btn";rb.textContent="恢复";rb.onclick=()=>restoreHabit(h);r.appendChild(rb);box.appendChild(r)});
+    wrap.appendChild(d);
+  }
+  $("groups").appendChild(wrap);
+
+  // milestones on all-time net
+  $("lines").textContent=all.net>0?`累计净省下的钱相当于美超 ${Math.floor(all.net/(settings.aes.ulthera/settings.aes.ultheraLines))} lines`:"";
+  $("ms").innerHTML=milestones().map(m=>{const p=Math.max(0,Math.min(1,all.net/m.amt));
+    return `<div class="ms-row"><div class="ms-top"><span>${m.name}（${money(m.amt)}）</span><span class="num ${p>=1?"done":""}">${p>=1?"✓ 已够":Math.round(p*100)+"%"}</span></div><div class="bar"><span style="width:${p*100}%"></span></div></div>`}).join("");
+
+  renderChart(map);
+}
+
+// ---------- weekly chart ----------
+let selWeek=null;
+function renderChart(map){
+  const t=today(), cur=weekStart(t);
+  const weeks=Array.from({length:8},(_,i)=>addDays(cur,-7*(7-i)));
+  const data=weeks.map(w=>({w,...sumDays(weekKeys(w),map)}));
+  if(!selWeek||!weeks.includes(selWeek))selWeek=cur;
+  const W=600,H=220,L=48,R=8,T=14,B=30;
+  const F=fx();const maxV=Math.max(10,...data.map(d=>d.net*F)), minV=Math.min(0,...data.map(d=>d.net*F));
+  const step=niceStep((maxV-minV)/4);
+  const top=Math.ceil(maxV/step)*step, bot=Math.floor(minV/step)*step;
+  const y=v=>T+(top-v)/(top-bot)*(H-T-B);
+  const colW=(W-L-R)/8, bw=Math.min(36,colW*.55);
+  let s="";
+  for(let v=bot;v<=top+1e-9;v+=step){
+    s+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="${v===0?1.5:1}"/>`;
+    s+=`<text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="var(--mono)">${sym()}${Math.round(v)}</text>`;
+  }
+  data.forEach((d,i)=>{
+    const cx=L+colW*i+colW/2, y0=y(0), y1=y(d.net*F), h=Math.abs(y1-y0);
+    const neg=d.net<0, isSel=d.w===selWeek, isCur=d.w===cur;
+    const fill=neg?"var(--bad)":"var(--accent)";
+    if(h>0.5){
+      const r=Math.min(4,h,bw/2);
+      // rounded data-end, square at baseline
+      const x=cx-bw/2;
+      const path=neg
+        ?`M${x},${y0} H${x+bw} V${y1-r} Q${x+bw},${y1} ${x+bw-r},${y1} H${x+r} Q${x},${y1} ${x},${y1-r} Z`
+        :`M${x},${y0} V${y1+r} Q${x},${y1} ${x+r},${y1} H${x+bw-r} Q${x+bw},${y1} ${x+bw},${y1+r} V${y0} Z`;
+      s+=`<path d="${path}" fill="${fill}" opacity="${isSel?1:.55}"/>`;
+    }
+    const md=parseDay(d.w);
+    s+=`<text x="${cx}" y="${H-10}" text-anchor="middle" font-size="11" fill="${isSel?"var(--ink)":"var(--muted)"}" font-weight="${isSel?700:400}">${isCur?"本周":(md.getMonth()+1)+"/"+md.getDate()}</text>`;
+    if(isSel&&d.net!==0)s+=`<text x="${cx}" y="${neg?y1+14:y1-6}" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="var(--mono)">${money(d.net)}</text>`;
+    s+=`<rect x="${L+colW*i}" y="0" width="${colW}" height="${H}" fill="transparent" data-w="${d.w}" style="cursor:pointer"><title>${d.w} 那一周：${money(d.net)}</title></rect>`;
+  });
+  const svg=$("chart");svg.innerHTML=s;
+  svg.querySelectorAll("rect[data-w]").forEach(r=>{
+    const pick=()=>{if(selWeek!==r.dataset.w){selWeek=r.dataset.w;renderChart(hMap())}};
+    r.addEventListener("click",pick);r.addEventListener("mouseenter",pick);
+  });
+  const d=data.find(x=>x.w===selWeek), md=parseDay(d.w), end=parseDay(addDays(d.w,6));
+  $("readout").innerHTML=`<b>${d.w===cur?"本周":""}${md.getMonth()+1}月${md.getDate()}日 – ${end.getMonth()+1}月${end.getDate()}日</b>：净省下 <b class="num">${money(d.net)}</b>`;
+  $("split").innerHTML=`<span>当场省下 <b>${money(d.cash)}</b></span><span>估算少损失 <b>${money(d.fut)}</b></span>`;
+  const ranked=Object.entries(d.per).filter(([,v])=>v>0).sort((a,b)=>b[1]-a[1]).slice(0,3);
+  const worst=Object.entries(d.per).filter(([,v])=>v<0).sort((a,b)=>a[1]-b[1])[0];
+  let html=ranked.length?`<div style="font-size:.85rem;color:var(--muted)">这一周贡献最大的习惯</div>`+ranked.map(([id,v],i)=>`<div class="top-row"><span class="num">${i+1}</span><span>${esc(map[id]?.name||"已删除的习惯")}</span><span class="num">${money(v)}</span></div>`).join(""):`<div style="font-size:.85rem;color:var(--muted)">这一周还没有记录。</div>`;
+  if(worst)html+=`<div class="top-row" style="color:var(--bad)"><span>!</span><span>扣得最多：${esc(map[worst[0]]?.name||"已删除的习惯")}</span><span class="num">${money(worst[1])}</span></div>`;
+  $("top").innerHTML=html;
+}
+const AES_MONEY=new Set(["botox","sculptra","ulthera"]);
+function renderAes(){
+  for(const k of Object.keys(AES_DEFAULT)){const el=$("a-"+k);if(el&&document.activeElement!==el)el.value=AES_MONEY.has(k)?r2(settings.aes[k]*fx()):settings.aes[k]}
+  const y=aesYear(settings.aes);$("a-total").value=money(y.botox+y.sculptra+y.ulthera)+(settings.aes.ultheraLines?` · 美超 ${money(settings.aes.ulthera/settings.aes.ultheraLines)}/line`:"");
+}
+Object.keys(AES_DEFAULT).forEach(k=>{let tm;$("a-"+k).addEventListener("input",e=>{const v=parseFloat(e.target.value);if(isNaN(v)||v<0||(k==="ultheraLines"&&v<1))return;settings={...settings,aes:{...settings.aes,[k]:AES_MONEY.has(k)?v/fx():v}};renderAes();renderRules();render();clearTimeout(tm);tm=setTimeout(saveSettings,800)})});
+function renderCur(){
+  document.querySelectorAll(".cur-label").forEach(e=>e.textContent=curName());
+  $("curAUD").setAttribute("aria-pressed",settings.cur!=="CNY");$("curCNY").setAttribute("aria-pressed",settings.cur==="CNY");
+
+}
+function setCur(c){if(settings.cur===c)return;settings={...settings,cur:c};renderRules();render();saveSettings()}
+$("curAUD").onclick=()=>setCur("AUD");$("curCNY").onclick=()=>setCur("CNY");
+
+function niceStep(x){const p=Math.pow(10,Math.floor(Math.log10(x||1)));const f=x/p;return (f<=1?1:f<=2?2:f<=5?5:10)*p}
+
+// ---------- rules table ----------
+function renderRules(){
+  renderAes();renderCur();renderGrpSelect();
+  const tb=$("rules");tb.innerHTML="";
+  habits().forEach(h=>{
+    const tr=document.createElement("tr");
+    const custom=h.id.startsWith("c_");
+    tr.innerHTML=`<td><div>${esc(h.name)}</div><span class="tag" style="background:var(--line)">${KIND_LABEL[h.kind]}</span></td><td>${h.kind==="count"?"—":h.ask?"每次填":h.link?`<span class="num">${money(h.val)}</span>`:`<input type="number" min="0" step="0.05" id="v-${h.id}" aria-label="${esc(h.name)} 每次金额">`}</td><td></td>`;
+    const why=tr.children[2];
+    if(custom){why.innerHTML=`<span style="color:var(--muted)">你自己添加的${h.ask?"，每次自己填金额":""}</span> `;const del=document.createElement("button");del.type="button";del.className="btn danger";del.textContent="删除";
+      del.onclick=()=>{if(del.dataset.armed){removeCustom(h.id)}else{del.dataset.armed="1";del.textContent="确定删除？过去的记录不再计入";setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent="删除"}},4000)}};why.appendChild(del)}
+    else why.textContent=h.why;
+    const inp=tr.querySelector("input");
+    if(inp){inp.value=r2(h.val*fx());let tm;inp.addEventListener("input",()=>{const v=parseFloat(inp.value);if(isNaN(v)||v<0)return;settings.vals={...settings.vals,[h.id]:v/fx()};render();clearTimeout(tm);tm=setTimeout(saveSettings,800)})}
+    tb.appendChild(tr);
+  });
+}
+
+// ---------- actions ----------
+let tt;
+function toast(msg){const t=$("toast");t.textContent=msg;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3400)}
+function log(h,d,amt){
+  const t=today(),c={...(days[t]||{})},n=(c[h.id]||0)+d;if(n<0)return;
+  c[h.id]=n;days={...days,[t]:c};
+  if(h.ask){const a={...(amts[t]||{})},list=[...(a[h.id]||[])];if(d>0)list.push(amt);else list.pop();a[h.id]=list;amts={...amts,[t]:a}}
+  render();persistDay(t);
+  if(d<=0)return;
+  const map=hMap(),wk=sumDays(weekKeys(weekStart(t)),map),all=sumDays(Object.keys(days),map);
+  if(h.kind==="count"){toast(`记下了。${streakText(h)||"继续保持"}`);return}
+  if(h.ask){toast(`+${money(amt)}！本周净省下 ${money(wk.net)}`);return}
+  if(h.kind.startsWith("bad")){toast(`记下了：扣 ${money(h.val)}。本周净省下 ${money(wk.net)}`);return}
+  const nm=milestones().find(m=>m.amt>all.net);
+  toast(`+${money(h.val)}！本周净省下 ${money(wk.net)}`+(nm?`，离「${nm.name}」还差 ${money(nm.amt-all.net)}`:""));
+}
+let askH=null;
+function openAsk(h){askH=h;$("askTitle").textContent=h.name;$("askLabel").textContent=h.askLabel||"这次多少钱？";$("askVal").value="";$("askMsg").textContent="";$("ask").hidden=false;setTimeout(()=>$("askVal").focus(),30)}
+function closeAsk(){$("ask").hidden=true;askH=null}
+$("askCancel").onclick=closeAsk;
+$("ask").addEventListener("click",e=>{if(e.target.id==="ask")closeAsk()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("ask").hidden)closeAsk()});
+$("askForm").addEventListener("submit",e=>{e.preventDefault();const v=parseFloat($("askVal").value);
+  if(isNaN(v)||v<=0){$("askMsg").textContent="请填一个大于 0 的金额。";return}
+  const h=askH;closeAsk();log(h,1,v*(h.mult||1)/fx())});
+$("saveBtn").onclick=()=>{
+  const ws=weekStart(today()),tr={...settings.transfers};
+  if(tr[ws]!=null){delete tr[ws];settings={...settings,transfers:tr};render();saveSettings();toast("已撤销本周的转入记录");return}
+  const wk=sumDays(weekKeys(ws),hMap());if(wk.cash<=0)return;
+  tr[ws]=Math.round(wk.cash*100)/100;settings={...settings,transfers:tr};render();saveSettings();
+  toast(`记下了：本周转入储蓄 ${money(tr[ws])}`);
+};
+$("addForm").addEventListener("submit",e=>{
+  e.preventDefault();
+  const name=$("newName").value.trim(),kind=$("newKind").value,val=parseFloat($("newVal").value);
+  if(!name){$("formMsg").textContent="请填写习惯名称。";return}
+  const ask=$("newAsk").checked&&kind!=="count";
+  if(kind!=="count"&&!ask&&(isNaN(val)||val<0)){$("formMsg").textContent="每次金额要填 0 或以上的数字。";return}
+  if(habits().some(h=>h.name===name)){$("formMsg").textContent="已经有同名的习惯了。";return}
+  const grp=$("newGrp").value;const h={id:"c_"+Date.now().toString(36),kind,name,...(grp?{grp}:{}),val:kind==="count"||ask?0:val/fx(),...(ask?{ask:true}:{})};
+  $("newAsk").checked=false;$("newVal").disabled=false;
+  settings={...settings,custom:[...settings.custom,h]};
+  $("formMsg").textContent="";$("newName").value="";
+  renderRules();render();saveSettings();toast(`已添加「${name}」`);
+});
+const syncNew=()=>{$("newVal").disabled=$("newKind").value==="count"||$("newAsk").checked};$("newKind").addEventListener("change",syncNew);$("newAsk").addEventListener("change",syncNew);
+const COLLAPSE_KEY="ledger-collapsed";
+function getCollapsed(){try{const v=JSON.parse(localStorage.getItem(COLLAPSE_KEY)||"null");if(Array.isArray(v))return v}catch(e){}return collapsedMem??allGroups().map(g=>g.id).filter(id=>id!=="cash")}
+let collapsedMem=null;
+function setCollapsed(a){collapsedMem=a;try{localStorage.setItem(COLLAPSE_KEY,JSON.stringify(a))}catch(e){}}
+function isCollapsed(id){return getCollapsed().includes(id)}
+function allGroups(){return [...GROUPS,...(settings.groups||[])]}
+function groupOf(h){const g=h.grp||(h.kind.startsWith("bad")?"bad":h.kind);return allGroups().some(x=>x.id===g)?g:(h.kind.startsWith("bad")?"bad":h.kind)}
+function hideGroup(g){settings={...settings,hiddenGroups:[...new Set([...(settings.hiddenGroups||[]),g.id])]};renderGrpSelect();render();saveSettings();toast(`已删除板块「${g.title}」，可以在下方恢复`)}
+function restoreGroup(g){settings={...settings,hiddenGroups:(settings.hiddenGroups||[]).filter(x=>x!==g.id)};renderGrpSelect();render();saveSettings();toast(`已恢复板块「${g.title}」`)}
+function renderGrpSelect(){const sel=$("newGrp");if(!sel)return;const cur=sel.value;const hidG=new Set(settings.hiddenGroups||[]);
+  sel.innerHTML=`<option value="">按类型自动放</option>`+allGroups().filter(g=>!hidG.has(g.id)).map(g=>`<option value="${g.id}">${esc(g.title)}</option>`).join("");
+  if([...sel.options].some(o=>o.value===cur))sel.value=cur}
+function hideHabit(h){settings={...settings,hidden:[...new Set([...(settings.hidden||[]),h.id])]};render();saveSettings();toast(`已删除「${h.name}」，可以在下方恢复`)}
+function restoreHabit(h){settings={...settings,hidden:(settings.hidden||[]).filter(x=>x!==h.id)};render();saveSettings();toast(`已恢复「${h.name}」`)}
+function removeCustom(id){
+  settings={...settings,custom:settings.custom.filter(h=>h.id!==id),hidden:(settings.hidden||[]).filter(x=>x!==id)};
+  const v={...settings.vals};delete v[id];settings.vals=v;
+  renderRules();render();saveSettings();toast("已删除");
+}
+
+// ---------- storage ----------
+function lsGet(){try{const s=JSON.parse(localStorage.getItem("habit-ledger")||"null");if(s){days=s.days||{};amts=s.amts||{};notes=s.notes||[];if(s.settings)settings={...settings,hidden:[],groups:[],hiddenGroups:[],cur:"AUD",rate:4.68,...s.settings,aes:{...AES_DEFAULT,...(s.settings.aes||{})}};else if(s.vals)settings.vals=s.vals}}catch(e){}}
+function lsSave(){try{localStorage.setItem("habit-ledger",JSON.stringify({days,amts,settings,notes}))}catch(e){}}
+function queueWrite(key,fn){
+  const q=pending[key]||(pending[key]={busy:false,again:false,timer:null});
+  clearTimeout(q.timer);
+  q.timer=setTimeout(async function run(){
+    q.timer=null;
+    if(q.busy){q.again=true;return}
+    q.busy=true;
+    try{await fn()}catch(e){if(e&&(e.code==="invalid_argument"||e.code==="not_granted"||e.code==="revoked")){goLocal();return}setStatus(e&&e.code==="quota_exceeded"?"存储空间满了，保存失败。":"这次没保存上，稍后再点一下试试。")}
+    q.busy=false;
+    if(q.again){q.again=false;run()}
+  },500);
+}
+const dirty=k=>pending[k]&&(pending[k].busy||pending[k].timer);
+function persistDay(t){if(mode!=="db"){lsSave();return}queueWrite(t,()=>db.collection("data/users/"+uid).doc(t).set({date:t,counts:days[t]||{},amts:amts[t]||{}}))}
+function saveSettings(){if(mode!=="db"){lsSave();return}queueWrite("settings",()=>db.collection("data/users/"+uid).doc("settings").set({kind:"settings",vals:settings.vals,custom:settings.custom,transfers:settings.transfers,aes:settings.aes,hidden:settings.hidden||[],groups:settings.groups||[],hiddenGroups:settings.hiddenGroups||[],cur:settings.cur||"AUD",rate:settings.rate||4.68}))}
+function setStatus(s){$("status").textContent=s}
+
+// ---------- notes ----------
+let editing=null;
+const notesCol=()=>db.collection("data/users/"+uid).doc("notes").collection("items");
+function renderNotes(){
+  const box=$("noteList");box.innerHTML="";
+  if(!notes.length){box.innerHTML=`<p class="note" style="margin:0">还没有便签。可以记下今天的感受、想买但忍住的东西、下次想加的习惯。</p>`;return}
+  [...notes].sort((a,b)=>b.at-a.at).forEach(n=>{
+    const d=new Date(n.at),el=document.createElement("div");el.className="note-item";
+    el.innerHTML=`<div class="note-meta"><span>${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span><span class="note-act"></span></div><div class="note-text"></div>`;
+    el.querySelector(".note-text").textContent=n.text;
+    const act=el.querySelector(".note-act");
+    const ed=document.createElement("button");ed.type="button";ed.className="undo";ed.textContent="编辑";
+    ed.onclick=()=>{editing=n.id;$("noteText").value=n.text;$("noteSave").textContent="保存修改";$("noteCancel").hidden=false;$("noteText").focus()};
+    const del=document.createElement("button");del.type="button";del.className="undo";del.textContent="删除";del.style.color="var(--bad)";
+    del.onclick=()=>{if(del.dataset.armed){removeNote(n.id)}else{del.dataset.armed="1";del.textContent="确定删除？";setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent="删除"}},4000)}};
+    act.append(ed,del);box.appendChild(el);
+  });
+}
+function resetComposer(){editing=null;$("noteText").value="";$("noteSave").textContent="保存便签";$("noteCancel").hidden=true}
+$("noteCancel").onclick=resetComposer;
+$("noteForm").addEventListener("submit",async e=>{
+  e.preventDefault();const text=$("noteText").value.trim();if(!text)return;
+  const id=editing||("n"+Date.now().toString(36));
+  const old=notes.find(x=>x.id===id);const n={id,text,at:old?old.at:Date.now()};
+  notes=[...notes.filter(x=>x.id!==id),n];resetComposer();renderNotes();
+  if(mode==="db"){try{await notesCol().doc(id).set(n)}catch(err){if(err&&err.code==="invalid_argument")goLocal();else setStatus("便签没保存上，稍后再试。")}}else lsSave();
+  toast(old?"便签已更新":"便签已保存");
+});
+async function removeNote(id){
+  notes=notes.filter(x=>x.id!==id);if(editing===id)resetComposer();renderNotes();
+  if(mode==="db"){try{await notesCol().doc(id).delete()}catch(err){setStatus("删除没成功，稍后再试。")}}else lsSave();
+}
+
+async function boot(){
+  renderRules();render();
+  const cl=window.claude;
+  if(!cl||!cl.use){fallback();return}
+  try{
+    const [d,u]=await Promise.all([cl.use("db"),cl.use("user")]);
+    uid=u?await u.id():null;
+    if(!d||!uid){fallback();return}
+    let lo=null;try{lo=localStorage.getItem("ledger-local-only")}catch(e){}
+    if(lo){fallback();setStatus(LOCAL_MSG);return}
+    db=d;mode="db";
+  }catch(e){fallback();return}
+  const timer=setTimeout(()=>setStatus("暂时连不上云端记录，显示的可能不是最新的。"),10000);
+  db.collection("data/users/"+uid).onSnapshot(snap=>{
+    const nd={},na={};let ns=null;
+    snap.docs.forEach(doc=>{const v=doc.data();if(!v)return;
+      if(v.amts)na[doc.id]=v.amts;
+      if(doc.id==="settings")ns={vals:v.vals||{},custom:v.custom||[],transfers:v.transfers||{},hidden:v.hidden||[],groups:v.groups||[],hiddenGroups:v.hiddenGroups||[],cur:v.cur||"AUD",rate:v.rate||4.68,aes:{...AES_DEFAULT,...(v.aes||{})}};
+      else if(v.counts)nd[doc.id]=v.counts});
+    for(const k of Object.keys(pending))if(/^\d{4}-/.test(k)&&dirty(k)&&days[k]){nd[k]=days[k];na[k]=amts[k]}
+    days=nd;amts=na;
+    if(ns&&!dirty("settings")){settings=ns;renderRules()}
+    if(!snap.metadata.fromCache){clearTimeout(timer);setStatus(snap.empty?"还没有记录。做完一件事，点下面对应的卡片。":"记录已同步，换设备打开也能看到。")}
+    render();
+  },()=>{clearTimeout(timer);setStatus("读取记录失败了，刷新页面再试。")});
+  notesCol().onSnapshot(snap=>{notes=snap.docs.map(d=>d.data()).filter(Boolean);renderNotes()},()=>{});
+}
+const LOCAL_MSG="你的账号不能把记录存到云端，已改为保存在这个浏览器里。换设备或清除浏览器数据会丢失。";
+function goLocal(){if(mode==="local")return;mode="local";try{localStorage.setItem("ledger-local-only","1")}catch(e){}lsSave();setStatus(LOCAL_MSG)}
+function fallback(){mode="local";lsGet();renderRules();render();renderNotes();setStatus("记录只保存在这个浏览器里。")}
+// ---------- tabs + link to 减脂打卡 ----------
+function showTab(name){const cut=name==="cut";$("cut").hidden=!cut;$("ledgerView").hidden=cut;
+  $("tabCut").setAttribute("aria-selected",cut);$("tabLedger").setAttribute("aria-selected",!cut);
+  try{localStorage.setItem("ledger-tab",name)}catch(e){}}
+$("tabLedger").onclick=()=>showTab("ledger");$("tabCut").onclick=()=>showTab("cut");
+try{if(localStorage.getItem("ledger-tab")==="cut")showTab("cut")}catch(e){}
+window.__cutRendered=()=>{if(typeof render==="function"&&mode!=="loading")render()};
+window.__cutHook=(pro,target)=>{
+  if(mode==="loading")return;
+  const t=today(),h=hMap().protein;
+  if(h&&pro>=target&&!((days[t]||{}).protein)){log(h,1);toast(`蛋白质 ${pro} g 达标，已在省钱账本自动打卡 ✓`)}
+};
+renderNotes();boot();
+</script>
+<script>
+(function(){
+const PLAN = {
+  1:{name:"上肢·拉",type:"train",ex:[["离心引体 / 弹力带辅助引体","4×5–8"],["哑铃单臂划船","3×8–10/侧"],["高位下拉","3×10–12"],["面拉","3×12–15"],["悬挂：双手→单手辅助","3×最大时长"],["哑铃弯举","2×12"]],
+     cardio:"力量练完后：坡度走 30 分钟（坡度 8–12%，4.5–5.5 km/h）。"},
+  2:{name:"下肢 A · 深蹲",type:"train",ex:[["杠铃深蹲 / 高脚杯深蹲","4×6–10"],["罗马尼亚硬拉","3×8–10"],["保加利亚分腿蹲","3×10/侧"],["腿弯举","3×12"],["平板支撑","3×45秒"]],
+     cardio:"今天不加额外有氧，保证步数即可。"},
+  3:{name:"主动恢复",type:"rest",ex:[["散步 / 拉伸 / 泡沫轴","15–20 分钟"]],
+     cardio:"坡度走 30–40 分钟，心率保持最大心率的 60–70%。"},
+  4:{name:"上肢·推",type:"train",ex:[["俯卧撑（可上斜）","4×力竭前1–2个"],["哑铃卧推","3×8–10"],["坐姿哑铃推举","3×8–10"],["侧平举","3×12–15"],["反向划船","3×10"],["绳索下压","2×12"]],
+     cardio:"今天不加额外有氧，保证步数即可。"},
+  5:{name:"下肢 B · 臀",type:"train",ex:[["杠铃臀推","4×8–10"],["腿举","3×10–12"],["行走弓步","3×12/侧"],["器械髋外展","3×15"],["悬垂举腿","3×10"]],
+     cardio:"今天不加额外有氧，保证步数即可。"},
+  6:{name:"有氧日",type:"rest",ex:[],
+     cardio:"坡度走 30–40 分钟；状态好可改做 HIIT：单车 30 秒冲刺 + 90 秒慢速 × 6–8 轮。"},
+  0:{name:"完全休息",type:"rest",ex:[],
+     cardio:"只保留日常步数，好好休息。"}
+};
+const PRESETS=[["燕麦酸奶早餐",410,24],["米饭鸡胸午餐",440,37],["香蕉+牛奶",190,8],["三文鱼红薯晚餐",440,27],["蛋白粉 1 勺",120,24]];
+const WD=["周日","周一","周二","周三","周四","周五","周六"];
+const FLOOR=1400;
+
+const pad=n=>String(n).padStart(2,"0");
+const keyOf=d=>d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate());
+const dayAgo=i=>{const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()-i);return d};
+const now=new Date(), todayKey=keyOf(now);
+const blank=()=>({ex:{},lifts:{},water:[],food:[],steps:null,cardio:false,weight:null,waist:null,planDay:null});
+
+let day=blank(), allDays={}, settings={offset:0,applied:null,proT:110,height:null};
+let col=null, saveTimer=null, setTimer=null;
+
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function lsGet(k){try{return JSON.parse(localStorage.getItem(k))}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+
+const planIdx=d=>(d&&d.planDay!=null?d.planDay:null);
+const planOf=(rec,date)=>PLAN[planIdx(rec)??date.getDay()];
+const curPlan=()=>planOf(day,now);
+const isTrain=()=>curPlan().type==="train";
+const kcalT=()=>Math.max(FLOOR,(isTrain()?1600:1450)+(settings.offset||0));
+const waterT=()=>isTrain()?2500:2000;
+const proT=()=>settings.proT||110;
+
+function save(){
+  allDays[todayKey]=day; render();
+  try{window.__cutHook&&window.__cutHook(totals(day).pro,proT())}catch(e){}
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(async()=>{
+    lsSet("cut-day-"+todayKey,day);
+    if(col){try{await col.doc(todayKey).set(day);$("sync").textContent="已同步到你的账户"}catch(e){if(e&&e.code==="invalid_argument"){col=null;lsSet("cut-local-only",1);$("sync").textContent="你的账号不能存到云端，记录保存在这个浏览器里"}else $("sync").textContent="同步失败，已暂存在本浏览器"}}
+  },500);
+}
+function saveSettings(){
+  render();
+  clearTimeout(setTimer);
+  setTimer=setTimeout(async()=>{
+    lsSet("cut-settings",settings);
+    if(col){try{await col.doc("settings").set(settings)}catch(e){}}
+  },300);
+}
+
+function totals(d){
+  const kcal=(d.food||[]).reduce((a,f)=>a+(+f.kcal||0),0);
+  const pro=(d.food||[]).reduce((a,f)=>a+(+f.pro||0),0);
+  const water=(d.water||[]).reduce((a,w)=>a+w.ml,0);
+  return {kcal,pro,water};
+}
+function setBar(el,val,target,overBad){
+  el.querySelector("i").style.width=Math.min(100,target?val/target*100:0)+"%";
+  el.classList.toggle("over",!!overBad&&val>target);
+}
+const avg=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:null;
+function windowWeights(from,to){ // days ago, inclusive
+  const out=[];for(let i=from;i<=to;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.weight)out.push(+r.weight)}return out;
+}
+function windowSteps(from,to){
+  const out=[];for(let i=from;i<=to;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.steps!=null)out.push(+r.steps)}return out;
+}
+function waistSeries(){
+  const out=[];for(let i=35;i>=0;i--){const r=allDays[keyOf(dayAgo(i))];if(r&&r.waist)out.push({i,v:+r.waist})}return out;
+}
+function parseTarget(s){const m=String(s).match(/(\d+)×(\d+)(?:–(\d+))?/);return m?{sets:+m[1],top:+(m[3]||m[2])}:null}
+function lastLift(exName){
+  for(let i=1;i<=42;i++){
+    const d=dayAgo(i), r=allDays[keyOf(d)]; if(!r||!r.lifts)continue;
+    const p=planOf(r,d); const j=p.ex.findIndex(e=>e[0]===exName);
+    if(j>=0&&r.lifts[j]&&(r.lifts[j].w||r.lifts[j].r))return {...r.lifts[j],date:d};
+  }
+  return null;
+}
+const repsArr=s=>String(s||"").split(/[,，\s/]+/).map(Number).filter(n=>n>0);
+
+/* ---------- advice ---------- */
+function advice(){
+  const w0=windowWeights(0,6), w1=windowWeights(7,13), w2=windowWeights(14,20);
+  const a0=avg(w0),a1=avg(w1),a2=avg(w2);
+  const actions=[];
+  if(w0.length<3||w1.length<3){
+    return {cls:"plain",text:`数据还不够：需要连续两周、每周至少 3 次称重才能判断。本周已称 ${w0.length} 次，上周 ${w1.length} 次。`,actions};
+  }
+  const loss=a1-a0;
+  const lossPrev=(w2.length>=3)?a2-a1:null;
+  const ws=waistSeries(); let waistDown=false;
+  if(ws.length>=2){const recent=ws[ws.length-1], older=ws.find(x=>x.i>=recent.i+7); if(older&&recent.v<older.v)waistDown=true}
+  if(loss>0.7){
+    actions.push(["每天 +150 kcal",150]);
+    return {cls:"warn",text:`本周平均下降 ${loss.toFixed(2)} kg，超过每周 0.7 kg，掉得太快容易掉肌肉。建议每天加 100–150 kcal。`,actions};
+  }
+  if(loss>=0.2){
+    return {cls:"ok",text:`本周平均下降 ${loss.toFixed(2)} kg，在 0.2–0.7 kg 的目标范围内。保持现在的计划，不用调整。`,actions};
+  }
+  if(waistDown){
+    return {cls:"ok",text:`体重变化 ${(-loss).toFixed(2)} kg，但腰围在减少，说明在减脂增肌。不调整。`,actions};
+  }
+  if(lossPrev===null||lossPrev>=0.2){
+    return {cls:"plain",text:`本周平均只下降 ${Math.max(0,loss).toFixed(2)} kg。先观察一周：可能是水分或生理期波动。规则是连续 2 周不到 0.2 kg 才调整。`,actions};
+  }
+  const st=avg(windowSteps(0,6));
+  if(st===null||st<10000){
+    return {cls:"warn",text:`已连续 2 周每周下降不到 0.2 kg。第一步：每天多走 2,000 步（近 7 天平均 ${st?Math.round(st):"未记录"} 步）。`,actions};
+  }
+  if(kcalT()-150<FLOOR||(1450+(settings.offset||0))-150<FLOOR){
+    return {cls:"bad",text:`连续 2 周不动，但热量已经接近 ${FLOOR} kcal 下限。不再减热量：建议吃 1–2 周维持热量（约 1900 kcal）做饮食休息。`,actions};
+  }
+  actions.push(["每天 −150 kcal（从碳水减）",-150]);
+  return {cls:"warn",text:`连续 2 周下降不到 0.2 kg，且步数已够。第二步：每天减 100–150 kcal，从碳水里减。`,actions};
+}
+
+/* ---------- chart ---------- */
+function renderChart(){
+  const pts=[];for(let i=27;i>=0;i--){const r=allDays[keyOf(dayAgo(i))];if(r&&r.weight)pts.push({i,v:+r.weight})}
+  if(pts.length<2){$("wchart").innerHTML=`<p class="note">记录 2 天以上体重后，这里会显示近 4 周的体重曲线和 7 天平均线。</p>`;return}
+  const W=640,H=160,L=36,R=10,T=12,B=22;
+  const vals=pts.map(p=>p.v); let lo=Math.min(...vals), hi=Math.max(...vals);
+  lo=Math.floor((lo-0.3)*2)/2; hi=Math.ceil((hi+0.3)*2)/2; if(hi-lo<1)hi=lo+1;
+  const x=i=>L+(27-i)/27*(W-L-R), y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let grid="";const step=(hi-lo)>3?1:0.5;
+  for(let v=lo;v<=hi+1e-9;v+=step){grid+=`<line x1="${L}" x2="${W-R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end">${v.toFixed(1)}</text>`}
+  const dots=pts.map(p=>`<circle cx="${x(p.i)}" cy="${y(p.v)}" r="3" fill="var(--muted)" opacity=".55"/>`).join("");
+  const ma=[];for(let i=27;i>=0;i--){const w=[];for(let k=i;k<=i+6;k++){const r=allDays[keyOf(dayAgo(k))];if(r&&r.weight)w.push(+r.weight)}if(w.length>=2)ma.push([x(i),y(avg(w))])}
+  const line=ma.length>1?`<polyline points="${ma.map(p=>p.join(",")).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linejoin="round"/>`:"";
+  const end=ma.length?`<circle cx="${ma[ma.length-1][0]}" cy="${ma[ma.length-1][1]}" r="4.5" fill="var(--accent)"/>`:"";
+  const lbl=[27,14,0].map(i=>{const d=dayAgo(i);return `<text x="${x(i)}" y="${H-6}" text-anchor="${i===27?"start":i===0?"end":"middle"}">${d.getMonth()+1}/${d.getDate()}</text>`}).join("");
+  $("wchart").innerHTML=`<svg viewBox="0 0 ${W} ${H}" width="100%" style="min-width:420px" role="img" aria-label="近 4 周体重，点为每日体重，线为 7 天平均">${grid}${dots}${line}${end}${lbl}</svg><p class="note">灰点：每日体重 · 绿线：7 天平均。看绿线的方向，不看单天。</p>`;
+}
+
+/* ---------- render ---------- */
+function render(){
+  const plan=curPlan(), t=totals(day), KT=kcalT(), WT=waterT();
+  $("dayType").textContent=(isTrain()?"训练日 · ":"休息日 · ")+KT+" kcal";
+  $("dayType").classList.toggle("rest",!isTrain());
+  $("sKcalT").textContent=KT;$("sWaterT").textContent=WT;
+  $("sKcal").textContent=t.kcal;$("sPro").textContent=t.pro;$("sProT").textContent=proT();$("sWater").textContent=t.water;
+  const done=plan.ex.filter((_,i)=>day.ex[i]).length;
+  $("sTrain").textContent=plan.ex.length?done+"/"+plan.ex.length:"休息";
+
+  // advice
+  const a=advice();
+  $("advice").className="banner "+a.cls;$("advice").textContent=a.text;
+  $("adviceActions").innerHTML=a.actions.map(([l,v])=>`<button type="button" class="primary" data-off="${v}">应用：${l}</button>`).join("")+
+    (settings.offset?`<button type="button" id="resetOff">恢复原始目标</button>`:"");
+  $("offsetNote").textContent=settings.offset?`当前目标已调整 ${settings.offset>0?"+":""}${settings.offset} kcal/天（训练日 ${Math.max(FLOOR,1600+settings.offset)}，休息日 ${Math.max(FLOOR,1450+settings.offset)}）${settings.applied?"，调整于 "+settings.applied:""}。调整后至少观察 2 周再改。`:"热量目标：训练日 1600 kcal，休息日 1450 kcal。";
+
+  // body
+  if(document.activeElement!==$("weight"))$("weight").value=day.weight??"";
+  if(document.activeElement!==$("waist"))$("waist").value=day.waist??"";
+  const a0=avg(windowWeights(0,6)),a1=avg(windowWeights(7,13));
+  $("avgNow").textContent=a0?a0.toFixed(1):"–";
+  $("avgPrev").textContent=a1?a1.toFixed(1):"–";
+  $("avgDiff").textContent=(a0&&a1)?((a0-a1>0?"+":"")+(a0-a1).toFixed(2)):"–";
+  const ws=waistSeries();$("waistNow").textContent=ws.length?ws[ws.length-1].v:"–";
+  renderChart();
+
+  // plan select
+  const sel=$("planSel");
+  if(!sel.options.length){[1,2,3,4,5,6,0].forEach(k=>{const o=document.createElement("option");o.value=k;o.textContent=PLAN[k].name+(k===now.getDay()?"（今天原计划）":"");sel.appendChild(o)})}
+  sel.value=String(planIdx(day)??now.getDay());
+
+  // exercises
+  $("exList").innerHTML=plan.ex.length?plan.ex.map((e,i)=>{
+    const lf=day.lifts[i]||{}, last=lastLift(e[0]), tg=parseTarget(e[1]);
+    let hint="";
+    if(last){
+      const lr=repsArr(last.r);
+      hint=`上次 ${last.date.getMonth()+1}/${last.date.getDate()}：${last.w?esc(last.w)+" kg × ":""}${esc(last.r||"")}`;
+      if(tg&&lr.length>=tg.sets&&lr.slice(0,tg.sets).every(n=>n>=tg.top))hint+=` <span class="tag">全部做满，今天加 1–2.5 kg</span>`;
+    }
+    return `<li class="${day.ex[i]?"done":""}"><input type="checkbox" id="ex${i}" data-i="${i}" ${day.ex[i]?"checked":""}><label class="name" for="ex${i}">${esc(e[0])}</label><span class="sets">${esc(e[1])}</span>
+      <div class="lift"><input type="number" step="0.5" min="0" inputmode="decimal" placeholder="重量 kg" id="lw${i}" data-lw="${i}" value="${esc(lf.w??"")}" aria-label="${esc(e[0])} 重量">
+      <input type="text" class="reps" placeholder="每组次数 8,8,7" id="lr${i}" data-lr="${i}" value="${esc(lf.r??"")}" aria-label="${esc(e[0])} 每组次数">
+      ${hint?`<span>${hint}</span>`:""}</div></li>`}).join("")
+    :`<li><span></span><span class="name">今天没有力量训练</span><span></span></li>`;
+  $("trainNote").textContent=isTrain()?"每组做到还剩 1–3 个；每组次数用逗号分开。所有组都做到次数上限，下次会提示加重。练前热身 5–10 分钟。":"休息日碳水少一点：去掉训练前的香蕉，午餐米饭减到 100 g。";
+  $("cardioText").textContent=plan.cardio;
+
+  // steps
+  if(document.activeElement!==$("steps"))$("steps").value=day.steps??"";
+  $("cardioDone").checked=!!day.cardio;
+  setBar($("stepBar"),+day.steps||0,9000);
+
+  // water
+  $("waterFill").style.width=Math.min(100,t.water/WT*100)+"%";
+  const last=day.water.length?new Date(day.water[day.water.length-1].t):null;
+  const h=new Date().getHours(); let msg,late=false;
+  if(t.water>=WT)msg="今天喝水已达标 ✓";
+  else if(h<8)msg="08:00 开始第一杯水。";
+  else if(h>=21)msg=`今天还差 ${WT-t.water} ml，睡前少量补一点，别一次喝太多。`;
+  else if(!last){msg="今天还没喝水，先来一杯 250 ml。";late=true}
+  else{const mins=Math.round((Date.now()-last)/60000), next=new Date(last.getTime()+90*60000);
+    if(mins>=90){msg=`距离上一杯已经 ${mins} 分钟，该喝水了。`;late=true}
+    else msg=`上一杯 ${pad(last.getHours())}:${pad(last.getMinutes())}，下一杯 ${pad(next.getHours())}:${pad(next.getMinutes())}。还差 ${WT-t.water} ml。`}
+  $("waterBanner").textContent=msg;$("waterBanner").classList.toggle("late",late);
+
+  // food
+  const left=KT-t.kcal;
+  $("kcalLeft").textContent=left>=0?`还可以吃 ${left} kcal · 蛋白质还差 ${Math.max(0,proT()-t.pro)} g`:`已超出 ${-left} kcal`;
+  setBar($("kcalBar"),t.kcal,KT,true);
+  $("foodBody").innerHTML=day.food.length?day.food.map((f,i)=>{const d=new Date(f.t);
+    return `<tr><td>${pad(d.getHours())}:${pad(d.getMinutes())}</td><td>${esc(f.name)}</td><td class="n">${f.kcal}</td><td class="n">${f.pro||0} g</td><td class="x"><button type="button" data-del="${i}" aria-label="删除">×</button></td></tr>`}).join("")
+    :`<tr><td colspan="5" class="note">还没有记录。点上面的常吃餐快速添加，或手动输入。</td></tr>`;
+
+  // macro targets
+  const carbT=Math.round((KT-proT()*4-45*9)/4);
+  $("macroTarget").textContent=`今天的目标：蛋白质 ${proT()} g（${proT()*4} kcal）· 脂肪 45 g（405 kcal）· 碳水约 ${carbT} g（${carbT*4} kcal）。`;
+
+  renderWeek();
+  try{fillCalc();window.__cutRendered&&window.__cutRendered()}catch(e){}
+}
+
+function renderWeek(){
+  let html="";
+  for(let i=6;i>=0;i--){
+    const d=dayAgo(i),k=keyOf(d),rec=allDays[k],p=planOf(rec,d),tt=rec?totals(rec):null;
+    const trained=rec&&p.ex.length&&p.ex.every((_,j)=>rec.ex&&rec.ex[j]);
+    const wOk=tt&&tt.water>=(p.type==="train"?2500:2000);
+    html+=`<div class="day ${k===todayKey?"today":""}"><span>${WD[d.getDay()]}</span><b>${tt&&tt.kcal?tt.kcal:"–"}</b><span>${rec&&rec.weight?rec.weight+" kg":"kcal"}</span><span><i class="dot ${trained?"on":""}"></i><i class="dot ${rec&&rec.cardio?"on":""}"></i><i class="dot ${wOk?"w":""}"></i></span></div>`;
+  }
+  $("week").innerHTML=html;
+}
+
+/* ---------- protein calculator ---------- */
+const GOALS={cut:[1.6,2.2],gain:[1.6,2.2],keep:[1.2,1.6]};
+function latestWeight(){for(let i=0;i<=42;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.weight)return +r.weight}return null}
+function pcalc(){
+  const h=parseFloat($("pH").value), w=parseFloat($("pW").value), g=$("pGoal").value;
+  $("pNow").textContent=`当前每日目标：${proT()} g`;
+  if(!(h>=100&&h<=230)||!(w>=25&&w<=250)){["pBmi","pRef","pRange","pRec"].forEach(id=>$(id).textContent="–");$("pText").textContent="填好身高和体重就会显示结果。";$("pText").className="banner plain";$("pSet").disabled=true;return null}
+  const m=h/100, bmi=w/(m*m), ref=bmi>25?25*m*m:w, [lo,hi]=GOALS[g];
+  const a=Math.round(ref*lo), b=Math.round(ref*hi), rec=Math.round(ref*(g==="keep"?1.4:2.0)/5)*5;
+  $("pBmi").textContent=bmi.toFixed(1);$("pRef").textContent=ref.toFixed(1);$("pRange").textContent=a+"–"+b;$("pRec").textContent=rec;
+  $("pText").className="banner ok";
+  $("pText").textContent=`每天 ${a}–${b} g，建议 ${rec} g。分 4 餐吃，每餐约 ${Math.round(rec/4)} g；分 3 餐，每餐约 ${Math.round(rec/3)} g。${bmi>25?"（BMI 超过 25，已按 "+ref.toFixed(1)+" kg 计算）":""}`;
+  $("pSet").disabled=false;return rec;
+}
+["pH","pW","pGoal"].forEach(id=>$(id).addEventListener("input",()=>{pcalc();if(id==="pH"){const v=parseFloat($("pH").value);if(v>=100&&v<=230){settings.height=v;clearTimeout(setTimer);setTimer=setTimeout(async()=>{lsSet("cut-settings",settings);if(col){try{await col.doc("settings").set(settings)}catch(e){}}},800)}}}));
+$("pSet").addEventListener("click",()=>{const rec=pcalc();if(!rec)return;settings.proT=rec;saveSettings();pcalc();try{window.__cutHook&&window.__cutHook(totals(day).pro,proT())}catch(e){}});
+function fillCalc(){if(settings.height&&document.activeElement!==$("pH")&&!$("pH").value)$("pH").value=settings.height;const lw=latestWeight();if(lw&&document.activeElement!==$("pW")&&!$("pW").value)$("pW").value=lw;pcalc()}
+window.__cutProtein=()=>({pro:totals(day).pro,target:proT()});
+
+/* ---------- calculator ---------- */
+function calc(){
+  const p=+$("cP").value||0,c=+$("cC").value||0,f=+$("cF").value||0;
+  $("cPk").textContent=Math.round(p*4)+" kcal";$("cCk").textContent=Math.round(c*4)+" kcal";$("cFk").textContent=Math.round(f*9)+" kcal";
+  $("cTotal").textContent=Math.round(p*4+c*4+f*9);
+  const k=+$("rK").value||0;$("rG").textContent=(k/+$("rM").value).toFixed(1).replace(/\.0$/,"");
+}
+["cP","cC","cF","rK","rM"].forEach(id=>$(id).addEventListener("input",calc));
+$("cAdd").addEventListener("click",()=>{
+  const p=+$("cP").value||0,c=+$("cC").value||0,f=+$("cF").value||0,k=Math.round(p*4+c*4+f*9);
+  if(!k)return;
+  day.food.push({name:$("cName").value.trim()||`P${p}/C${c}/F${f}`,kcal:k,pro:Math.round(p),t:Date.now()});
+  ["cP","cC","cF","cName"].forEach(id=>$(id).value="");calc();save();
+});
+
+/* ---------- events ---------- */
+$("date").textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${WD[now.getDay()]}`;
+$("presets").innerHTML=PRESETS.map((p,i)=>`<button type="button" data-preset="${i}">${esc(p[0])} <span class="note">${p[1]}</span></button>`).join("");
+$("planSel").addEventListener("change",e=>{const v=+e.target.value;day.planDay=(v===now.getDay())?null:v;day.ex={};day.lifts={};save()});
+$("exList").addEventListener("change",e=>{const i=e.target.dataset.i;if(i!=null){day.ex[i]=e.target.checked;save()}});
+$("exList").addEventListener("input",e=>{
+  const t=e.target;
+  if(t.dataset.lw!=null){(day.lifts[t.dataset.lw]=day.lifts[t.dataset.lw]||{}).w=t.value;allDays[todayKey]=day;queueSave()}
+  if(t.dataset.lr!=null){(day.lifts[t.dataset.lr]=day.lifts[t.dataset.lr]||{}).r=t.value;allDays[todayKey]=day;queueSave()}
+});
+$("exList").addEventListener("focusout",e=>{if(e.target.dataset.lw!=null||e.target.dataset.lr!=null)save()});
+function queueSave(){clearTimeout(saveTimer);saveTimer=setTimeout(async()=>{lsSet("cut-day-"+todayKey,day);if(col){try{await col.doc(todayKey).set(day)}catch(e){}}},800)}
+$("weight").addEventListener("change",e=>{const v=parseFloat(e.target.value);day.weight=(v>20&&v<300)?Math.round(v*10)/10:null;save()});
+$("waist").addEventListener("change",e=>{const v=parseFloat(e.target.value);day.waist=(v>30&&v<200)?v:null;save()});
+$("steps").addEventListener("change",e=>{day.steps=e.target.value===""?null:Math.max(0,+e.target.value);save()});
+$("cardioDone").addEventListener("change",e=>{day.cardio=e.target.checked;save()});
+document.querySelectorAll("[data-ml]").forEach(b=>b.addEventListener("click",()=>{day.water.push({ml:+b.dataset.ml,t:Date.now()});save()}));
+$("waterUndo").addEventListener("click",()=>{if(day.water.length){day.water.pop();save()}});
+$("presets").addEventListener("click",e=>{const b=e.target.closest("[data-preset]");if(!b)return;const p=PRESETS[b.dataset.preset];day.food.push({name:p[0],kcal:p[1],pro:p[2],t:Date.now()});save()});
+$("foodForm").addEventListener("submit",e=>{e.preventDefault();const name=$("fName").value.trim();if(!name)return;
+  day.food.push({name,kcal:Math.max(0,+$("fKcal").value||0),pro:Math.max(0,+$("fPro").value||0),t:Date.now()});e.target.reset();$("fName").focus();save()});
+$("foodBody").addEventListener("click",e=>{const b=e.target.closest("[data-del]");if(!b)return;day.food.splice(+b.dataset.del,1);save()});
+$("adviceActions").addEventListener("click",e=>{
+  const b=e.target.closest("[data-off]");
+  if(b){settings.offset=(settings.offset||0)+(+b.dataset.off);settings.applied=todayKey;saveSettings();return}
+  if(e.target.id==="resetOff"){settings.offset=0;settings.applied=null;saveSettings()}
+});
+setInterval(()=>{if(!document.activeElement||!document.activeElement.closest("#exList,.calc,#foodForm"))render()},60000);
+
+/* ---------- load ---------- */
+const local=lsGet("cut-day-"+todayKey); if(local)day=Object.assign(blank(),local);
+for(let i=1;i<=42;i++){const k=keyOf(dayAgo(i));const v=lsGet("cut-day-"+k);if(v)allDays[k]=v}
+const ls=lsGet("cut-settings");if(ls)settings=Object.assign(settings,ls);
+allDays[todayKey]=day;
+render();calc();
+
+(async()=>{
+  const timer=setTimeout(()=>{if(!col)$("sync").textContent="未连接账户，数据暂存在本浏览器"},10000);
+  try{
+    if(lsGet("cut-local-only")){clearTimeout(timer);$("sync").textContent="记录保存在这个浏览器里";return}
+    if(!window.claude||!claude.use){clearTimeout(timer);$("sync").textContent="未连接账户，数据暂存在本浏览器";return}
+    const [db,user]=await Promise.all([claude.use("db"),claude.use("user")]);
+    const uid=user&&await user.id();
+    if(!db||!uid){clearTimeout(timer);$("sync").textContent="未登录，数据暂存在本浏览器";return}
+    const c=db.collection("data/users/"+uid).doc("cut").collection("days");
+    const snap=await c.get();
+    let remoteToday=null;
+    snap.docs.forEach(s=>{if(!s.exists)return;if(s.id==="settings")settings=Object.assign({offset:0,applied:null,proT:110},s.data());else{allDays[s.id]=s.data();if(s.id===todayKey)remoteToday=s.data()}});
+    if(remoteToday){
+      const rc=(remoteToday.food||[]).length+(remoteToday.water||[]).length, lc=day.food.length+day.water.length;
+      if(!local||rc>=lc)day=Object.assign(blank(),remoteToday);
+    }
+    allDays[todayKey]=day;
+    col=c; clearTimeout(timer);
+    $("sync").textContent="已连接，记录会同步到你的账户";
+    render();
+    if(local&&!remoteToday)save();
+  }catch(e){clearTimeout(timer);$("sync").textContent="同步不可用，数据暂存在本浏览器"}
+})();
+
+})();
+</script>
+
+</body></html>
