@@ -119,11 +119,27 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 /* forms */
 .form{display:grid;grid-template-columns:2fr 1fr;gap:10px}
 .aes-list{display:flex;flex-direction:column;gap:10px}
-.aes-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;border:1px solid var(--line);border-radius:10px;padding:10px;background:var(--bg);position:relative}
-.aes-row .full{grid-column:1/-1}
-.aes-row .x{position:absolute;top:6px;right:6px;border:none;background:none;color:var(--bad);font-size:1.1rem;cursor:pointer;padding:4px 8px}
-.aes-row .nm{padding-right:34px}
-.aes-row input,.aes-row select{background:var(--paper)}
+.aes-row{border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+.aes-row[open]{border-color:var(--accent)}
+.aes-row>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2px 10px;padding:10px 12px;align-items:baseline}
+.aes-row>summary::-webkit-details-marker{display:none}
+.aes-n{font-weight:600;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aes-n::before{content:"▸ ";color:var(--muted);font-size:.8em}
+.aes-row[open] .aes-n::before{content:"▾ "}
+.aes-y{font-family:var(--mono);font-variant-numeric:tabular-nums;font-weight:600}
+.aes-m{grid-column:1/-1;font-size:.78rem;color:var(--muted)}
+.aes-bar{grid-column:1/-1;height:4px;border-radius:2px;background:var(--line);overflow:hidden}
+.aes-bar i{display:block;height:100%;background:var(--accent)}
+.aes-body{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:0 12px 12px}
+.aes-body .full{grid-column:1/-1}
+.aes-body input{background:var(--paper)}
+.aes-del{justify-self:start;color:var(--bad)}
+.aes-sumbar{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.aes-sumbar div{background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}
+.aes-sumbar b{display:block;font-family:var(--mono);font-size:1rem}
+.aes-sumbar span{font-size:.72rem;color:var(--muted)}
+.aes-how{margin-top:10px}
+.aes-how summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 11px;font-size:.82rem;cursor:pointer;color:var(--muted)}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
@@ -149,6 +165,10 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .note-item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--bg)}
 .note-meta{display:flex;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--muted)}
 .note-act{display:flex;gap:12px}
+.note-box{border:1px dashed var(--line);border-radius:10px;padding:8px 12px}
+.note-box summary{cursor:pointer;font-size:.88rem;color:var(--muted);font-weight:600}
+.note-boxl{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.note-item.arch{opacity:.8}
 .note-text{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.92rem;margin-top:4px}
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.35);display:flex;align-items:flex-end;justify-content:center;z-index:30;padding:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
 .sheet-box{background:var(--paper);color:var(--ink);border-radius:14px;padding:18px;width:min(100%,440px);display:flex;flex-direction:column;gap:10px}
@@ -352,6 +372,30 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <style>
 /* 日常计划 tab: week rows of 7 colour-coded days + "add to this day" panel (sticky on wide screens, bottom sheet on phones) */
 .wrap.wide{max-width:1320px}
+.hsub{font-size:.9rem}
+.toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 2px;margin:-8px 0;background:var(--bg)}
+.toc::-webkit-scrollbar{display:none}
+.toc button{flex:none;border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:6px 12px;font-size:.82rem;cursor:pointer;white-space:nowrap}
+.toc button:hover{border-color:var(--accent)}
+.toc button.toc-all{background:transparent;color:var(--muted);border-style:dashed}
+.toc button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.fold,#secLedger,#groups,#secRules,#goalBox,#cutSum,#plCalSec,#plYear{scroll-margin-top:calc(60px + env(safe-area-inset-top,0px))}
+.fold>:first-child{cursor:pointer;user-select:none}
+.fold>:first-child::after{content:"收起 ▴";margin-left:auto;font-size:.72rem;font-weight:500;letter-spacing:0;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
+.fold.folded>:first-child::after{content:"展开 ▾";color:var(--accent);border-color:var(--accent)}
+.fold>h2:first-child{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.fold.folded>:first-child{margin-bottom:0!important}
+.fold.folded>:not(:first-child){display:none!important}
+.fold-sum{font-size:.78rem;font-weight:500;letter-spacing:0;color:var(--accent)}
+.fold:not(.folded) .fold-sum{display:none}
+.fold.folded>h2 small{display:none}
+.cal-chg{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warn,#b7791f);margin-left:3px;vertical-align:super}
+.cal-w{font-size:.62rem!important;opacity:.75}
+.cd-chg{margin:0;font-size:.85rem;color:var(--warn,#b7791f)}
+.todayfab{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(78px + env(safe-area-inset-bottom,0px));z-index:25;border:0;border-radius:999px;background:var(--ink);color:var(--paper);padding:10px 14px;font-size:.85rem;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,.22)}
+.todayfab[hidden]{display:none!important}
+.todayfab:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (max-width:900px){.pl-panel.pl-open~.todayfab,body.pl-sheet .todayfab{display:none}}
 .totop{position:fixed;right:calc(16px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:25;
   width:48px;height:48px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:1.3rem;line-height:1;cursor:pointer;
   box-shadow:0 6px 18px rgba(0,0,0,.22);display:flex;align-items:center;justify-content:center;transition:opacity .2s,transform .2s}
@@ -665,7 +709,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>
 (function(){
-  var VER="11/12-1440",log=[],busy=false;
+  var VER="11/12-1520",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -685,10 +729,15 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-1440</p>
-    <p>做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
-    <div class="cur-row"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-1520</p>
+    <p class="hsub" id="hSub" hidden></p>
+    <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
+    <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
   </header>
+
+
+  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">运动打卡</button><button type="button" role="tab" id="tabPlan" aria-selected="false">日常计划</button></div>
+  <nav class="toc" id="toc" aria-label="本页目录"></nav>
 
   <div class="ov" aria-label="今天概览">
     <button type="button" class="ov-row" id="ovPlan"><span class="ov-k">今天的计划</span><span class="ov-v" id="ovPlanV">–</span><span class="ov-s" id="ovPlanS"></span></button>
@@ -697,11 +746,9 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <button type="button" class="ov-row" id="ovSav"><span class="ov-k">储蓄进度</span><span class="ov-v" id="ovSavV">–</span><span class="ov-s" id="ovSavS"></span></button>
   </div>
 
-  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">运动打卡</button><button type="button" role="tab" id="tabPlan" aria-selected="false">日常计划</button></div>
-
   <div id="ledgerView" style="display:flex;flex-direction:column;gap:22px">
 
-  <div class="ledger" aria-live="polite">
+  <div class="ledger" id="secLedger" aria-live="polite">
     <div class="head">
       <div><small>本周净省下</small><span class="num big" id="wNet">$0.00</span></div>
       <div style="text-align:right"><small>今天</small><span class="num" id="dNet">$0.00</span></div>
@@ -725,7 +772,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 
   <section id="groups"></section>
 
-  <section class="card">
+  <section class="card" id="secWeek">
     <h2>每周回顾</h2>
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 220" role="img" aria-label="最近 8 周每周净省下的金额"></svg></div>
     <div class="readout" id="readout">点或指向柱子，看那一周的明细。</div>
@@ -733,14 +780,14 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <div class="top" id="top"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="secMs">
     <h2>累计净省下的钱已经够付</h2>
     <p id="lines" class="num" style="margin:0 0 12px;color:var(--gold)"></p>
     <div class="ms" id="ms"></div>
   </section>
 
-  <section class="card">
-    <h2>便签</h2>
+  <section class="card" id="secNotes">
+    <h2>便签 <span class="fold-sum" id="notesSum"></span></h2>
     <form id="noteForm" style="display:flex;flex-direction:column;gap:10px">
       <textarea id="noteText" rows="3" maxlength="2000" placeholder="写点什么：今天的感受、忍住没买的东西、想调整的习惯…" aria-label="便签内容"></textarea>
       <div style="display:flex;gap:10px"><button class="btn primary" id="noteSave" type="submit">保存便签</button><button class="btn" id="noteCancel" type="button" hidden>取消编辑</button></div>
@@ -748,18 +795,19 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <div id="noteList" style="display:flex;flex-direction:column;gap:10px;margin-top:14px"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="secAes">
     <h2>你的价格清单</h2>
-    <p class="note" style="margin:0 0 12px">填你以后可能要花钱的项目：护肤、牙科、理疗、健身课、按摩等都可以。勾选它和哪些习惯有关，「健康 · 外貌习惯」那一组每次打卡的金额就按这里自动换算。</p>
+    <p class="note" style="margin:0 0 12px">以后可能要花钱的项目（护肤、牙科、理疗、健身课等）。点开一项可以改价格、次数和关联的习惯；「健康 · 外貌习惯」每次打卡的金额按这里换算。</p>
+    <div class="aes-sumbar" id="aesSumbar"></div>
     <div class="aes-list" id="aesList"></div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
       <button class="btn" type="button" id="aesAdd">+ 添加项目</button>
       <span class="note" style="margin:0" id="aesTotal"></span>
     </div>
-    <p class="note">算法：每个习惯每打卡一次 = 勾选了它的项目一年总花费 × 这个习惯的比例 ÷ 一年做这件事的次数。比例：防晒 40%、减脂节奏 30%、早睡 15%、蛋白质 / 训练 / 墨镜各 10%、卸妆 / 睡前不刷手机各 5%。具体每个习惯怎么算，可以在页面最下面「每个数字是怎么算的」里看到。</p>
+    <details class="aes-how"><summary>怎么换算成每次打卡的金额</summary><p class="note">算法：每个习惯每打卡一次 = 勾选了它的项目一年总花费 × 这个习惯的比例 ÷ 一年做这件事的次数。比例：防晒 40%、减脂节奏 30%、早睡 15%、蛋白质 / 训练 / 墨镜各 10%、卸妆 / 睡前不刷手机各 5%。具体每个习惯怎么算，可以在页面最下面「每个数字是怎么算的」里看到。</p></details>
   </section>
 
-  <section class="card">
+  <section class="card" id="secAdd">
     <h2>添加自己的习惯</h2>
     <form class="form" id="addForm" novalidate>
       <label class="full">名称<input id="newName" type="text" maxlength="30" placeholder="例如：自己泡咖啡，不买外带"></label>
@@ -782,14 +830,14 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </form>
   </section>
 
-  <section class="card">
+  <section class="card" id="secTheme">
     <h2>主题颜色</h2>
     <div class="swatches" id="swatches" role="group" aria-label="选择主题颜色"></div>
     <label class="custom-color">自定义颜色<input type="color" id="customColor" value="#1f84cc" aria-label="自定义主题颜色"></label>
     <p class="note">选好的颜色只保存在这台手机上，下次打开还是这个颜色。</p>
   </section>
 
-  <section class="card">
+  <section class="card" id="secRules">
     <details>
       <summary>每个数字是怎么算的（可以改金额、删除自己加的习惯）</summary>
       <div class="tbl">
@@ -812,7 +860,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <span class="pill" id="dayType"></span>
   </div>
 
-  <section class="panel" aria-label="今日汇总">
+  <section class="panel" id="cutSum" aria-label="今日汇总">
     <div class="stats">
       <div class="stat"><b id="sKcal">0</b><span>热量 / <em id="sKcalT">1600</em> kcal</span></div>
       <div class="stat"><b id="sPro">0</b><span>蛋白质 / <em id="sProT">110</em> g</span></div>
@@ -820,8 +868,8 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
       <div class="stat"><b id="sTrain">0/0</b><span>训练动作完成</span></div>
     </div>
   </section>
-  <section class="panel">
-    <h2>今日训练
+  <section class="panel" id="cutTrain">
+    <h2>今日训练 <span class="fold-sum" id="trainSum"></span>
       <small><label for="planSel">今天练：</label><select id="planSel"></select></small>
     </h2>
     <ul class="ex" id="exList"></ul>
@@ -857,7 +905,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </form>
     <p class="note">组数写成「4×8–10」这样，系统才能判断你是否做满、提示加重。也可以写「3×45秒」「3×力竭」。</p>
   </section>
-  <section class="panel">
+  <section class="panel" id="cutFood">
     <h2>饮食摄入 <small id="kcalLeft"></small></h2>
     <div class="bar" id="kcalBar"><i></i></div>
     <p class="note" id="macroTarget"></p>
@@ -901,7 +949,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
       </table>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel" id="cutWater">
     <h2>喝水 <small>每 90 分钟喝一次，08:00–21:00</small></h2>
     <div class="banner" id="waterBanner"></div>
     <div class="bar water"><i id="waterFill"></i></div>
@@ -914,7 +962,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
       <button type="button" id="cupAdd">＋ 加一个杯量</button>
     </div>
   </section>
-  <section class="panel">
+  <section class="panel" id="cutCardio">
     <h2>有氧建议 <small>目标 8,000–10,000 步</small></h2>
     <p style="margin:0" id="cardioText"></p>
     <div class="row">
@@ -929,7 +977,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </div>
     <div class="bar" id="stepBar"><i></i></div>
   </section>
-  <section class="panel" aria-label="身体变化">
+  <section class="panel" id="cutBody" aria-label="身体变化">
     <h2>身体变化 <small>早上空腹称，每周至少 3 次；围度每周量 1 次</small></h2>
     <div class="seg tabseg" role="tablist" aria-label="身体变化"><button type="button" role="tab" data-btab="w" aria-selected="true">体重 · 腰围</button><button type="button" role="tab" data-btab="g" aria-selected="false">围度</button><button type="button" role="tab" data-btab="s" aria-selected="false">力量 · 增肌</button></div>
     <div data-bpane="w">
@@ -969,7 +1017,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <p class="note">怎么看：增肌期体重每周涨 0.25–0.5%、力量持续进步、腰围基本不变（4 周内涨不超过 1 cm），就说明长的主要是肌肉。只要记录每个动作的重量和每组次数，这里会自动计算。</p>
       </div>
   </section>
-  <section class="panel">
+  <section class="panel" id="cutAdvice">
     <h2>本周调整建议 <small>按计划里的规则自动判断</small></h2>
     <div class="banner plain" id="advice"></div>
     <div class="row" id="adviceActions"></div>
@@ -977,7 +1025,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <p class="note" id="offsetNote"></p>
     <details class="sub" id="offHist"><summary>调整记录</summary><ul class="hist" id="offList"></ul></details>
   </section>
-  <section class="panel" aria-label="健身日历">
+  <section class="panel" id="cutCal" aria-label="健身日历">
     <h2>健身日历 <small>点任意一天，直接安排或删除那天的健身</small></h2>
     <div class="cal-nav"><button type="button" id="calPrev" aria-label="往前看">‹</button><span id="calRange"></span><button type="button" id="calToday">本周</button><button type="button" id="calNext" aria-label="往后看">›</button></div>
     <div class="cal4" id="week"></div>
@@ -1028,7 +1076,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/12-1440</div>
+  <div class="sync">页面版本 11/12-1520</div>
   </div>
 
   <div id="plan" hidden>
@@ -1044,7 +1092,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
       </div>
     </div>
     <section class="pl-memo" id="plMemo" aria-label="备忘录"></section>
-    <div class="pl-layout">
+    <div class="pl-layout" id="plCalSec">
       <div class="pl-calwrap">
         <div class="pl-mnav" id="plMnav"><button type="button" class="pl-btn" id="plPrev" aria-label="上一个">‹</button><b id="plMTitle"></b><button type="button" class="pl-btn" id="plNext" aria-label="下一个">›</button></div>
         <div class="pl-cal" id="plCal"></div>
@@ -1063,6 +1111,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   </form>
 </div>
 <div class="toast" id="toast" role="status" hidden></div>
+<button type="button" class="todayfab" id="todayFab" hidden>回到今天</button>
 <button type="button" class="totop" id="toTop" aria-label="回到顶部" title="回到顶部" hidden>↑</button>
 
 <script>
@@ -1345,23 +1394,37 @@ function renderChart(map){
   if(worst)html+=`<div class="top-row" style="color:var(--bad)"><span>!</span><span>扣得最多：${esc(map[worst[0]]?.name||"已删除的习惯")}</span><span class="num">${money(worst[1])}</span></div>`;
   $("top").innerHTML=html;
 }
-let aesSig="", aesTm;
+let aesSig="", aesTm; const aesOpen=new Set();
 function aesSetItems(items){settings={...settings,aes:{items}};renderRules();render();clearTimeout(aesTm);aesTm=setTimeout(saveSettings,800)}
 function aesTotalText(){const y=aesYear(settings.aes);$("aesTotal").textContent="每年合计 "+money(y.all)}
 function renderAes(){
   const items=aesItems(), sig=items.map(i=>i.id).join("|")+"|"+settings.cur+"|"+fx();
+  const yr=it=>(+it.price||0)*(+it.n||0);
   if(sig!==aesSig||!$("aesList").children.length&&items.length){
     aesSig=sig;
-    $("aesList").innerHTML=items.length?items.map(it=>`<div class="aes-row" data-id="${esc(it.id)}">
-      <label class="full nm">项目名称<input type="text" maxlength="20" data-f="name" value="${esc(it.name||"")}" placeholder="例如 热玛吉 / 洗牙 / 私教课"></label>
+    const ord=[...items].sort((a,b)=>yr(b)-yr(a)||(a.name?0:1)-(b.name?0:1));
+    $("aesList").innerHTML=ord.length?ord.map(it=>`<details class="aes-row" data-id="${esc(it.id)}"${aesOpen.has(it.id)?" open":""}><summary><span class="aes-n"></span><span class="aes-y"></span><span class="aes-bar"><i></i></span><span class="aes-m"></span></summary>
+      <div class="aes-body">
+      <label class="full">项目名称<input type="text" maxlength="20" data-f="name" value="${esc(it.name||"")}" placeholder="例如 热玛吉 / 洗牙 / 私教课"></label>
       <label><span>每次价格（<span class="cur-label">${curName()}</span>）</span><input type="number" min="0" step="10" inputmode="decimal" data-f="price" value="${r2((+it.price||0)*fx())}"></label>
       <label>一年做几次<input type="number" min="0" step="1" inputmode="decimal" data-f="n" value="${+it.n||0}"></label>
       <div class="full"><div style="font-size:.85rem;margin-bottom:6px">跟哪些习惯有关</div><div class="chips">${Object.entries(LINKS).map(([k,L])=>`<button type="button" class="chip" data-link="${k}" aria-pressed="${it.links.includes(k)}">${L.label}</button>`).join("")}</div></div>
-      <button type="button" class="x" data-del aria-label="删除 ${esc(it.name||"项目")}">×</button></div>`).join("")
+      <button type="button" class="btn aes-del" data-del aria-label="删除 ${esc(it.name||"项目")}">删除这个项目</button></div></details>`).join("")
       :`<p class="note" style="margin:0">还没有项目。点「+ 添加项目」加上你以后可能要花钱的项目。</p>`;
   }
+  const max=Math.max(1,...items.map(yr));
+  items.forEach(it=>{const row=$("aesList").querySelector(`.aes-row[data-id="${CSS.escape(it.id)}"]`);if(!row)return;
+    row.querySelector(".aes-n").textContent=it.name||"未命名项目";
+    row.querySelector(".aes-y").textContent=money(yr(it))+" / 年";
+    row.querySelector(".aes-bar i").style.width=Math.round(yr(it)/max*100)+"%";
+    const ln=it.links.map(k=>LINKS[k]&&LINKS[k].label).filter(Boolean);
+    row.querySelector(".aes-m").textContent=`每次 ${money(+it.price||0)} × ${+it.n||0} 次`+(ln.length?" · 关联："+ln.join("、"):" · 还没关联习惯");});
+  const tot=items.reduce((a,it)=>a+yr(it),0),linked=items.filter(it=>it.links.length).length;
+  $("aesSumbar").innerHTML=`<div><b>${items.length}</b><span>个项目</span></div><div><b>${money(tot)}</b><span>每年合计</span></div><div><b>${money(tot/12)}</b><span>平均每月</span></div>`;
+  $("aesSumbar").hidden=!items.length;
   aesTotalText();
 }
+$("aesList").addEventListener("toggle",e=>{const r=e.target.closest&&e.target.closest(".aes-row");if(!r)return;if(r.open)aesOpen.add(r.dataset.id);else aesOpen.delete(r.dataset.id)},true);
 $("aesList").addEventListener("input",e=>{
   const f=e.target.dataset.f, row=e.target.closest(".aes-row"); if(!f||!row)return;
   const items=aesItems().map(x=>({...x,links:[...x.links]}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
@@ -1374,14 +1437,14 @@ $("aesList").addEventListener("click",e=>{
   const ch=e.target.closest("[data-link]");
   if(ch){const row=ch.closest(".aes-row"),k=ch.dataset.link;const items=aesItems().map(x=>({...x,links:[...x.links]}));const it=items.find(x=>x.id===row.dataset.id);if(!it)return;
     it.links=it.links.includes(k)?it.links.filter(x=>x!==k):[...it.links,k];ch.setAttribute("aria-pressed",String(it.links.includes(k)));aesSetItems(items);return}
-  if(e.target.dataset.del===undefined)return;const row=e.target.closest(".aes-row");
+  if(e.target.dataset.del===undefined)return;e.preventDefault();const row=e.target.closest(".aes-row");
   const it=aesItems().find(x=>x.id===row.dataset.id);
   if(!e.target.dataset.armed){e.target.dataset.armed="1";const o=e.target.textContent;e.target.textContent="再点一次删除";setTimeout(()=>{if(e.target.isConnected){delete e.target.dataset.armed;e.target.textContent=o}},3500);return}
   aesSetItems(aesItems().filter(x=>x.id!==row.dataset.id));
 });
 $("aesAdd").addEventListener("click",()=>{
   const id="a"+Date.now().toString(36);
-  aesSetItems([...aesItems().map(x=>({...x,links:[...x.links]})),{id,name:"",price:0,n:1,links:["sleep","train"]}]);
+  aesOpen.add(id);aesSetItems([...aesItems().map(x=>({...x,links:[...x.links]})),{id,name:"",price:0,n:1,links:["sleep","train"]}]);
   const inp=document.querySelector(`.aes-row[data-id="${id}"] [data-f=name]`);if(inp)inp.focus();
 });
 function renderCur(){
@@ -1502,27 +1565,40 @@ function setStatus(s){$("status").textContent=s}
 // ---------- notes ----------
 let editing=null;
 const notesCol=()=>db.collection("data/users/"+uid).doc("notes").collection("items");
+let notesAll=false,archOpen=false;
+function noteEl(n,arch){
+  const d=new Date(n.at),el=document.createElement("div");el.className="note-item"+(arch?" arch":"");
+  el.innerHTML=`<div class="note-meta"><span>${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span><span class="note-act"></span></div><div class="note-text"></div>`;
+  el.querySelector(".note-text").textContent=n.text;
+  const act=el.querySelector(".note-act"),b=(t,f)=>{const x=document.createElement("button");x.type="button";x.className="undo";x.textContent=t;x.onclick=f;return x};
+  if(arch)act.append(b("取出",()=>setNoteArch(n,false)));
+  else act.append(b("编辑",()=>{editing=n.id;$("noteText").value=n.text;$("noteSave").textContent="保存修改";$("noteCancel").hidden=false;$("noteText").focus()}),b("收纳",()=>setNoteArch(n,true)));
+  const del=b("删除",()=>{if(del.dataset.armed){removeNote(n.id)}else{del.dataset.armed="1";del.textContent="确定删除？";setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent="删除"}},4000)}});del.style.color="var(--bad)";
+  act.append(del);return el;
+}
 function renderNotes(){
   const box=$("noteList");box.innerHTML="";
+  const act=[...notes].filter(n=>!n.arch).sort((a,b)=>b.at-a.at),arc=[...notes].filter(n=>n.arch).sort((a,b)=>(b.archAt||b.at)-(a.archAt||a.at));
   if(!notes.length){box.innerHTML=`<p class="note" style="margin:0">还没有便签。可以记下今天的感受、想买但忍住的东西、下次想加的习惯。</p>`;return}
-  [...notes].sort((a,b)=>b.at-a.at).forEach(n=>{
-    const d=new Date(n.at),el=document.createElement("div");el.className="note-item";
-    el.innerHTML=`<div class="note-meta"><span>${d.getMonth()+1}月${d.getDate()}日 ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}</span><span class="note-act"></span></div><div class="note-text"></div>`;
-    el.querySelector(".note-text").textContent=n.text;
-    const act=el.querySelector(".note-act");
-    const ed=document.createElement("button");ed.type="button";ed.className="undo";ed.textContent="编辑";
-    ed.onclick=()=>{editing=n.id;$("noteText").value=n.text;$("noteSave").textContent="保存修改";$("noteCancel").hidden=false;$("noteText").focus()};
-    const del=document.createElement("button");del.type="button";del.className="undo";del.textContent="删除";del.style.color="var(--bad)";
-    del.onclick=()=>{if(del.dataset.armed){removeNote(n.id)}else{del.dataset.armed="1";del.textContent="确定删除？";setTimeout(()=>{if(del.isConnected){delete del.dataset.armed;del.textContent="删除"}},4000)}};
-    act.append(ed,del);box.appendChild(el);
-  });
+  if(!act.length)box.insertAdjacentHTML("beforeend",`<p class="note" style="margin:0">桌面上没有便签了，旧的都在收纳盒里。</p>`);
+  (notesAll?act:act.slice(0,3)).forEach(n=>box.appendChild(noteEl(n,false)));
+  if(act.length>3){const m=document.createElement("button");m.type="button";m.className="btn";m.textContent=notesAll?"只看最近 3 条":`显示全部 ${act.length} 条`;m.onclick=()=>{notesAll=!notesAll;renderNotes()};box.appendChild(m)}
+  if(arc.length){const d=document.createElement("details");d.className="note-box";d.open=archOpen;d.ontoggle=()=>{archOpen=d.open};
+    d.innerHTML=`<summary>收纳盒（${arc.length} 条）</summary><div class="note-boxl"></div>`;
+    arc.forEach(n=>d.querySelector(".note-boxl").appendChild(noteEl(n,true)));box.appendChild(d)}
+  const sum=$("notesSum");if(sum)sum.textContent=act.length?act.length+" 条"+(arc.length?" · 收纳 "+arc.length:""):(arc.length?"收纳 "+arc.length+" 条":"");
+}
+async function setNoteArch(n,v){
+  const nn={...n,arch:v,archAt:v?Date.now():null};notes=[...notes.filter(x=>x.id!==n.id),nn];if(editing===n.id)resetComposer();renderNotes();
+  if(mode==="db"){try{await notesCol().doc(n.id).set(nn)}catch(err){setStatus("便签没保存上，稍后再试。")}}else lsSave();
+  toast(v?"已放进收纳盒":"已从收纳盒取出");
 }
 function resetComposer(){editing=null;$("noteText").value="";$("noteSave").textContent="保存便签";$("noteCancel").hidden=true}
 $("noteCancel").onclick=resetComposer;
 $("noteForm").addEventListener("submit",async e=>{
   e.preventDefault();const text=$("noteText").value.trim();if(!text)return;
   const id=editing||("n"+Date.now().toString(36));
-  const old=notes.find(x=>x.id===id);const n={id,text,at:old?old.at:Date.now()};
+  const old=notes.find(x=>x.id===id);const n={id,text,at:old?old.at:Date.now(),arch:false};
   notes=[...notes.filter(x=>x.id!==id),n];resetComposer();renderNotes();
   if(mode==="db"){try{await notesCol().doc(id).set(n)}catch(err){if(err&&err.code==="invalid_argument")goLocal();else setStatus("便签没保存上，稍后再试。")}}else lsSave();
   toast(old?"便签已更新":"便签已保存");
@@ -1746,7 +1822,7 @@ const proT=()=>settings.proT||110;
 
 function snap(){try{const p=curPlan();day.snap={name:p.name,type:p.type,ex:p.ex.map(e=>[e[0],e[1]]),cardio:p.cardio}}catch(e){}}
 function save(){
-  snap();allDays[todayKey]=day; render();
+  snap();day.at=Date.now();allDays[todayKey]=day; render();
   try{window.__cutHook&&window.__cutHook(totals(day).pro,proT())}catch(e){}
   clearTimeout(saveTimer);
   saveTimer=setTimeout(async()=>{
@@ -2088,9 +2164,10 @@ function renderWeek(){
   let html=["一","二","三","四","五","六","日"].map(x=>`<span class="cal-h">${x}</span>`).join("");
   for(let i=0;i<35;i++){const d=new Date(st);d.setDate(st.getDate()+i);const k=keyOf(d),fut=k>todayKey,rec=allDays[k]||(k===todayKey?day:null);
     const sc=fut?null:dayScore(k,d),lv=sc?sc.n:0,p=planOf(rec,d),ex=(rec&&rec.extra)||[];
-    let sub="";if(fut)sub=shortPlan(p)+(ex.length?" +"+ex.length:"");else if(sc&&sc.weight)sub=sc.weight;
+    const chg=planIdx(rec)!=null,showP=fut||k===todayKey||(rec&&(Object.keys(rec.ex||{}).length||chg));
+    let sub=showP?shortPlan(p)+(ex.length?" +"+ex.length:""):"";const sub2=!fut&&sc&&sc.weight?sc.weight:"";
     const tip=`${d.getMonth()+1}/${d.getDate()} ${p.name}`+(ex.length?" + "+ex.map(x=>x.name).join("、"):"");
-    html+=`<button type="button" class="cal-d lv${lv}${k===todayKey?" today":""}${fut?" fut":""}${k===calSel?" sel":""}${fut&&p.type!=="train"&&!ex.length?" rest":""}" data-k="${k}" title="${esc(tip)}" aria-label="${esc(tip)}" aria-pressed="${k===calSel}"><b>${d.getDate()}</b>${sub?`<span>${esc(String(sub))}</span>`:""}</button>`}
+    html+=`<button type="button" class="cal-d lv${lv}${k===todayKey?" today":""}${fut?" fut":""}${k===calSel?" sel":""}${fut&&p.type!=="train"&&!ex.length?" rest":""}" data-k="${k}" title="${esc(tip)}" aria-label="${esc(tip)}" aria-pressed="${k===calSel}"><b>${d.getDate()}${chg?'<i class="cal-chg" title="改过计划"></i>':""}</b>${sub?`<span>${esc(String(sub))}</span>`:""}${sub2?`<span class="cal-w">${esc(String(sub2))}</span>`:""}</button>`}
   $("week").innerHTML=html;
   $("calSync").checked=settings.syncPlan!==false;
   renderCalDay();
@@ -2108,7 +2185,8 @@ function renderCalDay(){
   }else{
     h+=`<div class="cd-row"><label for="cdPlan">训练</label><select id="cdPlan">`+[1,2,3,4,5,6,0].map(w=>`<option value="${w}" ${(idx??d.getDay())===w?"selected":""}>${esc(plans()[w].name)}${w===d.getDay()?"（${wkName}默认）":""}</option>`).join("")+`</select>
       <input type="time" id="cdTime" value="${esc((rec&&rec.trainAt)||"")}" aria-label="训练时间"><span class="note">时间可不填</span></div>`;
-    if(p.ex.length)h+=`<p class="note cd-exs">${p.ex.map(x=>esc(x[0])).join(" · ")}</p>`;
+    if(idx!=null&&idx!==d.getDay())h+=`<p class="cd-chg">${k===todayKey?"今天":"这天"}改成了「${esc(p.name)}」，原计划是「${esc((plans()[d.getDay()]||{}).name||"")}」</p>`;
+    if(p.ex.length)h+=`<p class="note cd-exs">${p.ex.map((x,j)=>(k===todayKey&&rec&&rec.ex&&rec.ex[j]?"✓ ":"")+esc(x[0])).join(" · ")}</p>`;
   }
   h+=`<div class="cd-list">`+(ex.length?ex.map(x=>`<div class="cd-it${x.done?" done":""}">${past||k===todayKey?`<input type="checkbox" data-xdone="${x.id}" ${x.done?"checked":""} aria-label="完成 ${esc(x.name)}">`:"<span></span>"}<span>${x.time?`<b>${esc(x.time)}</b> `:""}${esc(x.name)}${x.min?` · ${x.min} 分钟`:""}</span><button type="button" data-xdel="${x.id}" aria-label="删除 ${esc(x.name)}">✕</button></div>`).join(""):`<p class="note">${past?"":"还没有加其他健身项目。"}</p>`)+`</div>`;
   h+=`<div class="cd-quick">`+QUICK.map(([n,m],i)=>`<button type="button" data-q="${i}">＋ ${n}</button>`).join("")+`</div>
@@ -2132,7 +2210,7 @@ $("calSync").addEventListener("change",e=>{settings.syncPlan=e.target.checked;sa
   if(e.target.checked){Object.keys(allDays).concat([todayKey]).filter(k=>k>=todayKey).forEach(syncPlanFor);try{window.__toastAny&&window.__toastAny("已打开同步，今天起的健身安排已同步到日常计划")}catch(err){}}
   else try{window.__toastAny&&window.__toastAny("已关闭同步，日常计划里已有的项目会保留")}catch(err){}});
 $("calDay").addEventListener("change",e=>{const k=calSel||todayKey,t=e.target;
-  if(t.id==="cdPlan"){const v=+t.value,d=dateOf(k);if(k===todayKey){day.planDay=(v===now.getDay())?null:v;day.ex={};day.lifts={};save()}
+  if(t.id==="cdPlan"){const v=+t.value,d=dateOf(k);if(k===todayKey){switchToday(v);return}
     else{const r=ensureRec(k);r.planDay=(v===d.getDay())?null:v;saveRec(k,r)}syncPlanFor(k);return}
   if(t.id==="cdTime"){const r=ensureRec(k);r.trainAt=t.value||null;saveRec(k,r);syncPlanFor(k);return}
   if(t.dataset.xdone){const r=ensureRec(k);const x=(r.extra||[]).find(y=>y.id===t.dataset.xdone);if(!x)return;x.done=t.checked;
@@ -2210,7 +2288,10 @@ $("cAdd").addEventListener("click",()=>{
 /* ---------- events ---------- */
 $("date").textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${WD[now.getDay()]}`;
 
-$("planSel").addEventListener("change",e=>{const v=+e.target.value;day.planDay=(v===now.getDay())?null:v;day.ex={};day.lifts={};save()});
+function switchToday(v){const cur=planIdx(day)??now.getDay();if(v===cur)return;const by=Object.assign({},day.exBy||{});by[cur]={ex:day.ex||{},lifts:day.lifts||{}};const keep=by[v];delete by[v];
+  day.exBy=by;day.planDay=(v===now.getDay())?null:v;day.ex=keep?keep.ex:{};day.lifts=keep?keep.lifts:{};save();syncPlanFor(todayKey);
+  try{window.__toastAny&&window.__toastAny("今天改成「"+plans()[v].name+"」，健身日历已更新"+(keep?"，之前的记录还在":""))}catch(e){}}
+$("planSel").addEventListener("change",e=>switchToday(+e.target.value));
 $("exList").addEventListener("change",e=>{const i=e.target.dataset.i;if(i!=null){day.ex[i]=e.target.checked;save()}});
 $("exList").addEventListener("input",e=>{
   const t=e.target;
@@ -2382,7 +2463,8 @@ render();calc();
     snap.docs.forEach(s=>{if(!s.exists)return;const v=JSON.parse(JSON.stringify(s.data()));if(s.id==="settings")settings=Object.assign({offset:0,applied:null,proT:110,goal:"cut",tdee:1900,sex:"",age:null,act:1.375,tdeeManual:false,presets:null,cups:[250,500],offLog:[],restAuto:true,syncPlan:true},v);else{allDays[s.id]=v;if(s.id===todayKey)remoteToday=JSON.parse(JSON.stringify(v))}});
     if(remoteToday){
       const rc=(remoteToday.food||[]).length+(remoteToday.water||[]).length, lc=day.food.length+day.water.length;
-      if(!local||rc>=lc)day=Object.assign(blank(),remoteToday);
+      const newer=(remoteToday.at&&local&&local.at)?remoteToday.at>=local.at:rc>=lc;
+      if(!local||newer)day=Object.assign(blank(),remoteToday);
     }
     allDays[todayKey]=day;
     col=c; clearTimeout(timer);
@@ -3488,6 +3570,98 @@ render();calc();
       setRef.onSnapshot(s=>{if(s.exists&&!s.metadata.hasPendingWrites){budget=+s.data().budget||0;cache();render()}},()=>{});
     });
   }).catch(()=>{});
+})();
+</script>
+<script>
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var TITLES={ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"]};
+  var TOC={
+    ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["每周回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"],["添加习惯","secAdd"],["主题颜色","secTheme"],["算法说明","secRules"]],
+    cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
+    plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]]
+  };
+  var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secAdd:1,secTheme:1,
+    cutTrain:0,cutFood:0,cutWater:0,cutCardio:1,cutBody:1,cutAdvice:1,cutCal:0,plMemo:0};
+  var st={};try{st=JSON.parse(localStorage.getItem("fold-state")||"{}")||{}}catch(e){}
+  function saveSt(){try{localStorage.setItem("fold-state",JSON.stringify(st))}catch(e){}}
+  function isF(id){return id in st?!!st[id]:!!FOLD[id]}
+  Object.keys(FOLD).forEach(function(id){var e=$(id);if(!e)return;e.classList.add("fold");e.classList.toggle("folded",isF(id));});
+  function setF(id,v){var e=$(id);if(!e)return;st[id]=v?1:0;saveSt();e.classList.toggle("folded",v);syncHead(e);if(id==="cutTrain")try{trainSum()}catch(x){}}
+  function syncHead(e){var h=e.firstElementChild;if(h){h.setAttribute("aria-expanded",String(!e.classList.contains("folded")));}}
+  document.addEventListener("click",function(ev){
+    var t=ev.target;if(!t.closest)return;
+    if(t.closest("input,select,textarea,label,a,button:not(.fold-head-btn)"))return;
+    var sec=t.closest(".fold");if(!sec)return;var h=sec.firstElementChild;if(!h||!h.contains(t))return;
+    setF(sec.id,!sec.classList.contains("folded"));
+  });
+  // keyboard: make heads focusable
+  function prepHeads(){Object.keys(FOLD).forEach(function(id){var e=$(id);if(!e)return;var h=e.firstElementChild;if(!h||h.dataset.fh)return;h.dataset.fh="1";h.tabIndex=0;h.setAttribute("role","button");syncHead(e);
+    h.addEventListener("keydown",function(ev){if(ev.target!==h)return;if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();setF(id,!e.classList.contains("folded"));}});});}
+  prepHeads();
+  // dynamic sections rebuild their head: re-prep after changes
+  var mo=new MutationObserver(function(){prepHeads();});
+  ["savSec","expSec","paySec","plMemo"].forEach(function(id){var e=$(id);if(e)mo.observe(e,{childList:true});});
+
+  var cur="ledger";
+  function tabNow(){return $("tabCut").getAttribute("aria-selected")==="true"?"cut":$("tabPlan").getAttribute("aria-selected")==="true"?"plan":"ledger";}
+  function anyOpen(){return TOC[cur].some(function(x){return x[1] in FOLD&&!$(x[1]).classList.contains("folded")});}
+  function buildToc(){
+    var nav=$("toc");nav.textContent="";
+    TOC[cur].forEach(function(x){var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
+    if(cur!=="plan"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
+      a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
+    nav.scrollLeft=0;
+  }
+  var rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
+  function scrollTo(e){if(e)e.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"});}
+  function todayKey(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+  function go(id){
+    if(id==="@year"){$("plViewYear").click();setTimeout(function(){scrollTo($("plYear"))},60);return;}
+    if(id==="@today"){if(window.__planSelect)window.__planSelect(todayKey());setTimeout(function(){var p=$("plPanel");if(p&&matchMedia("(min-width:901px)").matches)scrollTo(p);},80);return;}
+    if(id==="plCalSec"&&$("plViewMonth").getAttribute("aria-pressed")!=="true")$("plViewMonth").click();
+    var e=$(id);if(!e)return;
+    if(id in FOLD&&e.classList.contains("folded"))setF(id,false);
+    if(e.tagName==="DETAILS")e.open=true;
+    scrollTo(e);
+  }
+  function applyTab(t){
+    cur=t;var T=TITLES[t];
+    document.querySelector("header h1").textContent=T[0];
+    document.title=T[0];
+    $("hSub").textContent=T[1];$("hSub").hidden=!T[1];
+    $("hIntro").hidden=t!=="ledger";$("hCur").hidden=t!=="ledger";
+    var ch=document.querySelector(".cut-head h1");if(ch)ch.hidden=true;
+    var ph=document.querySelector(".pl-top h2");if(ph)ph.hidden=true;
+    buildToc();fab();try{trainSum()}catch(x){}
+  }
+  var orig=window.showTab;
+  if(typeof orig==="function"){window.showTab=function(n){orig(n);applyTab(n==="cut"||n==="plan"?n:"ledger");};}
+  ["tabLedger","tabCut","tabPlan"].forEach(function(id){$(id).addEventListener("click",function(){setTimeout(function(){applyTab(tabNow())},0)});});
+
+  // training summary when folded
+  function trainSum(){var s=$("planSel"),o=s&&s.options[s.selectedIndex];var nm=o?o.textContent.replace(/^周.：/,"").replace(/（.*）$/,""):"";
+    var done=$("sTrain")?$("sTrain").textContent:"";$("trainSum").textContent=nm+(done&&done!=="0/0"?" · 完成 "+done:"");}
+  var cr=window.__cutRendered;window.__cutRendered=function(){try{trainSum()}catch(e){}if(cr)return cr.apply(this,arguments)};
+  try{trainSum()}catch(e){}
+
+  // floating "回到今天" on the plan tab
+  var fb=$("todayFab");
+  function fab(){
+    if(cur!=="plan"){fb.hidden=true;return;}
+    var c=document.querySelector('#plCal [data-k="'+todayKey()+'"]');
+    var yearMode=$("plViewYear").getAttribute("aria-pressed")==="true";
+    var vis=false;if(c&&!yearMode){var r=c.getBoundingClientRect();vis=r.bottom>60&&r.top<innerHeight-60;}
+    var sheet=$("plPanel")&&$("plPanel").classList.contains("pl-open")&&!matchMedia("(min-width:901px)").matches;
+    fb.hidden=vis||sheet;
+  }
+  fb.onclick=function(){$("plGoToday").click();setTimeout(fab,600);};
+  window.addEventListener("scroll",fab,{passive:true});window.addEventListener("resize",fab);
+  document.addEventListener("click",function(){setTimeout(fab,50)},true);
+  new MutationObserver(function(){setTimeout(fab,30)}).observe($("plCal"),{childList:true});
+  new MutationObserver(function(){setTimeout(fab,30)}).observe($("plPanel"),{attributes:true,attributeFilter:["class"]});
+  applyTab(tabNow());
+  setTimeout(fab,800);
 })();
 </script>
 </body></html>
