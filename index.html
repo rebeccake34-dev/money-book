@@ -651,7 +651,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>
 (function(){
-  var VER="11/12-1400",log=[],busy=false;
+  var VER="11/12-1415",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -671,7 +671,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-1400</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-1415</p>
     <p>做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
   </header>
@@ -1014,7 +1014,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/12-1400</div>
+  <div class="sync">页面版本 11/12-1415</div>
   </div>
 
   <div id="plan" hidden>
@@ -3058,14 +3058,22 @@ render();calc();
     if(data)deliver(data,name+".pdf");else cv.toBlob(function(b){deliver(b,name+".png");},"image/png");
   }
 
-  $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();var c=cal.querySelector('[data-k="'+todayKey+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"});};
+  $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();scrollToToday(true);};
 
   renderCal();renderPanel();renderMemos();
   try{window.__cut&&window.__cut.rerender()}catch(e){}
-  var scrolled=false;
-  window.__planShown=function(){var t=panel.querySelector(".pl-tl");if(t)t.remove();renderPanel();
-    if(!scrolled){scrolled=true;setTimeout(function(){var c=cal.querySelector('[data-k="'+todayKey+'"]'),w=cal.querySelector(".pl-week");
-      if(c&&w&&c.closest(".pl-week")!==w)c.scrollIntoView({block:"center"});},50);}};
+  function scrollToToday(smooth){
+    var go=function(){var c=cal.querySelector('[data-k="'+todayKey+'"]');if(!c||$("plan").hidden)return;
+      var r=c.getBoundingClientRect(),y=window.scrollY+r.top-Math.max(80,(window.innerHeight-r.height)/2);
+      window.scrollTo({top:Math.max(0,y),behavior:smooth&&!(window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches)?"smooth":"auto"});};
+    requestAnimationFrame(function(){requestAnimationFrame(go);});setTimeout(go,250);
+  }
+  window.__planShown=function(){var t=panel.querySelector(".pl-tl");if(t)t.remove();
+    viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();
+    if(window.matchMedia&&matchMedia("(max-width:900px)").matches)panel.classList.remove("pl-open");
+    scrollToToday(true);};
+  if(!$("plan").hidden)window.__planShown();
+  var reAimed=false,userMoved=false;["wheel","touchmove","keydown"].forEach(function(ev){window.addEventListener(ev,function(){userMoved=true;},{passive:true,once:true});});
 
   // ---- storage: claude.ai account when opened as an artifact, otherwise this browser ----
   if(!(window.claude&&window.claude.use)){setStatus("内容保存在这个浏览器里");return;}
@@ -3085,7 +3093,7 @@ render();calc();
         var days={},sc=null,mm=[];
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
           if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.memos=mm;cacheLocal();renderCal();renderPanel();renderMemos();
+        state.days=days;state.shortcuts=sc;state.memos=mm;cacheLocal();renderCal();renderPanel();renderMemos();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");});
