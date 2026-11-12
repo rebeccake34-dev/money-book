@@ -709,7 +709,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>
 (function(){
-  var VER="11/12-1520",log=[],busy=false;
+  var VER="11/12-2145",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -729,7 +729,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-1520</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/12-2145</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1076,7 +1076,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/12-1520</div>
+  <div class="sync">页面版本 11/12-2145</div>
   </div>
 
   <div id="plan" hidden>
@@ -1296,7 +1296,7 @@ function render(){
       const n=c[h.id]||0, bad=h.kind.startsWith("bad");
       const cls=bad?"k-bad":"k-"+h.kind;
       const unit=h.weekly?"每周":"每次";const cp=h.id==="protein"&&window.__cutProtein?window.__cutProtein():null;const valText=cp?`${unit} +${money(h.val)} · 今天 ${cp.pro}/${cp.target} g`:h.kind==="count"?"记一次":h.ask?(n?`今天共 ${money(((amts[t]?.[h.id])||[]).reduce((a,b)=>a+b,0))}`:"每次自己填金额"):bad?`${unit}扣 ${money(h.val)}`:`${unit} +${money(h.val)}`;
-      const b=document.createElement("button");b.type="button";b.className="tile "+cls;
+      const b=document.createElement("button");b.type="button";b.className="tile "+cls;b.dataset.h=h.id;
       b.innerHTML=`<span class="cnt" ${n?"":"data-zero"}>${n?"×"+n:"今天 0"}</span><b>${esc(h.name)}</b><span class="val">${valText}</span><span class="streak">${streakText(h)}</span>`;
       if(manage){b.classList.add("managing");b.querySelector(".streak").innerHTML=`<span class="del-chip">删除</span>`;
         b.onclick=()=>hideHabit(h);b.setAttribute("aria-label","删除 "+h.name);grid.appendChild(b);return}
@@ -3660,6 +3660,25 @@ render();calc();
   document.addEventListener("click",function(){setTimeout(fab,50)},true);
   new MutationObserver(function(){setTimeout(fab,30)}).observe($("plCal"),{childList:true});
   new MutationObserver(function(){setTimeout(fab,30)}).observe($("plPanel"),{attributes:true,attributeFilter:["class"]});
+  // keep what you tapped in the same place on screen (re-rendering used to make the page jump)
+  function keyOf(el){var e=el;while(e&&e!==document.body){
+      if(e.id&&!/^(groups|plPanel|plMemo|exList|calDay|week|plCal|cut|plan|ledgerView)$/.test(e.id))return "#"+CSS.escape(e.id);
+      var ds=e.dataset||{};for(var k of ["h","k","id","i","xdone","q"])if(ds[k]!=null)return "["+"data-"+k+'="'+CSS.escape(ds[k])+'"]'+(e.tagName?"":"");
+      e=e.parentElement;}return null;}
+  function scroller(el){var e=el&&el.parentElement;while(e&&e!==document.body){var cs=getComputedStyle(e);if(/(auto|scroll)/.test(cs.overflowY)&&e.scrollHeight>e.clientHeight+1)return e;e=e.parentElement;}return null;}
+  document.addEventListener("click",function(ev){
+    var t=ev.target;if(!t.closest)return;
+    var hit=t.closest('input[type=checkbox],.tile,.pl-item,.cd-it,.ov-row');if(!hit||hit.closest(".toc"))return;
+    var key=keyOf(t.matches("input")?t:hit);if(!key)return;
+    var old=document.querySelector(key);if(!old)return;
+    var top0=old.getBoundingClientRect().top,sc=scroller(old),st0=sc?sc.scrollTop:null,y0=window.scrollY,until=Date.now()+900;
+    function fix(){var el=document.querySelector(key);if(!el||!el.isConnected)return;
+      var s2=scroller(el);if(sc&&s2===sc&&st0!=null&&sc.scrollTop!==st0)sc.scrollTop=st0;
+      var d=el.getBoundingClientRect().top-top0;if(Math.abs(d)>1){if(s2&&s2===sc)s2.scrollTop+=d;else window.scrollBy(0,d);}}
+    if(hit.classList.contains("ov-row"))return;
+    [0,40,120,300,600].forEach(function(ms){setTimeout(function(){if(Date.now()<=until)fix()},ms)});
+    requestAnimationFrame(fix);
+  },true);
   applyTab(tabNow());
   setTimeout(fab,800);
 })();
