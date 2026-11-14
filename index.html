@@ -551,6 +551,14 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .pl-tchips{display:flex;flex-wrap:wrap;gap:6px}
 .pl-tc{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:4px 10px;font-size:.78rem;cursor:pointer}
 .pl-tc.pl-on{border-color:var(--accent);background:var(--accent);color:#fff}
+.pl-tbtn{border:1px dashed var(--line);background:transparent;color:var(--muted);border-radius:8px;padding:3px 8px;font-size:.8rem;cursor:pointer;font-family:var(--mono)}
+.pl-tbtn:hover,.pl-tbtn.pl-on{border-color:var(--accent);color:var(--accent)}
+.pl-ted{display:flex;flex-direction:column;gap:8px;width:100%;margin-top:6px;padding:10px;border-radius:10px;background:var(--bg);border:1px solid var(--line)}
+.pl-tedr{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.pl-tedl{font-size:.75rem;color:var(--muted);min-width:2.6em}
+.pl-ted input[type=time],.pl-ted input[type=date]{font-size:.85rem;padding:4px 6px}
+.pl-ted>.pl-btn{align-self:flex-start}
+.pl-chip{cursor:pointer}
 .pl-hl{font-family:var(--mono);font-size:.75rem;color:var(--muted);padding:8px 6px;border-right:1px solid var(--line)}
 .pl-hitems{display:flex;flex-wrap:wrap;gap:4px;padding:5px 6px;align-items:center;min-width:0}
 .pl-shorts{display:flex;flex-wrap:wrap;gap:6px}
@@ -813,7 +821,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>
 (function(){
-  var VER="11/13-1140",log=[],busy=false;
+  var VER="11/14-1500",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -833,7 +841,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/13-1140</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-1500</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1182,7 +1190,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/13-1140</div>
+  <div class="sync">页面版本 11/14-1500</div>
   </div>
 
   <div id="plan" hidden>
@@ -2381,6 +2389,9 @@ function pcalc(){
 $("pSet").addEventListener("click",()=>{const rec=pcalc();if(!rec)return;settings.proT=rec;saveSettings();pcalc();try{window.__cutHook&&window.__cutHook(totals(day).pro,proT())}catch(e){}});
 function fillCalc(){if(!fillCalc.g){fillCalc.g=1;$("pGoal").value=goal()}if(settings.height&&document.activeElement!==$("pH")&&!$("pH").value)$("pH").value=settings.height;const lw=latestWeight();if(lw&&document.activeElement!==$("pW")&&!$("pW").value)$("pW").value=lw;pcalc()}
 window.__cutProtein=()=>({pro:totals(day).pro,target:proT()});
+window.__cutSetTime=function(k,ref,start){try{const r=ensureRec(k);
+  if(ref==="plan")r.trainAt=start||null;else{const x=(r.extra||[]).find(y=>"x-"+y.id===ref);if(!x)return;x.time=start||""}
+  saveRec(k,r);syncPlanFor(k)}catch(e){}};
 window.__cut={
   rerender:()=>render(),
   planFor:d=>{const p=plans()[d.getDay()]||OFF;return {name:p.name,type:p.type}},
@@ -2656,7 +2667,7 @@ render();calc();
   var state={shortcuts:null,days:{},memos:[]};
   try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];}}catch(e){}
   var sel=todayKey,openCat=null,editMode=false,addingShortcut=false;
-  var pendStart="",pendEnd="",paneMode="view";
+  var pendStart="",pendEnd="",paneMode="view",editId=null;
   var col=null,chains={};
 
   function shorts(){return state.shortcuts||DEFAULTS;}
@@ -2766,9 +2777,41 @@ render();calc();
     l.push(it);saveDay(sel);renderCal();renderPanel();
     var d=parse(sel);toast("已添加「"+label(it)+"」到 "+(d.getMonth()+1)+"月"+d.getDate()+"日"+(it.start?" "+fmtRange(it):""));
   }
+  // ---- edit an item's time / day in place ----
+  function m2t(m){m=Math.max(0,Math.min(23*60+59,m));return pad(Math.floor(m/60))+":"+pad(m%60);}
+  function setTime(it,st,en,k){it.start=st||"";it.end=st&&en?en:"";if(it.end&&toMin(it.end)<=toMin(it.start))it.end="";
+    saveDay(k);renderCal();if(it.cutRef&&window.__cutSetTime)try{window.__cutSetTime(k,it.cutRef,it.start)}catch(e){}}
+  function timeEditor(it,tbtn){
+    var k=sel,box=el("div","pl-ted");
+    var dur=it.start&&it.end?toMin(it.end)-toMin(it.start):null;
+    var r1=el("div","pl-tedr");
+    var a=el("input");a.type="time";a.value=it.start||"";a.setAttribute("aria-label","开始时间");
+    var b=el("input");b.type="time";b.value=it.end||"";b.setAttribute("aria-label","结束时间");
+    a.onchange=function(){var d=it.start&&it.end?toMin(it.end)-toMin(it.start):null;var en=it.end;if(a.value&&d!=null&&d>0)en=m2t(toMin(a.value)+d);setTime(it,a.value,en,k);b.value=it.end;tbtn.firstChild.nodeValue=(it.start?fmtRange(it):"不定时")+"  ✎ 调整时间";};
+    b.onchange=function(){if(!it.start&&b.value){toast("先选开始时间");b.value="";return;}setTime(it,it.start,b.value,k);b.value=it.end;tbtn.firstChild.nodeValue=(it.start?fmtRange(it):"不定时")+"  ✎ 调整时间";};
+    r1.appendChild(el("span","pl-tedl","开始"));r1.appendChild(a);r1.appendChild(el("span","pl-tedl","结束"));r1.appendChild(b);box.appendChild(r1);
+    function chipRow(lbl,list){var r=el("div","pl-tedr");r.appendChild(el("span","pl-tedl",lbl));list.forEach(function(x){r.appendChild(btn("pl-tc",x[0],x[1]));});box.appendChild(r);}
+    function shift(m){return function(){if(!it.start){toast("这项还没有时间，先选一个开始时间");return;}
+      var d=it.end?toMin(it.end)-toMin(it.start):null,ns=toMin(it.start)+m;if(ns<0||ns>23*60+59)return;
+      setTime(it,m2t(ns),d!=null?m2t(ns+d):"",k);renderPanel();};}
+    chipRow("挪动",[["提前 1 小时",shift(-60)],["提前 15 分",shift(-15)],["推后 15 分",shift(15)],["推后 1 小时",shift(60)]]);
+    chipRow("时长",[[" 30 分钟",30],[" 1 小时",60],[" 1.5 小时",90],[" 2 小时",120]].map(function(x){return [x[0].trim(),function(){if(!it.start){toast("先选开始时间");return;}setTime(it,it.start,m2t(toMin(it.start)+x[1]),k);renderPanel();}];}));
+    chipRow("改到",[["不定时",function(){setTime(it,"","",k);renderPanel();}]].concat(PRESETS.map(function(p){return [p[0]+" "+p[1],function(){setTime(it,p[1],dur!=null?m2t(toMin(p[1])+dur):p[2],k);renderPanel();}];})));
+    var r4=el("div","pl-tedr");r4.appendChild(el("span","pl-tedl","换天"));
+    if(it.cutRef){r4.appendChild(el("span","note","这项来自运动打卡，换天请到健身日历里改"));}
+    else{var di=el("input");di.type="date";di.value=k;di.min=ymd(new Date(today.getFullYear()-1,0,1));di.max=ymd(end);di.setAttribute("aria-label","改到哪一天");
+      di.onchange=function(){var nk=di.value;if(!nk||nk===k)return;if(it.done&&it.sync)syncOff(it,k);
+        state.days[k]=(state.days[k]||[]).filter(function(y){return y.id!==it.id;});saveDay(k);
+        (state.days[nk]||(state.days[nk]=[])).push(it);saveDay(nk);editId=null;renderCal();renderPanel();
+        var d2=parse(nk);toast("已挪到 "+(d2.getMonth()+1)+"月"+d2.getDate()+"日");};
+      r4.appendChild(di);}
+    box.appendChild(r4);
+    var ok=btn("pl-btn","完成",function(){editId=null;renderPanel();});box.appendChild(ok);
+    return box;
+  }
   function renderPanel(){
     var a=document.activeElement;
-    if(a&&panel.contains(a)&&a.classList.contains("pl-note"))return;
+    if(a&&panel.contains(a)&&(a.classList.contains("pl-note")||(a.closest&&a.closest(".pl-ted")&&a.tagName==="INPUT")))return;
     var tlPrev=panel.querySelector(".pl-tl"),tlScroll=tlPrev?tlPrev.scrollTop:null;
     panel.textContent="";
     var d=parse(sel),nItems=(state.days[sel]||[]).length;
@@ -2815,7 +2858,9 @@ render();calc();
         var here=Math.floor(s0/60)===h,covers=here||(e!=null&&e>s0&&s0<h*60&&e>h*60);
         if(!covers)return;
         var ch=el("span","pl-chip"+(it.done?" pl-done":"")+(here?"":" pl-cont"));ch.style.setProperty("--h",hueOf(it.cat));
-        ch.appendChild(el("i","pl-dot"));ch.appendChild(el("span","pl-t",here?fmtRange(it)+" "+label(it):label(it)+" …"));box.appendChild(ch);
+        ch.appendChild(el("i","pl-dot"));ch.appendChild(el("span","pl-t",here?fmtRange(it)+" "+label(it):label(it)+" …"));
+        ch.title="点一下调整时间";ch.onclick=function(e){e.stopPropagation();editId=it.id;renderPanel();setTimeout(function(){var r=panel.querySelector("#plcb-"+CSS.escape(it.id));if(r)r.closest(".pl-item").scrollIntoView({block:"nearest",behavior:"smooth"});},30);};
+        box.appendChild(ch);
       });
       memosOn(sel).forEach(function(m){if(!m.time||Math.floor(toMin(m.time)/60)!==h)return;var ch=el("span","pl-chip pl-mchip");ch.style.setProperty("--h",45);ch.appendChild(el("span","pl-t",m.time+" "+m.text));box.appendChild(ch);});
       if(!box.childNodes.length)box.appendChild(el("span","pl-plus","＋"));
@@ -2838,13 +2883,9 @@ render();calc();
       cb.onchange=function(){toggleDone(it,cb.checked);};
       var mid=el("div");mid.appendChild(el("div","pl-name",label(it)));
       var itm=el("div","pl-itime");
-      var s1=el("input");s1.type="time";s1.id="plts-"+it.id;s1.value=it.start||"";s1.setAttribute("aria-label","开始时间");
-      var s2=el("input");s2.type="time";s2.id="plte-"+it.id;s2.value=it.end||"";s2.setAttribute("aria-label","结束时间");
-      s1.onchange=function(){it.start=s1.value;saveDay(sel);renderCal();renderPanel();};
-      s2.onchange=function(){it.end=s2.value;saveDay(sel);renderCal();renderPanel();};
-      itm.appendChild(s1);itm.appendChild(el("span",null,"–"));itm.appendChild(s2);
-      if(!it.start)itm.appendChild(el("span",null,"不定时"));
-      mid.appendChild(itm);
+      var tbtn=btn("pl-tbtn"+(editId===it.id?" pl-on":""),(it.start?fmtRange(it):"不定时")+"  ✎ 调整时间",function(){editId=editId===it.id?null:it.id;renderPanel();});
+      tbtn.setAttribute("aria-expanded",String(editId===it.id));itm.appendChild(tbtn);
+      if(editId===it.id)itm.appendChild(timeEditor(it,tbtn));      mid.appendChild(itm);
       var note=el("input","pl-note");note.type="text";note.id="plnote-"+it.id;note.value=it.note||"";note.placeholder="备注：时长、金额、内容…";
       note.onchange=function(){it.note=note.value;saveDay(sel);};
       note.onkeydown=function(e){if(e.key==="Enter")note.blur();};
