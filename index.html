@@ -856,6 +856,14 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .td-plan .t{flex:none;font-family:var(--mono);font-size:.76rem;color:var(--muted);min-width:3.2em}
 .td-plan .n{min-width:0;overflow-wrap:anywhere}
 .td-plan.done .n{text-decoration:line-through;color:var(--muted)}
+.td-fres{display:flex;flex-direction:column;gap:6px}
+.td-fres:empty{display:none}
+.td-fitem{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid var(--line);background:var(--bg);border-radius:10px;padding:9px 10px;font-size:.86rem;cursor:pointer;color:var(--ink);text-align:left;min-height:42px}
+.td-fitem b{flex:none;font-family:var(--mono);font-size:.78rem;color:var(--accent)}
+#tdFoodQ{width:100%}
+.tidy-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:4px 12px}
+.tidy-row{display:flex;flex-direction:row;align-items:center;gap:8px;font-size:.9rem;min-height:36px;cursor:pointer}
+.tidy-row input{width:20px;height:20px;flex:none}
 .td-alert{margin:0;font-size:.82rem;color:var(--bad)}
 .td-note{margin:0;font-size:.82rem;color:var(--muted)}
 .td-warn{display:flex;align-items:center;gap:10px;background:var(--gold-soft);border:1px solid var(--gold);border-radius:12px;padding:10px 12px;font-size:.84rem}
@@ -912,7 +920,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2115</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2130</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -959,7 +967,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   <section id="groups"></section>
 
   <section class="card" id="secWeek">
-    <h2>每周回顾</h2>
+    <h2>每周和每月回顾</h2>
     <div class="wk-verdict" id="weekVerdict"></div>
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 220" role="img" aria-label="最近 8 周每周净省下的金额"></svg></div>
     <div class="readout" id="readout">点或指向柱子，看那一周的明细。</div>
@@ -1058,6 +1066,13 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     <div class="bar" id="kcalBar"><i></i></div>
     <p class="note" id="macroTarget"></p>
     <div class="row presets-bar"><span class="note">常吃</span><div class="row" id="presets"></div><button type="button" id="presetEdit" class="ghost">管理</button></div>
+    <details class="sub" id="foodLib" open><summary>食物库 · 点「＋」直接记，热量已经填好</summary>
+      <div class="row"><input type="search" id="flQ" placeholder="搜索：豆奶、蓝莓、虾…" aria-label="搜索食物" style="flex:1;min-width:120px">
+        <div class="seg" id="flMul" role="group" aria-label="份量"><button type="button" data-mul="0.5">半份</button><button type="button" data-mul="1">1 份</button><button type="button" data-mul="1.5">1.5 份</button><button type="button" data-mul="2">2 份</button></div></div>
+      <div class="chips" id="flCats" style="margin:8px 0"></div>
+      <div class="lib-list" id="flList" style="max-height:264px;background:var(--panel)"></div>
+      <p class="note">热量和蛋白质按常见值估算，品牌和做法不同会有出入。库里没有的，用下面的表单自己填；记过的食物在表格里点 ☆ 可以加到「常吃」。</p>
+    </details>
     <form class="foodform" id="foodForm">
       <input type="text" id="fName" placeholder="吃了什么" required>
       <input type="number" id="fKcal" placeholder="kcal" inputmode="numeric" required min="0">
@@ -1224,7 +1239,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/14-2115</div>
+  <div class="sync">页面版本 11/14-2130</div>
   </div>
 
   <div id="plan" hidden>
@@ -1289,6 +1304,10 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
         <span class="formmsg" id="formMsg"></span>
       </div>
     </form>
+  </section>
+  <section class="card" id="secTidy">
+    <h2>整理没用过的习惯</h2>
+    <div id="tidyBody" style="display:flex;flex-direction:column;gap:10px"></div>
   </section>
   <section class="card" id="secRules">
     <details>
@@ -1871,6 +1890,9 @@ function logAt(k,h,d){const c={...(days[k]||{})},n=(c[h.id]||0)+d;if(n<0)return 
 window.__ledger={
   ready:()=>mode!=="loading",
   mode:()=>mode,
+  usage:n=>{const t=today(),o={};for(let i=0;i<n;i++){const c=days[addDays(t,-i)];if(c)for(const id in c)if(c[id]>0)o[id]=(o[id]||0)+c[id]}return o},
+  firstDay:()=>firstDay(),
+  hideMany:ids=>{settings={...settings,hidden:[...new Set([...(settings.hidden||[]),...ids])]};render();saveSettings()},
   habits:()=>{const t=today(),c=days[t]||{},hid=new Set(settings.hidden||[]),hg=new Set(settings.hiddenGroups||[]);
     return habits().filter(h=>!hid.has(h.id)&&!hg.has(groupOf(h))).map(h=>({id:h.id,name:h.name,kind:h.kind,ask:!!h.ask,weekly:!!h.weekly,val:h.val,n:c[h.id]||0}))},
   freq:n=>{const t=today(),o={};for(let i=1;i<=n;i++){const c=days[addDays(t,-i)];if(c)for(const id in c)if(c[id]>0)o[id]=(o[id]||0)+1}return o},
@@ -1995,6 +2017,35 @@ const TEMPLATES=[
    5:TR("全身 C",["腿举","俯卧撑（可上斜）","哑铃单臂划船","侧平举"]),
    6:CAR,0:OFF}}
 ];
+const FOODS=[
+ // [名称, 份量, kcal, 蛋白质 g, 分类, 别名]
+ ["米饭","1 碗 150g",195,4,"主食","白饭"],["糙米饭","1 碗 150g",170,4,"主食",""],["面条","1 碗 熟200g",220,7,"主食","挂面 汤面"],["意面","1 盘 熟200g",310,11,"主食","意大利面 pasta"],
+ ["米粉 / 河粉","1 碗 熟200g",220,4,"主食","粉"],["白粥","1 碗 250g",115,2,"主食","稀饭 粥"],["馒头","1 个 100g",220,7,"主食",""],["肉包子","1 个",230,8,"主食","包子"],
+ ["饺子","6 个",270,11,"主食","水饺"],["全麦面包","1 片",85,4,"主食","吐司"],["白吐司","1 片",80,3,"主食","面包"],["燕麦","干 40g",150,5,"主食","麦片 oats"],
+ ["红薯","1 个 200g",170,3,"主食","地瓜 番薯"],["土豆","1 个 150g",115,3,"主食","马铃薯"],["玉米","1 根",130,5,"主食",""],["紫薯","1 个 150g",125,2,"主食",""],
+ ["鸡胸肉","熟 100g",165,31,"肉蛋","鸡肉"],["鸡腿肉","去皮 熟100g",190,25,"肉蛋","鸡肉"],["鸡蛋","1 个",70,6,"肉蛋","水煮蛋 煎蛋"],["蛋白","1 个",17,4,"肉蛋","蛋清"],
+ ["瘦牛肉","熟 100g",200,27,"肉蛋","牛肉"],["牛排","150g",330,39,"肉蛋","steak"],["猪里脊","熟 100g",160,26,"肉蛋","瘦猪肉"],["五花肉","熟 100g",480,10,"肉蛋","猪肉"],
+ ["羊肉","熟 100g",250,25,"肉蛋",""],["培根","2 片",90,6,"肉蛋","bacon"],["火腿片","2 片",45,7,"肉蛋","ham"],["鸡翅","2 个",200,17,"肉蛋",""],
+ ["虾","去壳 熟100g",100,24,"海鲜","虾仁 大虾 prawn"],["三文鱼","熟 100g",205,22,"海鲜","salmon"],["三文鱼刺身","5 片",155,15,"海鲜","生鱼片"],["金枪鱼罐头","水浸 1 罐 95g",100,22,"海鲜","吞拿鱼 tuna"],
+ ["白身鱼","熟 100g",105,23,"海鲜","鳕鱼 巴沙鱼 鱼"],["鱿鱼","100g",90,16,"海鲜",""],["扇贝 / 贝类","熟 100g",110,20,"海鲜","蛤蜊"],["蟹棒","3 根",50,4,"海鲜",""],
+ ["豆奶 / 豆浆（无糖）","250ml",90,8,"豆奶","soy milk"],["豆奶 / 豆浆（含糖）","250ml",140,8,"豆奶","soy milk"],["全脂牛奶","250ml",160,8,"豆奶","milk"],["脱脂牛奶","250ml",90,9,"豆奶","milk"],
+ ["燕麦奶","250ml",120,2,"豆奶","oat milk"],["杏仁奶（无糖）","250ml",40,1,"豆奶","almond milk"],["希腊酸奶（无糖）","170g",100,17,"豆奶","yogurt"],["普通酸奶","1 杯 150g",135,6,"豆奶","yogurt"],
+ ["嫩豆腐","150g",85,8,"豆奶","豆腐"],["老豆腐","150g",180,19,"豆奶","豆腐 北豆腐"],["毛豆仁","100g",120,11,"豆奶","毛豆"],["奶酪","1 片 20g",65,4,"豆奶","芝士 cheese"],
+ ["蛋白粉","1 勺",120,24,"豆奶","protein"],
+ ["西兰花","100g",35,3,"蔬菜","花椰菜"],["炒青菜","1 份",80,3,"蔬菜","绿叶菜 菠菜 生菜"],["沙拉菜（不含酱）","1 碗",20,1,"蔬菜","salad"],["番茄","1 个",25,1,"蔬菜","西红柿"],
+ ["黄瓜","1 根",20,1,"蔬菜",""],["胡萝卜","1 根",30,1,"蔬菜",""],["蘑菇","100g",25,3,"蔬菜","菌菇"],["牛油果","半个",120,2,"蔬菜","avocado"],
+ ["蓝莓","1 盒 125g",70,1,"水果","blueberry"],["草莓","10 颗",50,1,"水果",""],["香蕉","1 根",105,1,"水果",""],["苹果","1 个",95,0,"水果",""],
+ ["橙子","1 个",65,1,"水果","橘子"],["葡萄","100g",70,1,"水果",""],["西瓜","1 块 200g",60,1,"水果",""],["猕猴桃","1 个",45,1,"水果","奇异果"],
+ ["芒果","1 个",120,2,"水果",""],["梨","1 个",100,1,"水果",""],
+ ["黑咖啡 / 美式","1 杯",5,0,"饮品","coffee"],["拿铁（全脂）","1 杯",150,8,"饮品","咖啡 latte"],["奶茶（正常糖）","1 杯",350,3,"饮品","珍珠奶茶"],["可乐","1 罐",140,0,"饮品","汽水"],
+ ["橙汁","250ml",110,2,"饮品","果汁"],["啤酒","1 罐 375ml",140,1,"饮品","酒"],["红酒","1 杯 150ml",125,0,"饮品","酒"],
+ ["坚果","1 小把 30g",180,6,"零食外食","杏仁 腰果 核桃"],["花生酱","1 勺 15g",95,4,"零食外食",""],["黑巧克力","20g",110,2,"零食外食",""],["薯片","1 小包 45g",240,3,"零食外食",""],
+ ["饼干","2 块",100,1,"零食外食",""],["冰淇淋","1 球",140,2,"零食外食",""],["蛋白棒","1 根",200,20,"零食外食",""],["食用油","1 汤匙",120,0,"零食外食","橄榄油"],
+ ["寿司卷","1 条",180,6,"零食外食","sushi"],["汉堡","1 个",500,25,"零食外食",""],["薯条","中份",340,4,"零食外食",""],["披萨","1 片",270,11,"零食外食","pizza"],
+ ["炸鸡","2 块",450,30,"零食外食",""],["拉面","1 碗",600,25,"零食外食",""],["越南粉","1 碗",450,30,"零食外食","pho"],["鸡肉沙拉碗","1 份",450,35,"零食外食","salad bowl"]
+];
+const FCATS=["全部","主食","肉蛋","海鲜","豆奶","蔬菜","水果","饮品","零食外食"];
+let flCat="全部",flMul=1;
 const PRESETS=[["燕麦酸奶早餐",410,24],["米饭鸡胸午餐",440,37],["香蕉+牛奶",190,8],["三文鱼红薯晚餐",440,27],["蛋白粉 1 勺",120,24]];
 const WD=["周日","周一","周二","周三","周四","周五","周六"];
 const FLOOR=1400;
@@ -2359,6 +2410,7 @@ function render(){
   {const pl=presetList();$("presets").innerHTML=pl.map((p,i)=>{const n=day.food.filter(f=>f.name===p.name).length;
      return `<button type="button" data-preset="${i}" data-name="${esc(p.name)}" class="${presetEditing?"rm":""}${n&&!presetEditing?" on":""}" aria-label="${esc(p.name)} ${p.kcal} kcal${n?"，今天已记 "+n+" 次":""}">${presetEditing?"✕ ":""}${esc(p.name)} <span class="note">${p.kcal}</span>${n&&!presetEditing?`<span class="cnt">×${n}</span>`:""}</button>`}).join("")||`<span class="note">还没有常吃的。在下面的记录里点 ☆ 就能存进来。</span>`;
    $("presetEdit").textContent=presetEditing?"完成":"管理"}
+  renderFoodLib();
   {const MEALS=["早餐","午餐","加餐","晚餐"],groups={};day.food.forEach((f,i)=>{const m=f.meal||autoMeal(f.t);(groups[m]=groups[m]||[]).push([f,i])});
    const names=presetList().map(p=>p.name);
    $("foodBody").innerHTML=day.food.length?MEALS.filter(m=>groups[m]).map(m=>{const g=groups[m],kc=g.reduce((a,x)=>a+(+x[0].kcal||0),0),pr=g.reduce((a,x)=>a+(+x[0].pro||0),0);
@@ -2521,6 +2573,11 @@ window.__bk.cut={
 window.__cut={
   rerender:()=>render(),
   cups:()=>(settings.cups||[250,500]).slice(),
+  quickFoods:n=>quickFoods(n||6),
+  quickAdd:name=>{const x=quickFoods(12).find(f=>f.name===name);if(!x)return false;addFood({name:x.name,kcal:x.kcal,pro:x.pro});return true},
+  undoFood:name=>{for(let i=day.food.length-1;i>=0;i--)if(day.food[i].name===name){const f=day.food[i];if(f.exp&&window.__expenses)try{window.__expenses.remove(f.exp)}catch(e){}day.food.splice(i,1);save();return true}return false},
+  foodSearch:q=>{q=String(q||"").trim().toLowerCase();if(!q)return [];return FOODS.map((e,i)=>({i,name:e[0],unit:e[1],kcal:e[2],pro:e[3],s:(e[0]+" "+e[5]).toLowerCase()})).filter(x=>x.s.includes(q)).slice(0,6)},
+  addLib:i=>{flMul=1;addLibFood(i)},
   undoWater:()=>{if(day.water.length){day.water.pop();save();return true}return false},
   waterCount:()=>day.water.length,
   planFor:d=>{const p=plans()[d.getDay()]||OFF;return {name:p.name,type:p.type}},
@@ -2603,6 +2660,25 @@ function addFood(o,meal,cost){const t=Date.now(),f={name:o.name,kcal:Math.max(0,
   if(o.c!=null)f.c=Math.round(+o.c);if(o.f!=null)f.f=Math.round(+o.f);
   if(cost>0&&window.__expenses){try{f.exp=window.__expenses.add(cost,"餐饮",o.name,todayKey,"cut");f.cost=cost}catch(e){}}
   day.food.push(f);save()}
+function flName(e,m){return e[0]+" "+e[1]+(m!==1?" ×"+m:"")}
+function renderFoodLib(){const box=$("flList");if(!box)return;const q=($("flQ").value||"").trim().toLowerCase();
+  const cnt={};day.food.forEach(f=>{const b=f.name.replace(/ ×[\d.]+$/,"");cnt[b]=(cnt[b]||0)+1});
+  const list=FOODS.map((e,i)=>[e,i]).filter(([e])=>(q||flCat==="全部"||e[4]===flCat)&&(!q||(e[0]+" "+e[5]).toLowerCase().includes(q)));
+  $("flCats").innerHTML=FCATS.map(c=>`<button type="button" class="chip" data-fc="${c}" aria-pressed="${c===flCat}">${c}</button>`).join("");
+  $("flMul").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.mul===flMul)));
+  box.innerHTML=list.length?list.map(([e,i])=>{const n=cnt[e[0]+" "+e[1]]||0;return `<div class="lib-item"><div><div>${esc(e[0])}${n?` <span class="note">今天 ×${n}</span>`:""}</div><div class="meta">${esc(e[1])} · ${Math.round(e[2]*flMul)} kcal · 蛋白质 ${Math.round(e[3]*flMul)} g${flMul!==1?" · "+flMul+" 份":""}</div></div><span></span><button type="button" data-food="${i}" aria-label="记录 ${esc(e[0])}">＋</button></div>`}).join(""):`<p class="note" style="padding:10px 0">没找到，可以在下面自己填。</p>`}
+function addLibFood(i){const e=FOODS[i];if(!e)return;const m=flMul,name=flName(e,m);addFood({name,kcal:e[2]*m,pro:e[3]*m});flMul=1;renderFoodLib();
+  const t=totals(day),left=kcalT()-t.kcal;try{window.__toastAny&&window.__toastAny(`已记录：${name} ${Math.round(e[2]*m)} kcal · ${left>=0?"还可以吃 "+left:"已超出 "+(-left)} kcal · 蛋白质 ${t.pro}/${proT()} g`)}catch(err){}}
+$("flQ").addEventListener("input",renderFoodLib);
+$("flCats").addEventListener("click",e=>{const b=e.target.closest("[data-fc]");if(!b)return;flCat=b.dataset.fc;$("flQ").value="";renderFoodLib()});
+$("flMul").addEventListener("click",e=>{const b=e.target.closest("[data-mul]");if(!b)return;flMul=+b.dataset.mul;renderFoodLib()});
+$("flList").addEventListener("click",e=>{const b=e.target.closest("[data-food]");if(b)addLibFood(+b.dataset.food)});
+try{if(localStorage.getItem("food-lib-open")==="0")$("foodLib").open=false}catch(e){}
+$("foodLib").addEventListener("toggle",()=>{try{localStorage.setItem("food-lib-open",$("foodLib").open?"1":"0")}catch(e){}});
+function quickFoods(n){const stat={};Object.keys(allDays).sort().forEach(k=>{if(k===todayKey)return;((allDays[k]&&allDays[k].food)||[]).forEach(f=>{if(!f||!f.name)return;const s=stat[f.name]||(stat[f.name]={name:f.name,kcal:f.kcal,pro:f.pro||0,c:0});s.c++;s.kcal=f.kcal;s.pro=f.pro||0})});
+  const out=Object.values(stat).filter(x=>x.c>=2).sort((a,b)=>b.c-a.c).slice(0,n),have=new Set(out.map(x=>x.name));
+  presetList().forEach(p=>{if(out.length<n&&!have.has(p.name)){out.push({name:p.name,kcal:p.kcal,pro:p.pro||0});have.add(p.name)}});
+  return out.map(x=>({name:x.name,kcal:x.kcal,pro:x.pro,n:day.food.filter(f=>f.name===x.name).length}))}
 function presetList(){
   const base=(settings.presets||PRESETS.map(p=>({name:p[0],kcal:p[1],pro:p[2]})));
   const cnt={};Object.keys(allDays).forEach(k=>{if(k>=todayKey)return;((allDays[k]&&allDays[k].food)||[]).forEach(f=>{cnt[f.name]=(cnt[f.name]||0)+1})});
@@ -3699,7 +3775,7 @@ render();calc();
     const w0=new Date(now);w0.setDate(now.getDate()-((now.getDay()+6)%7));const wsk=ymd(w0),weekIn=recs.filter(r=>r.date>=wsk).reduce((s,r)=>s+r.amt,0);
     return {recs,bal,goal,pct,now,tk,mk,ps,avgNet,wc,ve,vc,cap,monthIn,spanW,recent,pace,eta,etaSub,wks,weekIn};
   }
-  window.__savings={stats:()=>{const c=calcS();return {bal:c.bal,goal:c.goal,pct:c.pct,pace:c.pace,eta:c.eta,etaSub:c.etaSub,wks:c.wks,weekIn:c.weekIn,started:S.start!=null||c.recs.length>0,money:money,money0:money0}}};
+  window.__savings={monthIn:mk=>records().filter(r=>r.date.slice(0,7)===mk).reduce((s,r)=>s+r.amt,0),stats:()=>{const c=calcS();return {bal:c.bal,goal:c.goal,pct:c.pct,pace:c.pace,eta:c.eta,etaSub:c.etaSub,wks:c.wks,weekIn:c.weekIn,started:S.start!=null||c.recs.length>0,money:money,money0:money0}}};
   window.__bk=window.__bk||{};
   window.__bk.savings={dump:()=>JSON.parse(JSON.stringify(S)),
     merge:d=>{if(!d)return 0;let n=0;const ids=new Set(S.entries.map(e=>e.id)),pays=new Set(S.entries.filter(e=>e.pay).map(e=>e.pay));
@@ -4343,7 +4419,7 @@ render();calc();
     if(onMore)h.appendChild(btn("td-more",moreTxt||"详情 ›",onMore));box.appendChild(h)}
 
   /* ---------- 固定的卡片容器（表单不重建，输入时不会被打断） ---------- */
-  var S={};["warn","hab","fit","exp","plan","cyc","week","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
+  var S={};["warn","hab","fit","food","exp","plan","cyc","week","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
   var expHead=el("div"),expForm=el("form","td-form"),expAlert=el("p","td-alert");expForm.noValidate=true;expAlert.hidden=true;
   var expSel=el("select"),expAmt=el("input"),expNote=el("input"),expBtn=el("button","btn primary","记一笔");
   expSel.id="tdExpCat";expSel.setAttribute("aria-label","开支分类");
@@ -4358,7 +4434,18 @@ render();calc();
     E.add(v,cat,note,tkey(),"");var w=E.week();
     toast("记下了："+cat+" "+E.money(v)+(w.totalBudget?(w.left>=0?"，本周还能花 "+E.money(w.left):"，本周已超 "+E.money(-w.left)):""))};
 
-  var lastEx=null,planAll=false;
+  var foodHead=el("div"),foodChips=el("div","td-chips"),foodQ=el("input"),foodRes=el("div","td-fres");
+  foodQ.type="search";foodQ.id="tdFoodQ";foodQ.placeholder="搜食物直接记：豆奶、蓝莓、虾…";foodQ.setAttribute("aria-label","搜索食物");
+  S.food.appendChild(foodHead);S.food.appendChild(foodChips);S.food.appendChild(foodQ);S.food.appendChild(foodRes);
+  function renderFoodRes(){var C=window.__cut;foodRes.textContent="";if(!C||!C.foodSearch)return;var q=foodQ.value.trim();if(!q)return;var r=C.foodSearch(q);
+    if(!r.length){foodRes.appendChild(el("p","td-note","食物库里没找到。点右上角「食物库」可以自己填名称和热量。"));return}
+    r.forEach(function(x){var b=btn("td-fitem",null,function(){C.addLib(x.i);foodQ.value="";renderFoodRes()},"tdFd"+x.i);
+      b.appendChild(el("span",null,x.name+" · "+x.unit));b.appendChild(el("b",null,x.kcal+" kcal ＋"));foodRes.appendChild(b)})}
+  foodQ.oninput=renderFoodRes;
+  var lastEx=null,planAll=false,tidyOff={};
+  var loadDay=tkey();
+  function dayCheck(){if(tkey()===loadDay)return;var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)&&a.type!=="checkbox")return;try{location.reload()}catch(e){}}
+  setInterval(dayCheck,30000);document.addEventListener("visibilitychange",function(){if(!document.hidden)dayCheck()});window.addEventListener("focus",dayCheck);
 
   function backupState(){var L=window.__ledger,local=!(L&&L.mode&&L.mode()==="db"),last=+lsGet("bk-last")||0,days=last?Math.floor((Date.now()-last)/864e5):null;
     var has=false;try{has=!!(L&&L.ready()&&(Object.keys(L.freq(120)).length||L.habits().some(function(h){return h.n>0})))}catch(e){}
@@ -4381,6 +4468,18 @@ render();calc();
       if(s.started&&s.goal&&s.bal<s.goal){
         if(s.weekIn>0)out.push({t:"本周已存 "+s.money(s.weekIn)+(s.wks?"，按现在的速度 "+s.eta+" 存够":""),k:"good"});
         else if(s.pace>0)out.push({t:"本周还没存钱；按现在的速度每周约存 "+s.money0(s.pace)+"，"+s.eta+" 存够",k:""});}}
+    return out}
+  function mverdict(y,m,cur){var L=window.__ledger,E=window.__expenses,out=[];if(!L||!L.ready())return out;var a=L.month(y,m);
+    if(a.good.length||a.bad.length){
+      out.push({t:"净省下 "+L.money(a.net)+"，其中当场省下 "+L.money(a.cash)+(a.transferred?"，已转入储蓄 "+L.money(a.transferred):""),k:a.net>=0?"good":"bad"});
+      var g=a.good.slice().sort(function(p,q){return q.amt-p.amt})[0];if(g&&g.amt>0)out.push({t:"省得最多：「"+g.name+"」"+g.n+" 次，共 "+L.money(g.amt),k:"good"});
+      var b=a.bad[0];if(b&&b.amt<0)out.push({t:"扣得最多：「"+b.name+"」"+b.n+" 次，共 "+L.money(-b.amt),k:"bad"});
+    }else out.push({t:cur?"这个月还没有打卡记录":"这个月没有打卡记录",k:""});
+    if(E){var x=E.month(y,m),pd=new Date(y,m-1,1),px=E.month(pd.getFullYear(),pd.getMonth());
+      if(x.total>0){var d=x.total-px.total;
+        out.push({t:"开支 "+E.money(x.total)+(x.byCat[0]?"，最多的是「"+x.byCat[0][0]+"」"+E.money(x.byCat[0][1]):"")+(!cur&&px.total>0?"，比前一个月"+(d>=0?"多 ":"少 ")+E.money(Math.abs(d)):""),k:""});
+        if(x.budget>0)out.push(x.total>x.budget?{t:"超出每月预算 "+E.money(x.total-x.budget),k:"bad"}:{t:"在每月预算内，"+(cur?"还剩 ":"剩下 ")+E.money(x.budget-x.total),k:"good"})}}
+    if(window.__savings){var mi=window.__savings.monthIn(y+"-"+pad(m+1));if(mi)out.push({t:(mi>0?"存入储蓄 ":"储蓄净取出 ")+window.__savings.stats().money(Math.abs(mi)),k:mi>0?"good":"bad"})}
     return out}
   function vlist(items){var u=el("ul","td-list");items.forEach(function(i){u.appendChild(el("li",i.k||null,i.t))});return u}
 
@@ -4421,8 +4520,16 @@ render();calc();
       wv.appendChild(el("span",null,T.water+" / "+T.waterT+" ml"));bi.style.width=Math.min(100,T.waterT?T.water/T.waterT*100:0)+"%";bar.appendChild(bi);wv.appendChild(bar);r3.appendChild(wv);
       var wb=el("div","td-btns");C.cups().slice(0,3).forEach(function(ml,i){wb.appendChild(btn("td-btn td-keep","+"+ml,function(){C.addWater(ml)},"tdW"+i))});
       if(C.waterCount())wb.appendChild(btn("td-btn ghost td-keep","撤销",function(){C.undoWater()},"tdWU"));r3.appendChild(wb);box.appendChild(r3);
-      var r4=el("div","td-row");r4.appendChild(el("span","td-k","饮食"));r4.appendChild(el("span","td-v","热量 "+T.kcal+"/"+T.kcalT+" · 蛋白质 "+T.pro+"/"+T.proT+" g"));
-      r4.appendChild(btn("td-btn","记一餐",function(){go("cut","cutFood")},"tdFood"));box.appendChild(r4);}
+}
+    // 饮食
+    S.food.hidden=!(C&&C.quickFoods);
+    if(C&&C.quickFoods){var T2=C.today();foodHead.textContent="";
+      head(foodHead,"饮食","热量 "+T2.kcal+"/"+T2.kcalT+" · 蛋白质 "+T2.pro+"/"+T2.proT+" g",function(){go("cut","cutFood")},"食物库 ›");
+      foodChips.textContent="";
+      C.quickFoods(6).forEach(function(x,i){var w=el("div","td-chipw"+(x.n?" on":"")),b=btn("td-chip td-keep",null,function(){if(C.quickAdd(x.name))toast("已记录："+x.name+" "+x.kcal+" kcal")},"tdQF"+i);
+        b.appendChild(el("span",null,x.name));b.appendChild(el("b",null,x.n?"×"+x.n:x.kcal+""));w.appendChild(b);
+        if(x.n){var u=btn("td-undo td-keep","撤销",function(){C.undoFood(x.name)},"tdQU"+i);u.setAttribute("aria-label","撤销一次："+x.name);w.appendChild(u)}
+        foodChips.appendChild(w)})}
     // 开支
     S.exp.hidden=!E;
     if(E){var W=E.week(),sp=E.day(t);expHead.textContent="";
@@ -4449,7 +4556,7 @@ render();calc();
       box.appendChild(cr);if(cy.tip)box.appendChild(el("p","td-note",cy.s))}
     // 本周小结
     box=S.week;box.textContent="";
-    if(L&&L.ready()){head(box,"本周小结","周一到今天",function(){go("ledger","secWeek")},"每周回顾 ›");box.appendChild(vlist(verdict(L.weekStart(t),true)))}
+    if(L&&L.ready()){head(box,"本周小结","周一到今天",function(){go("ledger","secWeek")},"回顾 ›");box.appendChild(vlist(verdict(L.weekStart(t),true)))}
     // 储蓄
     box=S.sav;box.textContent="";
     if(window.__savings){var sv=window.__savings.stats();
@@ -4459,7 +4566,24 @@ render();calc();
       else box.appendChild(el("p","td-note","在「省钱账本 › 储蓄」里填上现有存款，这里会显示进度和预计存够的时间。"))}
   }
   function renderWeekV(){var box=$("weekVerdict"),L=window.__ledger;if(!box||!L||!L.ready())return;box.textContent="";var ws=L.weekStart();
-    [["本周（周一到今天）",ws,true],["上周",L.addDays(ws,-7),false]].forEach(function(x){var d=el("div");d.appendChild(el("h3",null,x[0]));d.appendChild(vlist(verdict(x[1],x[2])));box.appendChild(d)})}
+    [["本周（周一到今天）",ws,true],["上周",L.addDays(ws,-7),false]].forEach(function(x){var d=el("div");d.appendChild(el("h3",null,x[0]));d.appendChild(vlist(verdict(x[1],x[2])));box.appendChild(d)});
+    var n=new Date(),pm=new Date(n.getFullYear(),n.getMonth()-1,1);
+    [[(n.getMonth()+1)+"月（到今天）",n.getFullYear(),n.getMonth(),true],[(pm.getMonth()+1)+"月",pm.getFullYear(),pm.getMonth(),false]].forEach(function(x){var d=el("div");d.appendChild(el("h3",null,x[0]));d.appendChild(vlist(mverdict(x[1],x[2],x[3])));box.appendChild(d)})}
+  function renderTidy(){var box=$("tidyBody"),L=window.__ledger;if(!box)return;box.textContent="";
+    if(!L||!L.ready()){box.appendChild(el("p","note","正在读取记录…"));return}
+    var f=L.firstDay(),span=f?Math.round((new Date(tkey())-new Date(f))/864e5)+1:0;
+    if(span<14){box.appendChild(el("p","note",f?"已经记录 "+span+" 天。用满 14 天后，这里会列出最近 4 周一次都没点过的习惯，可以一次隐藏。":"开始打卡 14 天后，这里会列出一次都没点过的习惯，可以一次隐藏。"));return}
+    var use=L.usage(28),un=L.habits().filter(function(h){return !use[h.id]});
+    if(!un.length){box.appendChild(el("p","note","最近 4 周每个习惯都点过，不用整理。"));return}
+    box.appendChild(el("p","note","最近 4 周一次都没点过的有 "+un.length+" 个。勾选的会从打卡页隐藏，过去的记录不受影响；想恢复，到「省钱账本 › 习惯打卡」最下面的「已删除的习惯」里点恢复。"));
+    var ls=el("div","tidy-list");
+    un.forEach(function(h){var l=el("label","tidy-row"),c=el("input");c.type="checkbox";c.id="tidy-"+h.id;c.checked=!tidyOff[h.id];c.onchange=function(){if(c.checked)delete tidyOff[h.id];else tidyOff[h.id]=1;cnt()};
+      l.appendChild(c);l.appendChild(el("span",null,h.name));ls.appendChild(l)});
+    box.appendChild(ls);
+    var row=el("div","bk-row"),go1=btn("btn primary","",function(){var ids=un.filter(function(h){return !tidyOff[h.id]}).map(function(h){return h.id});if(!ids.length){toast("先勾选要隐藏的习惯");return}
+      L.hideMany(ids);toast("已隐藏 "+ids.length+" 个习惯");renderTidy();sched()},"tidyGo");
+    function cnt(){go1.textContent="隐藏选中的 "+un.filter(function(h){return !tidyOff[h.id]}).length+" 个"}cnt();
+    row.appendChild(go1);row.appendChild(btn("btn","全不选",function(){un.forEach(function(h){tidyOff[h.id]=1});renderTidy()},"tidyNone"));box.appendChild(row)}
   var timer=null;
   function sched(){clearTimeout(timer);timer=setTimeout(function(){try{render()}catch(e){try{window.__debugPush&&window.__debugPush("today",e)}catch(x){}}try{renderWeekV()}catch(e){}},40)}
   window.__todayRender=sched;
@@ -4520,8 +4644,8 @@ render();calc();
     var how=el("details","bk-how");how.appendChild(el("summary",null,"怎么把两个入口的记录合成一份"));var ol=el("ol","bk-steps");
     ["打开以后不常用的那个入口，在这里点「导出备份文件」（或「复制备份文字」）。","打开以后要常用的那个入口，在这里点「从备份文件导入」，选刚才的文件（或粘贴文字）。","看一下列出的内容，点「确认合并」。之后只在常用的入口里记录。"].forEach(function(t){ol.appendChild(el("li",null,t))});
     how.appendChild(ol);bkBody.appendChild(how);}
-  window.__setShown=renderBackup;
-  renderBackup();
+  window.__setShown=function(){renderBackup();renderTidy()};
+  renderBackup();renderTidy();
   try{if(!(window.claude&&window.claude.use)&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){})}catch(e){}
   if(!root.hidden)sched();
   setTimeout(sched,1500);
@@ -4532,9 +4656,9 @@ render();calc();
   var $=function(id){return document.getElementById(id)};
   var TITLES={today:["今天",""],set:["设置","备份、主题颜色、添加习惯、算法说明"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
   var TOC={
-    ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["每周回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
+    ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["算法说明","secRules"]],
+    set:[["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
