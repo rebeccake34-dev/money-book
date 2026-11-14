@@ -1,0 +1,418 @@
+<div class="wrap">
+  <header>
+    <h1>好习惯省钱账本</h1>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2200</p>
+    <p class="hsub" id="hSub" hidden></p>
+    <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
+    <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
+  </header>
+
+
+  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabToday" aria-selected="false">今天</button><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">运动打卡</button><button type="button" role="tab" id="tabPlan" aria-selected="false">日常计划</button><button type="button" role="tab" id="tabCycle" aria-selected="false">生理期</button><button type="button" role="tab" id="tabSet" aria-selected="false">设置</button></div>
+  <nav class="toc" id="toc" aria-label="本页目录"></nav>
+
+  <div class="ov" aria-label="今天概览">
+    <button type="button" class="ov-row" id="ovPlan"><span class="ov-k">今天的计划</span><span class="ov-v" id="ovPlanV">–</span><span class="ov-s" id="ovPlanS"></span></button>
+    <button type="button" class="ov-row" id="ovCut"><span class="ov-k">今天的运动</span><span class="ov-v" id="ovCutV">–</span><span class="ov-s" id="ovCutS"></span></button>
+    <button type="button" class="ov-row" id="ovLed"><span class="ov-k">今天省钱</span><span class="ov-v" id="ovLedV">–</span><span class="ov-s" id="ovLedS"></span></button>
+    <button type="button" class="ov-row" id="ovSav"><span class="ov-k">储蓄进度</span><span class="ov-v" id="ovSavV">–</span><span class="ov-s" id="ovSavS"></span></button>
+    <button type="button" class="ov-row" id="ovCyc"><span class="ov-k">生理期</span><span class="ov-v" id="ovCycV">–</span><span class="ov-s" id="ovCycS"></span></button>
+  </div>
+
+  <div id="todayView" hidden></div>
+
+  <div id="ledgerView" style="display:flex;flex-direction:column;gap:22px">
+
+  <div class="ledger" id="secLedger" aria-live="polite">
+    <div class="head">
+      <div><small>本周净省下</small><span class="num big" id="wNet">$0.00</span></div>
+      <div style="text-align:right"><small>今天</small><span class="num" id="dNet">$0.00</span></div>
+    </div>
+    <div class="money2">
+      <div><small>当场省下的钱</small><span class="num" id="wCash">$0.00</span><div class="sub" id="aCash">累计 $0.00</div></div>
+      <div><small>估算少损失的钱</small><span class="num" id="wFut">$0.00</span><div class="sub" id="aFut">累计 $0.00</div></div>
+    </div>
+    <div class="save-row">
+      <span id="saveText">本周当场省下的钱，可以转进储蓄。</span>
+      <button class="btn" id="saveBtn" type="button">已转入</button>
+    </div>
+  </div>
+  <div class="status" id="status">正在读取你的记录…</div>
+
+
+  <section class="card sav" id="savSec" aria-label="储蓄"></section>
+
+  <section class="card exp" id="expSec" aria-label="日常开支"></section>
+  <section class="card pay" id="paySec" aria-label="工资与排班"></section>
+
+  <section id="groups"></section>
+
+  <section class="card" id="secWeek">
+    <h2>每周和每月回顾</h2>
+    <div class="wk-verdict" id="weekVerdict"></div>
+    <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 220" role="img" aria-label="最近 8 周每周净省下的金额"></svg></div>
+    <div class="readout" id="readout">点或指向柱子，看那一周的明细。</div>
+    <div class="split" id="split"></div>
+    <div class="top" id="top"></div>
+  </section>
+
+  <section class="card" id="secMs">
+    <h2>累计净省下的钱已经够付</h2>
+    <p id="lines" class="num" style="margin:0 0 12px;color:var(--gold)"></p>
+    <div class="ms" id="ms"></div>
+  </section>
+
+  <section class="card" id="secNotes">
+    <h2>便签 <span class="fold-sum" id="notesSum"></span></h2>
+    <form id="noteForm" style="display:flex;flex-direction:column;gap:10px">
+      <textarea id="noteText" rows="3" maxlength="2000" placeholder="写点什么：今天的感受、忍住没买的东西、想调整的习惯…" aria-label="便签内容"></textarea>
+      <div style="display:flex;gap:10px"><button class="btn primary" id="noteSave" type="submit">保存便签</button><button class="btn" id="noteCancel" type="button" hidden>取消编辑</button></div>
+    </form>
+    <div id="noteList" style="display:flex;flex-direction:column;gap:10px;margin-top:14px"></div>
+  </section>
+
+  <section class="card" id="secAes">
+    <h2>你的价格清单</h2>
+    <p class="note" style="margin:0 0 12px">以后可能要花钱的项目（护肤、牙科、理疗、健身课等）。点开一项可以改价格、次数和关联的习惯；「健康 · 外貌习惯」每次打卡的金额按这里换算。</p>
+    <div class="aes-sumbar" id="aesSumbar"></div>
+    <div class="aes-list" id="aesList"></div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <button class="btn" type="button" id="aesAdd">+ 添加项目</button>
+      <span class="note" style="margin:0" id="aesTotal"></span>
+    </div>
+    <details class="aes-how"><summary>怎么换算成每次打卡的金额</summary><p class="note">算法：每个习惯每打卡一次 = 勾选了它的项目一年总花费 × 这个习惯的比例 ÷ 一年做这件事的次数。比例：防晒 40%、减脂节奏 30%、早睡 15%、蛋白质 / 训练 / 墨镜各 10%、卸妆 / 睡前不刷手机各 5%。具体每个习惯怎么算，可以在页面最下面「每个数字是怎么算的」里看到。</p></details>
+  </section>
+
+
+
+  </div>
+
+  <div id="cut" hidden>
+  <div class="cut-head">
+    <div>
+      <h1>运动打卡</h1>
+      <div class="date" id="date"></div>
+    </div>
+    <span class="pill" id="dayType"></span>
+  </div>
+
+  <section class="panel" id="cutSum" aria-label="今日汇总">
+    <div class="stats">
+      <div class="stat"><b id="sKcal">0</b><span>热量 / <em id="sKcalT">1600</em> kcal</span></div>
+      <div class="stat"><b id="sPro">0</b><span>蛋白质 / <em id="sProT">110</em> g</span></div>
+      <div class="stat"><b id="sWater">0</b><span>喝水 / <em id="sWaterT">2500</em> ml</span></div>
+      <div class="stat"><b id="sTrain">0/0</b><span>训练动作完成</span></div>
+    </div>
+  </section>
+  <section class="panel" id="cutTrain">
+    <h2>今日训练 <span class="fold-sum" id="trainSum"></span>
+      <small><label for="planSel">今天练：</label><select id="planSel"></select></small>
+    </h2>
+    <div class="banner plain" id="cycHint" hidden></div>
+    <ul class="ex" id="exList"></ul>
+    <div class="banner plain" id="workHint" hidden></div>
+    <div class="rest" id="restBox">
+      <span class="rest-l">组间休息</span>
+      <b id="restTime" aria-live="polite">--:--</b>
+      <div class="rest-btns"><button type="button" data-rest="60">60 秒</button><button type="button" data-rest="90">90 秒</button><button type="button" data-rest="120">2 分钟</button><button type="button" id="restStop">停止</button></div>
+      <label class="note rest-auto"><input type="checkbox" id="restAuto">填完一组次数自动开始</label>
+    </div>
+    <p class="note" id="trainNote"></p>
+    <div class="row"><button type="button" id="editPlanBtn">调整计划 / 换一套搭配</button><span class="note" id="planName"></span></div>
+  </section>
+  <section class="panel" id="planEditor" hidden>
+    <h2>训练计划设置 <small>改完自动保存，过去的记录不受影响</small></h2>
+    <h3>推荐搭配 <small class="note">点「使用这套」会替换整周安排，之后还能继续改</small></h3>
+    <div class="tpl-list" id="tplList"></div>
+    <h3>每周安排</h3>
+    <div class="wdseg" id="wdSeg" role="group" aria-label="选择星期"></div>
+    <div id="dayEdit"></div>
+    <h3>动作库 <small class="note">点「＋」加到上面选中的那一天</small></h3>
+    <div class="row">
+      <select id="libG" aria-label="适合人群"><option value="all">全部动作</option><option value="f">女生常用</option><option value="m">男生常用</option></select>
+      <input type="text" id="libQ" placeholder="搜索动作" style="flex:1;min-width:120px">
+    </div>
+    <div class="chips" id="libM"></div>
+    <div class="lib-list" id="libList"></div>
+    <h3>自定义动作</h3>
+    <form class="row" id="customEx">
+      <input type="text" id="cxName" placeholder="动作名称" maxlength="30" required style="flex:2;min-width:140px">
+      <input type="text" id="cxSets" placeholder="组×次数，如 3×10–12" maxlength="20" style="flex:1;min-width:120px">
+      <button type="submit" class="primary">添加</button>
+    </form>
+    <p class="note">组数写成「4×8–10」这样，系统才能判断你是否做满、提示加重。也可以写「3×45秒」「3×力竭」。</p>
+  </section>
+  <section class="panel" id="cutFood">
+    <h2>饮食摄入 <small id="kcalLeft"></small></h2>
+    <div class="bar" id="kcalBar"><i></i></div>
+    <p class="note" id="macroTarget"></p>
+    <div class="row presets-bar"><span class="note">常吃</span><div class="row" id="presets"></div><button type="button" id="presetEdit" class="ghost">管理</button></div>
+    <details class="sub" id="foodLib" open><summary>食物库 · 点「＋」直接记，热量已经填好</summary>
+      <div class="row"><input type="search" id="flQ" placeholder="搜索：豆奶、蓝莓、虾…" aria-label="搜索食物" style="flex:1;min-width:120px">
+        <div class="seg" id="flMul" role="group" aria-label="份量"><button type="button" data-mul="0.5">半份</button><button type="button" data-mul="1">1 份</button><button type="button" data-mul="1.5">1.5 份</button><button type="button" data-mul="2">2 份</button></div></div>
+      <div class="chips" id="flCats" style="margin:8px 0"></div>
+      <div class="lib-list" id="flList" style="max-height:264px;background:var(--panel)"></div>
+      <p class="note">热量和蛋白质按常见值估算，品牌和做法不同会有出入。库里没有的，用下面的表单自己填；记过的食物在表格里点 ☆ 可以加到「常吃」。</p>
+    </details>
+    <form class="foodform" id="foodForm">
+      <input type="text" id="fName" placeholder="吃了什么" required>
+      <input type="number" id="fKcal" placeholder="kcal" inputmode="numeric" required min="0">
+      <input type="number" id="fPro" placeholder="蛋白质 g" inputmode="numeric" min="0">
+      <select id="fMeal" aria-label="哪一餐"><option value="">自动分餐</option><option value="早餐">早餐</option><option value="午餐">午餐</option><option value="晚餐">晚餐</option><option value="加餐">加餐</option></select>
+      <input type="number" id="fCost" placeholder="花了 $（外食可填）" inputmode="decimal" min="0" step="0.01">
+      <button class="primary" type="submit">添加</button>
+    </form>
+    <div class="row"><button type="button" id="copyYday">复制昨天的饮食</button><span class="note" id="copyNote"></span></div>
+    <details class="sub" id="calcBox"><summary>按克数算热量（蛋白质 4 · 碳水 4 · 脂肪 9 kcal/g）</summary>
+    <h3>克数 → 热量</h3>
+    <div class="calc">
+      <div class="field"><label for="cP">蛋白质 (g)</label><input type="number" id="cP" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cPk">0 kcal</b></div>
+      <div class="field"><label for="cC">碳水 (g)</label><input type="number" id="cC" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cCk">0 kcal</b></div>
+      <div class="field"><label for="cF">脂肪 (g)</label><input type="number" id="cF" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cFk">0 kcal</b></div>
+    </div>
+    <div class="row" style="justify-content:space-between">
+      <span>合计 <span class="total" id="cTotal">0</span> kcal</span>
+      <div class="row">
+        <input type="text" id="cName" placeholder="食物名称（可选）" style="width:150px">
+        <button type="button" id="cAdd" class="primary">加入今日饮食</button>
+      </div>
+    </div>
+    <h3>热量 → 克数</h3>
+    <div class="row">
+      <input type="number" id="rK" min="0" inputmode="numeric" placeholder="kcal" style="width:100px">
+      <select id="rM" aria-label="营养素">
+        <option value="4">蛋白质</option><option value="4">碳水</option><option value="9">脂肪</option>
+      </select>
+      <span>= <span class="total" id="rG">0</span> g</span>
+    </div>
+      </details>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>时间</th><th>食物</th><th class="n">kcal</th><th class="n">蛋白质</th><th></th></tr></thead>
+        <tbody id="foodBody"></tbody>
+      </table>
+    </div>
+  </section>
+  <section class="panel" id="cutWater">
+    <h2>喝水 <small>每 90 分钟喝一次，08:00–21:00</small></h2>
+    <div class="banner" id="waterBanner"></div>
+    <div class="bar water"><i id="waterFill"></i></div>
+    <div class="row">
+      <span id="cupBtns" class="row"></span>
+      <button type="button" id="waterUndo">撤销上一杯</button>
+    </div>
+    <div class="row">
+      <input type="number" id="cupNew" placeholder="我的杯子 ml" inputmode="numeric" min="50" max="2000" style="width:130px">
+      <button type="button" id="cupAdd">＋ 加一个杯量</button>
+    </div>
+  </section>
+  <section class="panel" id="cutCardio">
+    <h2>有氧建议 <small>目标 8,000–10,000 步</small></h2>
+    <p style="margin:0" id="cardioText"></p>
+    <div class="row">
+      <label for="steps" class="note">今日步数</label>
+      <input type="number" id="steps" inputmode="numeric" placeholder="例如 8500" style="width:120px">
+      <label class="row note" style="gap:6px"><input type="checkbox" id="cardioDone">有氧已完成</label>
+    </div>
+    <div class="row">
+      <select id="cardioType" aria-label="有氧类型"><option value="">有氧类型</option><option>坡度走</option><option>快走</option><option>跑步</option><option>单车</option><option>单车 HIIT</option><option>椭圆机</option><option>游泳</option><option>其他</option></select>
+      <input type="number" id="cardioMin" placeholder="分钟" inputmode="numeric" min="0" max="600" style="width:90px">
+      <span class="note" id="cardioWeek"></span>
+    </div>
+    <div class="bar" id="stepBar"><i></i></div>
+  </section>
+  <section class="panel" id="cutBody" aria-label="身体变化">
+    <h2>身体变化 <small>早上空腹称，每周至少 3 次；围度每周量 1 次</small></h2>
+    <div class="seg tabseg" role="tablist" aria-label="身体变化"><button type="button" role="tab" data-btab="w" aria-selected="true">体重 · 腰围</button><button type="button" role="tab" data-btab="g" aria-selected="false">围度</button><button type="button" role="tab" data-btab="s" aria-selected="false">力量 · 增肌</button></div>
+    <div data-bpane="w">
+
+    <div class="bodygrid">
+      <div class="field"><label for="weight">今日体重 (kg)</label><input type="number" id="weight" step="0.1" inputmode="decimal" placeholder="例如 60.0"></div>
+      <div class="field"><label for="waist">腰围 (cm，肚脐高度，每周 1 次)</label><input type="number" id="waist" step="0.5" inputmode="decimal" placeholder="例如 72"></div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="avgNow">–</b><span>近 7 天平均 kg</span></div>
+      <div class="stat"><b id="avgPrev">–</b><span>前 7 天平均 kg</span></div>
+      <div class="stat"><b id="avgDiff">–</b><span>周变化 kg</span></div>
+      <div class="stat"><b id="waistNow">–</b><span>最近腰围 cm</span></div>
+    </div>
+    <div class="seg rangeseg" id="wRange" role="group" aria-label="图表范围"><button type="button" data-range="28">4 周</button><button type="button" data-range="84">12 周</button><button type="button" data-range="0">全部</button></div>
+    <div class="chartwrap" id="wchart"></div>
+      </div>
+    <div data-bpane="g" hidden>
+    <h3>围度 <small class="note">每周量 1 次，和腰围同一天</small></h3>
+    <div class="bodygrid3">
+      <div class="field"><label for="hip">臀围 (cm)</label><input type="number" id="hip" step="0.5" inputmode="decimal" placeholder="例如 95"></div>
+      <div class="field"><label for="thigh">大腿围 (cm)</label><input type="number" id="thigh" step="0.5" inputmode="decimal" placeholder="例如 55"></div>
+      <div class="field"><label for="arm">上臂围 (cm)</label><input type="number" id="arm" step="0.5" inputmode="decimal" placeholder="例如 28"></div>
+    </div>
+    <div id="mGirth" class="note"></div>
+    </div>
+    <div data-bpane="s" hidden>
+    <div class="banner plain" id="mVerdict"></div>
+    <div class="stats">
+      <div class="stat"><b id="mRate">–</b><span>周增重 % 体重</span></div>
+      <div class="stat"><b id="mStr">–</b><span>力量进步的动作</span></div>
+      <div class="stat"><b id="mVol">–</b><span>本周训练量 kg</span></div>
+      <div class="stat"><b id="mWaist">–</b><span>4 周腰围变化 cm</span></div>
+    </div>
+    <h3>力量变化 <small class="note">估算最大重量（1RM）= 重量 ×（1 + 次数 ÷ 30）</small></h3>
+    <div class="tablewrap"><table><thead><tr><th>动作</th><th class="n">最近 2 周</th><th class="n">之前</th><th class="n">变化</th></tr></thead><tbody id="mLifts"></tbody></table></div>
+    <p class="note">怎么看：增肌期体重每周涨 0.25–0.5%、力量持续进步、腰围基本不变（4 周内涨不超过 1 cm），就说明长的主要是肌肉。只要记录每个动作的重量和每组次数，这里会自动计算。</p>
+      </div>
+  </section>
+  <section class="panel" id="cutAdvice">
+    <h2>本周调整建议 <small>按计划里的规则自动判断</small></h2>
+    <div class="banner plain" id="advice"></div>
+    <div class="row" id="adviceActions"></div>
+    <div class="banner plain" id="weighCount"></div>
+    <p class="note" id="offsetNote"></p>
+    <details class="sub" id="offHist"><summary>调整记录</summary><ul class="hist" id="offList"></ul></details>
+  </section>
+  <section class="panel" id="cutCal" aria-label="健身日历">
+    <h2>健身日历 <small>点任意一天，直接安排或删除那天的健身</small></h2>
+    <div class="cal-nav"><button type="button" id="calPrev" aria-label="往前看">‹</button><span id="calRange"></span><button type="button" id="calToday">本周</button><button type="button" id="calNext" aria-label="往后看">›</button></div>
+    <div class="cal4" id="week"></div>
+    <div class="cal-legend note"><span><i class="lv lv0"></i>没记录</span><span><i class="lv lv1"></i>1 项</span><span><i class="lv lv2"></i>2 项</span><span><i class="lv lv3"></i>3 项</span><span><i class="lv lv4"></i>4 项全达标</span><span>四项：训练 · 有氧 · 喝水 · 蛋白质</span><span>未来的日子显示安排的训练</span></div>
+    <div class="cal-day" id="calDay" aria-live="polite"></div>
+    <label class="note cal-sync"><input type="checkbox" id="calSync">同步到日常计划（打开后，这里安排的健身会自动出现在日常计划里，改动和删除也会同步）</label>
+  </section>
+  <details class="panel cut-set" id="goalBox">
+    <summary><span class="cs-t">我的目标</span><span class="cs-s" id="goalSum"></span></summary>
+
+    <div class="seg goalseg" id="goalSeg" role="group" aria-label="选择目标"><button type="button" data-goal="cut">减脂</button><button type="button" data-goal="gain">增肌</button><button type="button" data-goal="keep">维持</button></div>
+    <div class="pcalc">
+      <div class="field"><label for="bSex">性别</label><select id="bSex"><option value="">请选择</option><option value="f">女</option><option value="m">男</option></select></div>
+      <div class="field"><label for="bAge">年龄</label><input type="number" id="bAge" min="14" max="90" step="1" inputmode="numeric" placeholder="例如 30"></div>
+      <div class="field"><label for="bH">身高 (cm)</label><input type="number" id="bH" min="100" max="230" step="0.5" inputmode="decimal" placeholder="例如 165"></div>
+    </div>
+    <div class="field"><label for="bAct">平时活动量（不算有氧）</label><select id="bAct">
+      <option value="1.2">很少运动，久坐为主</option>
+      <option value="1.375">每周练 1–3 次</option>
+      <option value="1.55">每周练 3–5 次</option>
+      <option value="1.725">每周练 6–7 次，或工作要一直站着走动</option>
+      <option value="1.9">体力劳动 + 每天训练</option></select></div>
+    <div class="pres">
+      <div class="stat"><b id="bW">–</b><span>计算用体重 kg</span></div>
+      <div class="stat"><b id="bBmr">–</b><span>基础代谢 kcal</span></div>
+      <div class="stat"><b id="bTdee">–</b><span>维持热量 kcal</span></div>
+      <div class="stat"><b id="bMode">自动</b><span>计算方式</span></div>
+    </div>
+    <label class="note" style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="tdeeManual">我知道自己的维持热量，手动填写</label>
+    <div class="row" id="tdeeRow" hidden><label for="tdee" class="note">维持热量</label><input type="number" id="tdee" min="1200" max="4000" step="50" inputmode="numeric" style="width:100px"><span class="note">kcal/天</span></div>
+    <p class="note" id="goalNote"></p>
+      <h3>蛋白质需求 <small class="note">按身高体重和目标算每天该吃多少</small></h3>
+
+    <div class="pcalc">
+      <div class="field"><label for="pH">身高 (cm)</label><input type="number" id="pH" min="100" max="230" step="0.5" inputmode="decimal" placeholder="例如 165"></div>
+      <div class="field"><label for="pW">体重 (kg)</label><input type="number" id="pW" min="25" max="250" step="0.1" inputmode="decimal" placeholder="例如 60"></div>
+      <div class="field"><label for="pGoal">目标</label><select id="pGoal"><option value="cut">减脂（保肌肉）</option><option value="gain">增肌</option><option value="keep">维持</option></select></div>
+    </div>
+    <div class="pres">
+      <div class="stat"><b id="pBmi">–</b><span>BMI</span></div>
+      <div class="stat"><b id="pRef">–</b><span>计算用体重 kg</span></div>
+      <div class="stat"><b id="pRange">–</b><span>每天范围 g</span></div>
+      <div class="stat"><b id="pRec">–</b><span>建议每天 g</span></div>
+    </div>
+    <div class="banner plain" id="pText">填好身高和体重就会显示结果。</div>
+    <div class="row"><button type="button" class="primary" id="pSet">设为每日蛋白质目标</button><span class="note" id="pNow"></span></div>
+    <p class="note">公式：每天蛋白质 = 计算用体重 × 系数。减脂 1.6–2.2 g/kg，增肌 1.6–2.2 g/kg，维持 1.2–1.6 g/kg。BMI 超过 25 时，用 BMI 25 对应的体重（身高² × 25）来算，避免把脂肪也算进去。这是给健康成年人的一般参考，有肾病等情况先问医生。</p>
+    </details>
+
+  <div class="sync" id="sync">正在连接…</div>
+  <div class="sync">页面版本 11/14-2200</div>
+  </div>
+
+  <div id="plan" hidden>
+    <div class="pl-top">
+      <div>
+        <h2>日常计划</h2>
+        <div class="pl-range" id="plRange"></div>
+      </div>
+      <div class="pl-nav">
+        <button type="button" class="pl-btn" id="plGoToday">回到今天</button>
+        <div class="pl-view" role="group" aria-label="切换视图"><button type="button" class="pl-btn" id="plViewMonth" aria-pressed="true">月视图</button><button type="button" class="pl-btn" id="plViewYear" aria-pressed="false">年历</button></div>
+        <span class="pl-status" id="plStatus">正在载入…</span>
+      </div>
+    </div>
+    <section class="pl-memo" id="plMemo" aria-label="备忘录"></section>
+    <div class="pl-layout" id="plCalSec">
+      <div class="pl-calwrap">
+        <div class="pl-mnav" id="plMnav"><button type="button" class="pl-btn" id="plPrev" aria-label="上一个">‹</button><b id="plMTitle"></b><button type="button" class="pl-btn" id="plNext" aria-label="下一个">›</button></div>
+        <div class="pl-cal" id="plCal"></div>
+        <div class="pl-year" id="plYear" hidden></div>
+      </div>
+      <aside class="pl-panel" id="plPanel" aria-label="添加到当天"></aside>
+    </div>
+  </div>
+  <div id="cycle" hidden>
+    <section class="card" id="cyToday" aria-label="今天" aria-live="polite"></section>
+    <section class="card" id="cyLog"><h2>每天记录 <span class="fold-sum" id="cyLogSum"></span></h2><div id="cyLogBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
+    <section class="card" id="cyAdvice"><h2>阶段建议与同步 <span class="fold-sum" id="cyAdvSum"></span></h2><div id="cyAdvBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
+    <section class="card" id="cyCal"><h2>周期日历</h2><div id="cyCalBody" style="display:flex;flex-direction:column;gap:10px"></div></section>
+    <section class="card" id="cyHist"><h2>历史统计 <span class="fold-sum" id="cyHistSum"></span></h2><div id="cyHistBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
+    <section class="card" id="cySet"><h2>设置</h2><div id="cySetBody" style="display:flex;flex-direction:column;gap:12px"></div></section>
+  </div>
+  <div id="setView" hidden>
+  <section class="card" id="secBackup">
+    <h2>数据备份</h2>
+    <div id="bkBody" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+  <section class="card" id="secTheme">
+    <h2>主题颜色</h2>
+    <div class="swatches" id="swatches" role="group" aria-label="选择主题颜色"></div>
+    <label class="custom-color">自定义颜色<input type="color" id="customColor" value="#1f84cc" aria-label="自定义主题颜色"></label>
+    <p class="note">选好的颜色只保存在这台设备上，下次打开还是这个颜色。</p>
+  </section>
+  <section class="card" id="secAdd">
+    <h2>添加自己的习惯</h2>
+    <form class="form" id="addForm" novalidate>
+      <label class="full">名称<input id="newName" type="text" maxlength="30" placeholder="例如：自己泡咖啡，不买外带"></label>
+      <label class="full">放在哪个板块<select id="newGrp"></select></label>
+      <label>类型
+        <select id="newKind">
+          <option value="cash">好习惯 · 当场省下钱</option>
+          <option value="future">好习惯 · 以后少花钱（估算）</option>
+          <option value="count">好习惯 · 只记次数</option>
+          <option value="bad-cash">坏习惯 · 当场多花钱</option>
+          <option value="bad-future">坏习惯 · 以后多花钱（估算）</option>
+        </select>
+      </label>
+      <label>每次金额 <span class="cur-label">AUD</span><input id="newVal" type="number" min="0" step="0.05" value="5"></label>
+      <label class="full" style="flex-direction:row;align-items:center;gap:8px"><input id="newAsk" type="checkbox" style="width:auto">每次点的时候自己填金额（适合每次不一样的，比如没买的东西）</label>
+      <div class="full" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <button class="btn primary" type="submit">添加</button>
+        <span class="formmsg" id="formMsg"></span>
+      </div>
+    </form>
+  </section>
+  <section class="card" id="secTidy">
+    <h2>整理没用过的习惯</h2>
+    <div id="tidyBody" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+  <section class="card" id="secRules">
+    <details>
+      <summary>每个数字是怎么算的（可以改金额、删除自己加的习惯）</summary>
+      <div class="tbl">
+        <table>
+          <thead><tr><th>习惯</th><th>每次</th><th>依据</th></tr></thead>
+          <tbody id="rules"></tbody>
+        </table>
+      </div>
+      <p class="note">"依据"里的价格都是澳元。"以后少花"的金额是把十年内可能避免的治疗费，按需要做这件事的次数平均摊开。这是降低风险的估算，不是保证。改了金额后，过去的记录会按新金额重新计算。</p>
+    </details>
+  </section>
+  </div>
+</div>
+<div class="sheet" id="ask" hidden>
+  <form class="sheet-box" id="askForm" novalidate>
+    <b id="askTitle"></b>
+    <label><span id="askLabel"></span><input id="askVal" type="number" min="0" step="0.5" inputmode="decimal" placeholder="金额"></label>
+    <span class="formmsg" id="askMsg"></span>
+    <div style="display:flex;gap:10px"><button class="btn primary" type="submit">记录</button><button class="btn" type="button" id="askCancel">取消</button></div>
+  </form>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="pl-shade" id="plShade" hidden></div>
+<button type="button" class="todayfab" id="todayFab" hidden>回到今天</button>
+<button type="button" class="totop" id="toTop" aria-label="回到顶部" title="回到顶部" hidden>↑</button>

@@ -1,0 +1,5 @@
+.swatches{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
+.sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--paper);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
+.custom-color{display:flex;flex-direction:row!important;align-items:center;gap:10px;font-size:.9rem}
+.custom-color input[type=color]{width:52px;height:40px;padding:2px;border-radius:8px;cursor:pointer}

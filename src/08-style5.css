@@ -1,0 +1,34 @@
+/* 工资与排班: payslips and rosters synced from email into private account storage */
+.pay{display:flex;flex-direction:column;gap:14px}
+.pay-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.pay-head h2{margin:0}
+.pay-src{font-size:.75rem;color:var(--muted)}
+.pay-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.pay-stat{background:var(--bg);border-radius:10px;padding:10px 12px;min-width:0}
+.pay-stat small{display:block;font-size:.72rem;color:var(--muted)}
+.pay-stat b{font-family:var(--mono);font-size:1.15rem;font-variant-numeric:tabular-nums}
+.pay-stat span{display:block;font-size:.72rem;color:var(--muted);font-family:var(--mono)}
+@media (max-width:560px){.pay-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.pay-chart svg{width:100%;height:auto;display:block}
+.pay-sec{font-size:.78rem;font-weight:700;color:var(--muted);letter-spacing:.08em;margin:2px 0 -4px}
+.pay-shifts{display:flex;flex-direction:column;gap:6px}
+.pay-shift{display:grid;grid-template-columns:5.2em minmax(0,1fr) auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:var(--bg);font-size:.88rem}
+.pay-shift.past{opacity:.55}
+.pay-shift.today{box-shadow:inset 3px 0 0 var(--accent)}
+.pay-shift .d{font-family:var(--mono);font-size:.82rem}
+.pay-shift .w{font-size:.75rem;color:var(--muted)}
+.pay-shift .h{font-family:var(--mono);font-size:.82rem;color:var(--muted);white-space:nowrap}
+.pay-tag{font-size:.7rem;border-radius:999px;padding:0 7px;background:var(--gold-soft);color:var(--gold);margin-left:6px;white-space:nowrap}
+.pay-list{display:flex;flex-direction:column;gap:6px}
+.pay-row{border:1px solid var(--line);border-radius:10px;background:var(--paper)}
+.pay-row summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:10px 12px;align-items:baseline}
+.pay-row summary::-webkit-details-marker{display:none}
+.pay-row .p1{font-size:.88rem;font-weight:600}
+.pay-row .p2{font-size:.75rem;color:var(--muted)}
+.pay-row .net{font-family:var(--mono);font-weight:600;font-size:1rem;text-align:right}
+.pay-row .gr{font-family:var(--mono);font-size:.72rem;color:var(--muted);text-align:right}
+.pay-detail{padding:0 12px 12px;font-size:.82rem}
+.pay-detail table{font-size:.8rem}
+.pay-detail td.n,.pay-detail th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.pay-empty{font-size:.85rem;color:var(--muted);margin:0}
+.pay-more{align-self:flex-start}

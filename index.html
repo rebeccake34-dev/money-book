@@ -1,21 +1,20 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
+</head><body>
 <title>好习惯省钱账本</title>
 <meta name="theme-color" content="#1f84cc" id="metaTheme">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="省钱账本">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<style>
-.swatches{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
+<style>.swatches{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
 .sw{width:44px;height:44px;border-radius:50%;border:3px solid var(--paper);box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
 .sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--ink)}
 .custom-color{display:flex;flex-direction:row!important;align-items:center;gap:10px;font-size:.9rem}
-.custom-color input[type=color]{width:52px;height:40px;padding:2px;border-radius:8px;cursor:pointer}
-</style>
+.custom-color input[type=color]{width:52px;height:40px;padding:2px;border-radius:8px;cursor:pointer}</style>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
-<style>
-/* Layout: two-money ledger on top, habit tiles grouped by kind, weekly review chart, milestones, then settings (custom habits + the rules behind each number) */
+<style>/* Layout: two-money ledger on top, habit tiles grouped by kind, weekly review chart, milestones, then settings (custom habits + the rules behind each number) */
 :root{
   --bg:#eef3ef; --paper:#ffffff; --ink:#17251d; --muted:#5d6d63; --line:#d3ded6;
   --accent:#1f7a52; --accent-soft:#dcefe4; --gold:#a8701a; --gold-soft:#f6ead4;
@@ -366,11 +365,8 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 #cut .total{font-family:var(--f-display);font-size:1.6rem;font-weight:700;font-variant-numeric:tabular-nums}
 #cut .sync{font-size:.78rem;color:var(--muted);text-align:center}
 @media (max-width:520px){#cut .stats{grid-template-columns:repeat(2,1fr)}#cut .foodform{grid-template-columns:1fr 1fr}#cut .foodform input:first-child{grid-column:1/-1}#cut .foodform button[type=submit]{grid-column:1/-1}}
-@media (prefers-reduced-motion:reduce){#cut .bar i{transition:none}}
-</style>
-
-<style>
-/* 日常计划 tab: week rows of 7 colour-coded days + "add to this day" panel (sticky on wide screens, bottom sheet on phones) */
+@media (prefers-reduced-motion:reduce){#cut .bar i{transition:none}}</style>
+<style>/* 日常计划 tab: week rows of 7 colour-coded days + "add to this day" panel (sticky on wide screens, bottom sheet on phones) */
 .wrap.wide{max-width:1320px}
 .hsub{font-size:.9rem}
 .toc{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding:8px 2px;margin:-8px 0;background:var(--bg)}
@@ -600,10 +596,8 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   .pl-panel.pl-open{transform:none}
   .pl-close{display:inline-block}
 }
-@media (prefers-reduced-motion:reduce){.pl-panel{transition:none}}
-</style>
-<style>
-/* 工资与排班: payslips and rosters synced from email into private account storage */
+@media (prefers-reduced-motion:reduce){.pl-panel{transition:none}}</style>
+<style>/* 工资与排班: payslips and rosters synced from email into private account storage */
 .pay{display:flex;flex-direction:column;gap:14px}
 .pay-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .pay-head h2{margin:0}
@@ -636,10 +630,8 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .pay-detail table{font-size:.8rem}
 .pay-detail td.n,.pay-detail th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
 .pay-empty{font-size:.85rem;color:var(--muted);margin:0}
-.pay-more{align-self:flex-start}
-</style>
-<style>
-/* 储蓄: goal progress, deposits (manual + ledger transfers), weekly capacity from pay minus fixed costs */
+.pay-more{align-self:flex-start}</style>
+<style>/* 储蓄: goal progress, deposits (manual + ledger transfers), weekly capacity from pay minus fixed costs */
 .sav{display:flex;flex-direction:column;gap:14px}
 .sav-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .sav-head h2{margin:0}
@@ -673,10 +665,8 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .sav-cost{display:grid;grid-template-columns:minmax(0,1fr) 6.5em 5.5em auto;gap:6px;align-items:center}
 .sav-cost input,.sav-cost select{padding:6px 8px;font-size:.85rem}
 .sav-start{background:var(--gold-soft);color:var(--ink);border-radius:10px;padding:10px 12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.88rem}
-.sav-start input{width:9em}
-</style>
-<style>
-/* 日常开支: variable spending log by category, with monthly budget */
+.sav-start input{width:9em}</style>
+<style>/* 日常开支: variable spending log by category, with monthly budget */
 .exp{display:flex;flex-direction:column;gap:14px}
 .exp-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .exp-head h2{margin:0}
@@ -895,11 +885,9 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .bk-how summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--muted)}
 .toc[hidden]{display:none!important}
 .tabs button{white-space:nowrap}
-@media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}
-</style>
+@media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
-<script>
-(function(){
+<script>(function(){
   var VER="11/14-1500",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
@@ -915,12 +903,11 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
   window.addEventListener("error",function(ev){push("error",ev.message,(ev.error&&ev.error.stack)||(ev.filename+":"+ev.lineno+":"+ev.colno))});
   window.addEventListener("unhandledrejection",function(ev){var r=ev.reason;push("promise",r&&r.message||r,r&&r.stack)});
   window.__debugPush=push;
-})();
-</script>
+})();</script>
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2130</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2200</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1239,7 +1226,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/14-2130</div>
+  <div class="sync">页面版本 11/14-2200</div>
   </div>
 
   <div id="plan" hidden>
@@ -1335,9 +1322,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="pl-shade" id="plShade" hidden></div>
 <button type="button" class="todayfab" id="todayFab" hidden>回到今天</button>
 <button type="button" class="totop" id="toTop" aria-label="回到顶部" title="回到顶部" hidden>↑</button>
-
-<script>
-/* kind: cash | future | count | bad-cash | bad-future */
+<script>/* kind: cash | future | count | bad-cash | bad-future */
 const BUILTIN=[
  {id:"meal",kind:"cash",name:"自己带饭，不点外卖",val:13,why:"外卖一顿约 $20，自己做约 $7"},
  {id:"nosugar",kind:"cash",name:"忍住没买含糖饮料",val:8,why:"直接省下一杯的钱（按 $8 估）"},
@@ -1890,6 +1875,7 @@ function logAt(k,h,d){const c={...(days[k]||{})},n=(c[h.id]||0)+d;if(n<0)return 
 window.__ledger={
   ready:()=>mode!=="loading",
   mode:()=>mode,
+  range:(a,b)=>{const map=hMap(),sm=sumDays(Object.keys(days).filter(k=>k>=a&&k<=b),map);return {cash:sm.cash,fut:sm.fut,net:sm.net}},
   usage:n=>{const t=today(),o={};for(let i=0;i<n;i++){const c=days[addDays(t,-i)];if(c)for(const id in c)if(c[id]>0)o[id]=(o[id]||0)+c[id]}return o},
   firstDay:()=>firstDay(),
   hideMany:ids=>{settings={...settings,hidden:[...new Set([...(settings.hidden||[]),...ids])]};render();saveSettings()},
@@ -1940,10 +1926,8 @@ window.__bk.ledger={
   const upd=()=>{tt.hidden=window.scrollY<400};
   window.addEventListener("scroll",upd,{passive:true});upd();
   tt.onclick=()=>{window.scrollTo({top:0,behavior:rm?"auto":"smooth"});const h=document.querySelector("h1");if(h){h.setAttribute("tabindex","-1");h.focus({preventScroll:true})}}}
-renderNotes();boot();
-</script>
-<script>
-(function(){
+renderNotes();boot();</script>
+<script>(function(){
 const PLAN = {
   1:{name:"上肢·拉",type:"train",ex:[["离心引体 / 弹力带辅助引体","4×5–8"],["哑铃单臂划船","3×8–10/侧"],["高位下拉","3×10–12"],["面拉","3×12–15"],["悬挂：双手→单手辅助","3×最大时长"],["哑铃弯举","2×12"]],
      cardio:"力量练完后：坡度走 30 分钟（坡度 8–12%，4.5–5.5 km/h）。"},
@@ -2818,13 +2802,10 @@ render();calc();
   }catch(e){clearTimeout(timer);$("sync").textContent="同步不可用，数据暂存在本浏览器"}
 })();
 
-})();
-</script>
-
+})();</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <div class="pl-toast" id="plToast" role="status" hidden></div>
-<script>
-(function(){
+<script>(function(){
   var DEFAULTS=[
     {id:"fit",name:"健身",h:0,subs:["胸","背","腿","肩","手臂","有氧","拉伸"]},
     {id:"study",name:"学习",h:215,subs:["阅读","网课","练习","复盘"]},
@@ -3599,10 +3580,8 @@ render();calc();
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");});
-})();
-</script>
-<script>
-(function(){
+})();</script>
+<script>(function(){
   const KEY="theme-color", DEF="#1f84cc";
   const PRESETS=[["天蓝","#1f84cc"],["湖水青","#128a8a"],["森林绿","#1f7a52"],["薰衣草","#6b5bc4"],["樱花粉","#c4487a"],["暖橙","#c2651a"]];
   function get(){try{return localStorage.getItem(KEY)||DEF}catch(e){return DEF}}
@@ -3633,10 +3612,8 @@ render();calc();
   const ci=document.getElementById("customColor");
   if(ci)ci.addEventListener("input",e=>choose(e.target.value));
   apply(get());
-})();
-</script>
-<script>
-(function(){
+})();</script>
+<script>(function(){
   const box=document.getElementById("paySec");if(!box)return;
   const KEY="pay-sync-v1";
   window.__pay=()=>data.payslips;
@@ -3727,10 +3704,8 @@ render();calc();
         try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}render();try{window.__savingsRender&&window.__savingsRender()}catch(e){}try{window.__onShifts&&window.__onShifts(data.shifts)}catch(e){}},()=>{});
     });
   }).catch(()=>{});
-})();
-</script>
-<script>
-(function(){
+})();</script>
+<script>(function(){
   const box=document.getElementById("savSec");if(!box)return;
   const KEY="savings-v1";
   const DEF={goal:10000,goalNote:"",start:null,startDate:null,entries:[],pct:10,
@@ -3875,10 +3850,8 @@ render();calc();
         try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}render()},()=>{ref=null});
     });
   }).catch(()=>{});
-})();
-</script>
-<script>
-(function(){
+})();</script>
+<script>(function(){
   const box=document.getElementById("expSec");if(!box)return;
   const CATS=[["餐饮",20],["买菜",95],["交通",210],["购物",320],["娱乐",265],["美容护肤",340],["医疗",0],["社交礼物",45],["学习",235],["日用",160],["其他",30]];
   const hueOf=c=>{const f=CATS.find(x=>x[0]===c);return f?f[1]:200};
@@ -3919,7 +3892,7 @@ render();calc();
     cats:()=>CATS.map(c=>c[0]),hue:c=>hueOf(c),week:wsk=>weekOf(wsk),budget:()=>budget,money:money,
     add:(amt,cat,note,date,src)=>add({id:uid(),date:date||ymd(new Date()),amt:Math.round(amt*100)/100,cat:cat||"其他",note:note||"",src:src||""}),
     remove:remove,
-    day:k=>sumBetween(k,k),
+    day:k=>sumBetween(k,k),range:(a,b)=>sumBetween(a,b),
     weeklyAvg:()=>{const now=new Date(),list=all();if(!list.length)return null;const first=list.map(x=>x.date).sort()[0];
       const a=new Date(now);a.setDate(now.getDate()-27);let ak=ymd(a);if(first>ak)ak=first;const w=Math.max(1,(now-parse(ak))/6048e5+1/7);
       return {avg:sumBetween(ak,ymd(now))/w,weeks:w}},
@@ -4024,10 +3997,8 @@ render();calc();
       setRef.onSnapshot(s=>{if(s.exists&&!s.metadata.hasPendingWrites){const v=JSON.parse(JSON.stringify(s.data()));budget=+v.budget||0;wk=v.wk||{};cache();render();notify()}},()=>{});
     });
   }).catch(()=>{});
-})();
-</script>
-<script>
-/* 生理期：记录、预测、建议，并给运动打卡 / 日常计划 / 今天概览提供标记 */
+})();</script>
+<script>/* 生理期：记录、预测、建议，并给运动打卡 / 日常计划 / 今天概览提供标记 */
 (function(){
   var $=function(id){return document.getElementById(id)};
   var root=$("cycle");if(!root)return;
@@ -4396,10 +4367,8 @@ render();calc();
         S=R;lsPut();rebuild();renderAll();notify();},function(){ref=null;});
     });
   }).catch(function(){});
-})();
-</script>
-<script>
-/* 今天首页 · 每周小结 · 数据备份（导出 / 导入合并） */
+})();</script>
+<script>/* 今天首页 · 每周小结 · 数据备份（导出 / 导入合并） */
 (function(){
   var $=function(id){return document.getElementById(id)};
   var root=$("todayView");if(!root)return;
@@ -4419,7 +4388,7 @@ render();calc();
     if(onMore)h.appendChild(btn("td-more",moreTxt||"详情 ›",onMore));box.appendChild(h)}
 
   /* ---------- 固定的卡片容器（表单不重建，输入时不会被打断） ---------- */
-  var S={};["warn","hab","fit","food","exp","plan","cyc","week","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
+  var S={};["warn","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
   var expHead=el("div"),expForm=el("form","td-form"),expAlert=el("p","td-alert");expForm.noValidate=true;expAlert.hidden=true;
   var expSel=el("select"),expAmt=el("input"),expNote=el("input"),expBtn=el("button","btn primary","记一笔");
   expSel.id="tdExpCat";expSel.setAttribute("aria-label","开支分类");
@@ -4470,16 +4439,21 @@ render();calc();
         else if(s.pace>0)out.push({t:"本周还没存钱；按现在的速度每周约存 "+s.money0(s.pace)+"，"+s.eta+" 存够",k:""});}}
     return out}
   function mverdict(y,m,cur){var L=window.__ledger,E=window.__expenses,out=[];if(!L||!L.ready())return out;var a=L.month(y,m);
+    var pd0=new Date(y,m-1,1),pk=pd0.getFullYear()+"-"+pad(pd0.getMonth()+1),pdays=new Date(y,m,0).getDate(),dd=new Date().getDate(),pa=L.month(pd0.getFullYear(),pd0.getMonth());
+    var cmp=cur?"上月同期（1–"+Math.min(dd,pdays)+" 日）":"前一个月";
     if(a.good.length||a.bad.length){
       out.push({t:"净省下 "+L.money(a.net)+"，其中当场省下 "+L.money(a.cash)+(a.transferred?"，已转入储蓄 "+L.money(a.transferred):""),k:a.net>=0?"good":"bad"});
+      var pn=cur?L.range(pk+"-01",pk+"-"+pad(Math.min(dd,pdays))).net:pa.net;
+      if(pa.good.length||pa.bad.length){var dn=a.net-pn;out.push({t:"比"+cmp+(dn>=0?"多省 ":"少省 ")+L.money(Math.abs(dn)),k:dn>=0?"good":"bad"})}
       var g=a.good.slice().sort(function(p,q){return q.amt-p.amt})[0];if(g&&g.amt>0)out.push({t:"省得最多：「"+g.name+"」"+g.n+" 次，共 "+L.money(g.amt),k:"good"});
       var b=a.bad[0];if(b&&b.amt<0)out.push({t:"扣得最多：「"+b.name+"」"+b.n+" 次，共 "+L.money(-b.amt),k:"bad"});
     }else out.push({t:cur?"这个月还没有打卡记录":"这个月没有打卡记录",k:""});
     if(E){var x=E.month(y,m),pd=new Date(y,m-1,1),px=E.month(pd.getFullYear(),pd.getMonth());
-      if(x.total>0){var d=x.total-px.total;
-        out.push({t:"开支 "+E.money(x.total)+(x.byCat[0]?"，最多的是「"+x.byCat[0][0]+"」"+E.money(x.byCat[0][1]):"")+(!cur&&px.total>0?"，比前一个月"+(d>=0?"多 ":"少 ")+E.money(Math.abs(d)):""),k:""});
+      var pt=cur?E.range(pk+"-01",pk+"-"+pad(Math.min(dd,pdays))):px.total;if(x.total>0){var d=x.total-pt;
+        out.push({t:"开支 "+E.money(x.total)+(x.byCat[0]?"，最多的是「"+x.byCat[0][0]+"」"+E.money(x.byCat[0][1]):"")+(pt>0?"，比"+cmp+(d>=0?"多花 ":"少花 ")+E.money(Math.abs(d)):""),k:pt>0?(d>0?"bad":"good"):""});
         if(x.budget>0)out.push(x.total>x.budget?{t:"超出每月预算 "+E.money(x.total-x.budget),k:"bad"}:{t:"在每月预算内，"+(cur?"还剩 ":"剩下 ")+E.money(x.budget-x.total),k:"good"})}}
-    if(window.__savings){var mi=window.__savings.monthIn(y+"-"+pad(m+1));if(mi)out.push({t:(mi>0?"存入储蓄 ":"储蓄净取出 ")+window.__savings.stats().money(Math.abs(mi)),k:mi>0?"good":"bad"})}
+    if(window.__savings){var mi=window.__savings.monthIn(y+"-"+pad(m+1));var pmi=window.__savings.monthIn(pk),mny=window.__savings.stats().money;
+      if(mi||pmi)out.push({t:(mi>=0?"存入储蓄 ":"储蓄净取出 ")+mny(Math.abs(mi))+(pmi?"（"+(cur?"上月全月 ":"前一个月 ")+mny(pmi)+"）":""),k:mi>0?"good":mi<0?"bad":""})}
     return out}
   function vlist(items){var u=el("ul","td-list");items.forEach(function(i){u.appendChild(el("li",i.k||null,i.t))});return u}
 
@@ -4557,6 +4531,9 @@ render();calc();
     // 本周小结
     box=S.week;box.textContent="";
     if(L&&L.ready()){head(box,"本周小结","周一到今天",function(){go("ledger","secWeek")},"回顾 ›");box.appendChild(vlist(verdict(L.weekStart(t),true)))}
+    // 本月小结
+    box=S.month;box.textContent="";
+    if(L&&L.ready()){var nd=new Date();head(box,"本月小结",(nd.getMonth()+1)+"月 1 日到今天",function(){go("ledger","secWeek")},"上月 ›");box.appendChild(vlist(mverdict(nd.getFullYear(),nd.getMonth(),true)))}
     // 储蓄
     box=S.sav;box.textContent="";
     if(window.__savings){var sv=window.__savings.stats();
@@ -4649,10 +4626,8 @@ render();calc();
   try{if(!(window.claude&&window.claude.use)&&navigator.storage&&navigator.storage.persist)navigator.storage.persist().catch(function(){})}catch(e){}
   if(!root.hidden)sched();
   setTimeout(sched,1500);
-})();
-</script>
-<script>
-(function(){
+})();</script>
+<script>(function(){
   var $=function(id){return document.getElementById(id)};
   var TITLES={today:["今天",""],set:["设置","备份、主题颜色、添加习惯、算法说明"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
   var TOC={
@@ -4776,6 +4751,5 @@ render();calc();
   ["tabToday","tabLedger","tabCut","tabPlan","tabCycle","tabSet"].forEach(function(id){$(id).addEventListener("click",function(){setTimeout(shadeUpd,0)})});
   applyTab(tabNow());shadeUpd();
   setTimeout(fab,800);
-})();
-</script>
+})();</script>
 </body></html>
