@@ -14,8 +14,8 @@
   function apply(hex){
     let [h,s,l]=hsl(hex);
     const la=Math.min(Math.max(l,26),44), sa=Math.max(s,30);
-    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,45),95)};--paper:#ffffff;--ink:${c(h,30,12)};--muted:${c(h,12,40)};--line:${c(h,25,85)};`;
-    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,8)};--paper:${c(h,18,12)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,22)};`;
+    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,30),94)};--paper:${c(h,35,99)};--ink:${c(h,35,13)};--muted:${c(h,12,40)};--line:${c(h,22,86)};--accent-deep:${c(h,Math.max(sa,45),Math.max(la-15,16))};--sh:hsl(${h} 45% 22% / .14);--hi:rgba(255,255,255,.9);--trough:${c(h,Math.min(s,28),91.5)};`;
+    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,7.5)};--paper:${c(h,18,12.5)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,21)};--accent-deep:${c(h,Math.min(sa,55),17)};--sh:rgba(0,0,0,.55);--hi:hsl(${h} 40% 90% / .06);--trough:${c(h,22,5.5)};`;
     let st=document.getElementById("themeStyle");
     if(!st){st=document.createElement("style");st.id="themeStyle";document.body.appendChild(st)}
     st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;

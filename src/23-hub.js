@@ -18,7 +18,7 @@
     if(onMore)h.appendChild(btn("td-more",moreTxt||"详情 ›",onMore));box.appendChild(h)}
 
   /* ---------- 固定的卡片容器（表单不重建，输入时不会被打断） ---------- */
-  var S={};["warn","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
+  var S={};["warn","top","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"||k==="top"?"div":"section",k==="warn"?"":k==="top"?"td-hero":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
   var expHead=el("div"),expForm=el("form","td-form"),expAlert=el("p","td-alert");expForm.noValidate=true;expAlert.hidden=true;
   var expSel=el("select"),expAmt=el("input"),expNote=el("input"),expBtn=el("button","btn primary","记一笔");
   expSel.id="tdExpCat";expSel.setAttribute("aria-label","开支分类");
@@ -95,6 +95,12 @@
     var bk=backupState();
     if(bk.warn){box.className="td-warn";box.appendChild(el("span",null,bk.last?"已经 "+bk.days+" 天没备份了。记录只存在这台设备的浏览器里，清除浏览器数据就会丢。":"记录只存在这台设备的浏览器里，还没备份过。清除浏览器数据就会丢。"));
       box.appendChild(btn("btn","去备份",function(){go("set","secBackup")},"tdBk"))}
+    // 存折页：今天的三个数
+    box=S.top;box.textContent="";box.hidden=!(L&&L.ready());
+    if(L&&L.ready()){var hd=L.day(t),hw=L.week(t),figs=[["今天省下",(hd.net>=0?"+":"")+L.money(hd.net)]];
+      if(E){var hx=E.week();figs.push(["今天花了",E.money(E.day(t))]);figs.push(hx.totalBudget?[hx.left>=0?"本周还能花":"本周已超支",E.money(Math.abs(hx.left))]:["本周净省",L.money(hw.net)])}
+      else figs.push(["本周净省",L.money(hw.net)]);
+      figs.forEach(function(f){var d=el("div");d.appendChild(el("small",null,f[0]));d.appendChild(el("b",null,f[1]));box.appendChild(d)})}
     // 习惯
     box=S.hab;box.textContent="";
     if(L&&L.ready()){var hs=L.habits(),fq=L.freq(28),top=hs.slice().sort(function(a,b){return (fq[b.id]||0)-(fq[a.id]||0)});

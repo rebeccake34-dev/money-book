@@ -13,7 +13,7 @@
 .custom-color{display:flex;flex-direction:row!important;align-items:center;gap:10px;font-size:.9rem}
 .custom-color input[type=color]{width:52px;height:40px;padding:2px;border-radius:8px;cursor:pointer}</style>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@500;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
 <style>/* Layout: two-money ledger on top, habit tiles grouped by kind, weekly review chart, milestones, then settings (custom habits + the rules behind each number) */
 :root{
   --bg:#eef3ef; --paper:#ffffff; --ink:#17251d; --muted:#5d6d63; --line:#d3ded6;
@@ -886,6 +886,109 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .toc[hidden]{display:none!important}
 .tabs button{white-space:nowrap}
 @media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}</style>
+<style>/* ---- 质感层：存折纸感。深色「存折页」是唯一的重点，其余都是安静的纸面 ----
+   tokens: --accent-deep 存折页底色 · --sh 带色调的阴影 · --hi 纸面高光 · --trough 凹槽 · --numf 大数字字体 */
+:root{--accent-deep:#14573a;--sh:rgba(23,60,45,.13);--hi:rgba(255,255,255,.9);--trough:#e3ebe6;
+  --numf:"Fraunces","Noto Serif SC","Songti SC",serif;
+  --lift:0 1px 0 var(--hi) inset,0 1px 2px var(--sh),0 10px 24px -14px var(--sh);
+  --lift-s:0 1px 0 var(--hi) inset,0 1px 2px var(--sh);
+  --press:0 1px 3px var(--sh) inset}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--accent-deep:#123a2a;--sh:rgba(0,0,0,.5);--hi:rgba(255,255,255,.05);--trough:#0c120f}}
+:root[data-theme="dark"]{--accent-deep:#123a2a;--sh:rgba(0,0,0,.5);--hi:rgba(255,255,255,.05);--trough:#0c120f}
+
+body{font-variant-numeric:lining-nums}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+/* 标题：账本的页眉 */
+header{padding-bottom:14px;border-bottom:3px double var(--line)}
+h1{font-size:2.05rem;letter-spacing:.01em;line-height:1.25}
+header .ver{opacity:.7}
+h2{font-family:var(--display);font-size:1.02rem;letter-spacing:.02em;color:var(--ink);font-weight:700;margin:0 0 12px}
+.td-h b{font-family:var(--display);font-size:1.04rem;letter-spacing:.02em}
+.wk-verdict h3{font-family:var(--body)}
+
+/* 纸面卡片 */
+.card,.td-card,#cut .panel,.pl-memo,.pl-panel,.ov-row,.gtoggle,.tile,.sheet-box{box-shadow:var(--lift)}
+.card,.td-card,#cut .panel{border-radius:16px}
+.td-card{padding:14px 16px}
+.tile,.ov-row,.gtoggle{border-radius:14px;box-shadow:var(--lift-s);transition:transform .08s,box-shadow .08s}
+.tile:active,.ov-row:active,.gtoggle:active{transform:translateY(1px);box-shadow:var(--press)}
+.k-bad{box-shadow:none}
+
+/* 存折页：整个界面里唯一的重色块 */
+.ledger,.td-hero{position:relative;overflow:hidden;color:#fff;border-radius:18px;border:1px solid rgba(255,255,255,.14);
+  background:
+    repeating-radial-gradient(circle at 108% -20%,rgba(255,255,255,.07) 0 1px,transparent 1px 9px),
+    repeating-linear-gradient(0deg,rgba(255,255,255,.055) 0 1px,transparent 1px 30px),
+    linear-gradient(155deg,var(--accent-deep),var(--accent) 135%);
+  box-shadow:0 1px 0 rgba(255,255,255,.22) inset,0 2px 4px var(--sh),0 18px 34px -18px var(--accent-deep)}
+.ledger{padding:20px 22px}
+.ledger .num,.td-hero b{font-family:var(--numf);font-weight:600;font-variant-numeric:tabular-nums lining-nums;letter-spacing:-.01em;text-shadow:0 1px 0 rgba(0,0,0,.18)}
+.ledger .big{font-size:2.6rem}
+.ledger small{letter-spacing:.06em}
+.money2>div{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);border-radius:12px}
+.money2 .sub{font-family:var(--body)}
+.save-row{background:var(--paper);box-shadow:0 1px 3px rgba(0,0,0,.18);border-radius:12px}
+.td-hero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:16px 6px}
+.td-hero>div{padding:0 12px;min-width:0;display:flex;flex-direction:column;gap:4px}
+.td-hero>div+div{border-left:1px solid rgba(255,255,255,.18)}
+.td-hero small{font-size:.74rem;opacity:.85;letter-spacing:.06em}
+.td-hero b{font-size:1.5rem;line-height:1.1;white-space:nowrap}
+@media (max-width:420px){.td-hero b{font-size:1.22rem}.td-hero>div{padding:0 9px}}
+
+/* 大数字 */
+.sav-big b,.sav-stat b,.exp-s b,#cut .stat b{font-family:var(--numf);font-variant-numeric:tabular-nums lining-nums;font-weight:600;letter-spacing:-.01em}
+.sav-big b{font-size:2.3rem}
+.sav-stat,.exp-s,.sav-fast{background:var(--trough);box-shadow:var(--press);border-radius:12px}
+
+/* 标签页：凹槽里一块抬起的纸片 */
+.tabs{background:var(--trough);border:1px solid var(--line);box-shadow:var(--press);border-radius:14px;padding:4px}
+.tabs button{border-radius:10px;transition:background .12s,color .12s}
+.tabs button[aria-selected="true"]{background:var(--paper);color:var(--accent);font-weight:700;box-shadow:var(--lift-s),0 0 0 1px var(--line)}
+.toc{background:transparent;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.toc button{box-shadow:var(--lift-s)}
+.seg{background:var(--trough);box-shadow:var(--press)}
+
+/* 按钮：按下去会陷一点 */
+.btn,.td-btn,.pl-btn,#cut button,.cy-btn{box-shadow:var(--lift-s);transition:transform .08s,box-shadow .08s}
+.btn,.td-btn{border-radius:10px}
+.btn:active:not(:disabled),.td-btn:active,.pl-btn:active,#cut button:active,.cy-btn:active{transform:translateY(1px);box-shadow:var(--press)}
+.btn.primary,#cut button.primary,.save-row .btn{background:linear-gradient(180deg,var(--accent),var(--accent-deep) 220%);border-color:transparent;
+  box-shadow:0 1px 0 rgba(255,255,255,.28) inset,0 1px 2px var(--sh),0 6px 14px -8px var(--accent)}
+.td-btn.ghost,.btn.danger,.td-more,.td-undo,.seg button,#cut .seg button,.tabs button,.toc-all{box-shadow:none}
+.tabs button[aria-selected="true"]{box-shadow:var(--lift-s),0 0 0 1px var(--line)}
+
+/* 输入框：纸上压出来的格子 */
+input,select,textarea{border-radius:10px;background:var(--trough);box-shadow:var(--press);transition:border-color .12s,box-shadow .12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:var(--press),0 0 0 3px var(--accent-soft)}
+input[type=checkbox],input[type=radio]{box-shadow:none;accent-color:var(--accent)}
+input[type=color]{box-shadow:none}
+
+/* 今天页的小键 */
+.td-chipw{background:var(--paper);box-shadow:var(--lift-s);border-radius:12px;transition:box-shadow .1s}
+.td-chipw.on{box-shadow:var(--press);background:var(--accent-soft)}
+.td-chipw.on.bad{background:var(--bad-soft)}
+.td-chip:active{transform:translateY(1px)}
+.td-fitem{background:var(--paper);box-shadow:var(--lift-s)}
+.td-warn{box-shadow:var(--lift-s)}
+
+/* 进度条：凹槽 + 有光泽的填充 */
+.bar,#cut .bar,.td-bar,.sav-bar,.exp-bbar{background:var(--trough);box-shadow:var(--press)}
+.td-bar{height:8px;border-radius:4px}
+.bar span,#cut .bar i,.td-bar i,.sav-bar i,.exp-bbar i{background-image:linear-gradient(180deg,rgba(255,255,255,.35),rgba(255,255,255,0) 60%)}
+.td-bar i{border-radius:4px}
+
+.toast{border-radius:14px;box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 12px 30px -8px rgba(0,0,0,.45)}
+.fold>:first-child::after{background:var(--paper);box-shadow:var(--lift-s)}
+@media (prefers-reduced-motion:reduce){.tile,.ov-row,.gtoggle,.btn,.td-btn,.pl-btn,#cut button,.cy-btn,.tabs button,input,select,textarea,.td-chipw{transition:none}}
+/* 手机上「今天概览」改成一行横向滑动的小卡片，不再占满一屏 */
+@media (max-width:560px){
+  .ov{display:flex!important;overflow-x:auto;gap:8px;margin-inline:-16px;padding:2px 16px 8px;scrollbar-width:none;scroll-snap-type:x proximity}
+  .ov::-webkit-scrollbar{display:none}
+  .ov-row{flex:none!important;width:46%;min-width:156px;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:2px!important;padding:10px 12px!important;scroll-snap-align:start}
+  .ov-row .ov-k,.ov-row .ov-v,.ov-row .ov-s{width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;grid-area:auto}
+}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>(function(){
   var VER="11/14-1500",log=[],busy=false;
@@ -907,7 +1010,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/14-2200</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/15-1215</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1226,7 +1329,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/14-2200</div>
+  <div class="sync">页面版本 11/15-1215</div>
   </div>
 
   <div id="plan" hidden>
@@ -3597,8 +3700,8 @@ render();calc();
   function apply(hex){
     let [h,s,l]=hsl(hex);
     const la=Math.min(Math.max(l,26),44), sa=Math.max(s,30);
-    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,45),95)};--paper:#ffffff;--ink:${c(h,30,12)};--muted:${c(h,12,40)};--line:${c(h,25,85)};`;
-    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,8)};--paper:${c(h,18,12)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,22)};`;
+    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,30),94)};--paper:${c(h,35,99)};--ink:${c(h,35,13)};--muted:${c(h,12,40)};--line:${c(h,22,86)};--accent-deep:${c(h,Math.max(sa,45),Math.max(la-15,16))};--sh:hsl(${h} 45% 22% / .14);--hi:rgba(255,255,255,.9);--trough:${c(h,Math.min(s,28),91.5)};`;
+    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,7.5)};--paper:${c(h,18,12.5)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,21)};--accent-deep:${c(h,Math.min(sa,55),17)};--sh:rgba(0,0,0,.55);--hi:hsl(${h} 40% 90% / .06);--trough:${c(h,22,5.5)};`;
     let st=document.getElementById("themeStyle");
     if(!st){st=document.createElement("style");st.id="themeStyle";document.body.appendChild(st)}
     st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
@@ -4388,7 +4491,7 @@ render();calc();
     if(onMore)h.appendChild(btn("td-more",moreTxt||"详情 ›",onMore));box.appendChild(h)}
 
   /* ---------- 固定的卡片容器（表单不重建，输入时不会被打断） ---------- */
-  var S={};["warn","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"?"div":"section",k==="warn"?"":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
+  var S={};["warn","top","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"||k==="top"?"div":"section",k==="warn"?"":k==="top"?"td-hero":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
   var expHead=el("div"),expForm=el("form","td-form"),expAlert=el("p","td-alert");expForm.noValidate=true;expAlert.hidden=true;
   var expSel=el("select"),expAmt=el("input"),expNote=el("input"),expBtn=el("button","btn primary","记一笔");
   expSel.id="tdExpCat";expSel.setAttribute("aria-label","开支分类");
@@ -4465,6 +4568,12 @@ render();calc();
     var bk=backupState();
     if(bk.warn){box.className="td-warn";box.appendChild(el("span",null,bk.last?"已经 "+bk.days+" 天没备份了。记录只存在这台设备的浏览器里，清除浏览器数据就会丢。":"记录只存在这台设备的浏览器里，还没备份过。清除浏览器数据就会丢。"));
       box.appendChild(btn("btn","去备份",function(){go("set","secBackup")},"tdBk"))}
+    // 存折页：今天的三个数
+    box=S.top;box.textContent="";box.hidden=!(L&&L.ready());
+    if(L&&L.ready()){var hd=L.day(t),hw=L.week(t),figs=[["今天省下",(hd.net>=0?"+":"")+L.money(hd.net)]];
+      if(E){var hx=E.week();figs.push(["今天花了",E.money(E.day(t))]);figs.push(hx.totalBudget?[hx.left>=0?"本周还能花":"本周已超支",E.money(Math.abs(hx.left))]:["本周净省",L.money(hw.net)])}
+      else figs.push(["本周净省",L.money(hw.net)]);
+      figs.forEach(function(f){var d=el("div");d.appendChild(el("small",null,f[0]));d.appendChild(el("b",null,f[1]));box.appendChild(d)})}
     // 习惯
     box=S.hab;box.textContent="";
     if(L&&L.ready()){var hs=L.habits(),fq=L.freq(28),top=hs.slice().sort(function(a,b){return (fq[b.id]||0)-(fq[a.id]||0)});
