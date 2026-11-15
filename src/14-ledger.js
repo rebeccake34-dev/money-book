@@ -161,7 +161,11 @@ function render(){
   tb.onclick=()=>{setCollapsed(allOpen?visG.map(g=>g.id):[]);render()};
   if(!manage){bar.innerHTML="";bar.appendChild(tb)}
   const mb=document.createElement("button");mb.type="button";mb.className="btn"+(manage?" primary":"");mb.textContent=manage?"完成":"管理习惯";
-  mb.onclick=()=>{manage=!manage;render()};bar.appendChild(mb);wrap.appendChild(bar);
+  mb.onclick=()=>{manage=!manage;render()};
+  if(!manage){const ab=document.createElement("button");ab.type="button";ab.className="btn primary";ab.id="addHabitBtn";ab.textContent="＋ 添加习惯";
+    ab.onclick=()=>{showTab("set");setTimeout(()=>{const e=$("secAdd");if(!e)return;if(e.classList.contains("folded")&&e.firstElementChild)e.firstElementChild.click();e.scrollIntoView({block:"start"});const n=$("newName");if(n)n.focus({preventScroll:true})},80)};
+    bar.appendChild(ab)}
+  bar.appendChild(mb);wrap.appendChild(bar);
   const hidG=new Set(settings.hiddenGroups||[]);
   allGroups().filter(g=>!hidG.has(g.id)).forEach(g=>{
     const list=hs.filter(h=>groupOf(h)===g.id);
