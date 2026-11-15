@@ -101,3 +101,9 @@ input[type=color]{box-shadow:none}
   .ov-row{flex:none!important;width:46%;min-width:156px;display:flex!important;flex-direction:column!important;align-items:flex-start!important;gap:2px!important;padding:10px 12px!important;scroll-snap-align:start}
   .ov-row .ov-k,.ov-row .ov-v,.ov-row .ov-s{width:100%;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;grid-area:auto}
 }
+/* ---- 配色统一：所有分类色、星期色都收拢到主题色两侧的邻近色里（--th 是主题色的色相） ---- */
+:root{--th:150;--spread:.3}
+[style*="--h"]{--hh:calc(var(--th) + (var(--h) - 180) * var(--spread))}
+#cut,:root[data-theme="dark"] #cut{--water:var(--calm);--water-soft:var(--calm-soft);--warn:var(--gold);--warn-soft:var(--gold-soft)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cut{--water:var(--calm);--water-soft:var(--calm-soft);--warn:var(--gold);--warn-soft:var(--gold-soft)}}
+.pl-dh{font-weight:600}
