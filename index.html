@@ -138,6 +138,13 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .aes-sumbar b{display:block;font-family:var(--mono);font-size:1rem}
 .aes-sumbar span{font-size:.72rem;color:var(--muted)}
 .aes-how{margin-top:10px}
+.pe-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.pe-sum div{background:var(--bg);border-radius:10px;padding:8px 10px;min-width:0}
+.pe-sum b{display:block;font-family:var(--mono);font-size:1rem}
+.pe-sum span{font-size:.72rem;color:var(--muted)}
+.pe-tbl td,.pe-tbl th{vertical-align:top;font-size:.85rem}
+.pe-tbl small{color:var(--muted);font-weight:400;font-family:var(--body)}
+@media (max-width:520px){.pe-sum b{font-size:.9rem}.pe-sum div{padding:6px 8px}}
 .aes-how summary{cursor:pointer;font-size:.85rem;color:var(--muted)}
 .chips{display:flex;flex-wrap:wrap;gap:6px}
 .chip{border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:5px 11px;font-size:.82rem;cursor:pointer;color:var(--muted)}
@@ -375,7 +382,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .toc button:hover{border-color:var(--accent)}
 .toc button.toc-all{background:transparent;color:var(--muted);border-style:dashed}
 .toc button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-.fold,#secLedger,#groups,#secRules,#goalBox,#cutSum,#plCalSec,#plYear{scroll-margin-top:calc(60px + env(safe-area-inset-top,0px))}
+#secPrice,.fold,#secLedger,#groups,#secRules,#goalBox,#cutSum,#plCalSec,#plYear{scroll-margin-top:calc(60px + env(safe-area-inset-top,0px))}
 .fold>:first-child{cursor:pointer;user-select:none}
 .fold>:first-child::after{content:"收起 ▴";margin-left:auto;font-size:.72rem;font-weight:500;letter-spacing:0;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
 .fold.folded>:first-child::after{content:"展开 ▾";color:var(--accent);border-color:var(--accent)}
@@ -997,7 +1004,7 @@ input[type=color]{box-shadow:none}
 .pl-dh{font-weight:600}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>(function(){
-  var VER="11/14-1500",log=[],busy=false;
+  var VER="11/16-0100",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -1096,6 +1103,24 @@ input[type=color]{box-shadow:none}
       <span class="note" style="margin:0" id="aesTotal"></span>
     </div>
     <details class="aes-how"><summary>怎么换算成每次打卡的金额</summary><p class="note">算法：每个习惯每打卡一次 = 勾选了它的项目一年总花费 × 这个习惯的比例 ÷ 一年做这件事的次数。比例：防晒 40%、减脂节奏 30%、早睡 15%、蛋白质 / 训练 / 墨镜各 10%、卸妆 / 睡前不刷手机各 5%。具体每个习惯怎么算，可以在页面最下面「每个数字是怎么算的」里看到。</p></details>
+  </section>
+
+  <section class="card" id="secPrice">
+    <h2>价格评估 · 自己做 vs 请人做</h2>
+    <p class="note" style="margin:0 0 12px">悉尼 2026 年的行情估价。下面「家务 · 收纳」和「洗澡后擦身体乳」这几个习惯，每次打卡的金额就是按这里算的。</p>
+    <div class="pe-sum" id="peSum"></div>
+    <div class="tbl"><table class="pe-tbl">
+      <thead><tr><th>请人做</th><th>悉尼价格</th><th>自己做（对应习惯）</th></tr></thead>
+      <tbody>
+        <tr><td>专业收纳师</td><td class="num">平均 $102 / 小时<br><small>$60–120，常见最少 3 小时，一次 $225–675</small></td><td>每天收纳 15 分钟 · 每次 <b class="num" data-pv="tidy15"></b></td></tr>
+        <tr><td>收纳师做 1 小时（衣柜 / 厨房一个区域）</td><td class="num">约 $102</td><td>深度收纳一个区域 · 每次 <b class="num" data-pv="deeporg"></b></td></tr>
+        <tr><td>常规保洁 · 1 卧室公寓</td><td class="num">$100–170 / 次<br><small>2 卧室 $130–200</small></td><td>自己做一次全屋打扫 · 每次 <b class="num" data-pv="hclean"></b></td></tr>
+        <tr><td>深度清洁 · 1 卧室公寓</td><td class="num">$280–480<br><small>2 卧室 $360–640</small></td><td>每月挑一个区域深度清洁，记成「深度收纳」或「全屋打扫」</td></tr>
+        <tr><td>每周包月保洁 · 1 卧 1 卫</td><td class="num">约 $157 / 次<br><small>一次性约 $221；一年约 $8,160</small></td><td>每周自己打扫一次</td></tr>
+        <tr><td>身体磨砂 / 补水护理</td><td class="num">$80–124 / 次</td><td rowspan="2">洗澡后擦身体乳 · 每次 <b class="num" data-pv="lotion"></b><br><small>身体乳本身约 $12 / 400 ml，用约 2 个月，一年约 $72</small></td></tr>
+        <tr><td>皮肤科初诊（干痒、湿疹等）</td><td class="num">平均约 $297<br><small>有 GP 转诊可退约 $84</small></td></tr>
+      </tbody></table></div>
+    <details class="aes-how"><summary>价格来源</summary><p class="note">Airtasker 收纳 / 断舍离价格指南（悉尼平均 $102/小时）；The Quote Yard 2026 悉尼保洁估价；Simply Maid 悉尼保洁价格；Fresha 悉尼身体磨砂价格；Cleanbill 皮肤科收费报告。都是行情估价，可以在「设置 → 算法说明」里把每个习惯的金额改成你自己的。</p></details>
   </section>
 
 
@@ -1457,6 +1482,11 @@ const BUILTIN=[
  {id:"feet",kind:"future",name:"站着工作穿支撑鞋、下班拉伸小腿",val:0.4,why:"十年内少看约 10 次足科（每次按 $100 估，共约 $1,000）÷ 约 2,500 个工作日"},
  {id:"eyes",kind:"future",name:"看屏幕 20 分钟远眺 20 秒",val:0.05,why:"主要好处是减少眼疲劳，金额按很低估算"},
  {id:"checkup",kind:"future",name:"按时洗牙 / 体检",val:150,why:"早发现问题：一次补牙（约 $310）比根管 + 牙冠便宜很多，按每次避免约半次补牙费估"},
+ {id:"lotion",kind:"future",grp:"aes",name:"洗澡后擦身体乳",val:0.75,why:"一年少做约 2 次身体磨砂补水护理（悉尼约 $80–124/次，按 $100）+ 半次皮肤科初诊（平均约 $297）≈ $350，减去身体乳自己的成本（约 $12 用 2 个月，一年约 $72），÷ 365 天"},
+ {id:"tidy15",kind:"future",grp:"home",name:"收纳 15 分钟，东西物归原位",val:1.7,why:"悉尼专业收纳师平均约 $102/小时、通常最少 3 小时（约 $306/次）；每天顺手收好，一年约少请 2 次 ≈ $612 ÷ 365 天"},
+ {id:"deeporg",kind:"future",grp:"home",name:"深度收纳一个区域（衣柜 / 抽屉 / 冰箱 / 储物柜）",val:34,why:"相当于请收纳师做 1 小时（约 $102）；你未必真会请人，按三分之一计"},
+ {id:"hclean",kind:"future",grp:"home",name:"自己做一次全屋打扫",val:50,why:"悉尼 1 卧室常规保洁约 $100–170/次，深度清洁约 $280–480；按常规保洁的一半左右计"},
+ {id:"declutter",kind:"cash",ask:true,grp:"home",name:"断舍离：卖掉一件不用的东西",val:0,askLabel:"卖了多少钱？送人或捐掉就填 0",why:"每次自己填卖出的钱"},
  {id:"noprocrast",kind:"count",name:"今天没拖延，完成了一件挂着的事",val:0,why:"情绪上的好处很难换算成钱，只记次数"},
  {id:"saidno",kind:"count",name:"拒绝了一件不想做的事",val:0,why:"只记次数"},
  {id:"study",kind:"count",name:"学习了 30 分钟",val:0,why:"备考、准备面试等；长期回报很大，但没法按次算钱，只记次数"},
@@ -1467,16 +1497,18 @@ const BUILTIN=[
  {id:"b-snack",kind:"bad-cash",name:"买了零食",val:4,why:"按一次 $4 扣"},
  {id:"b-sleep",kind:"bad-future",link:"sleep",name:"熬夜过了 0 点",val:0},
  {id:"b-pace",kind:"bad-future",link:"pace",name:"这周掉秤太快（超过体重 1%）",val:0,weekly:true},
+ {id:"b-dupbuy",kind:"bad-cash",ask:true,grp:"bad",name:"东西找不到 / 忘了家里有，又重复买了",val:0,askLabel:"重复买的东西多少钱？",why:"每次自己填重复买的金额"},
  {id:"b-warm",kind:"bad-future",name:"训练没热身就上重量",val:0.7,why:"跟热身同一个算法，反过来扣"}
 ];
 const GROUPS=[
  {id:"cash",title:"当场省下钱",hint:"真的留在你手里的钱"},
  {id:"aes",title:"健康 · 外貌习惯",hint:"按你的价格清单换算"},
+ {id:"home",title:"家务 · 收纳",hint:"跟请家政 / 收纳师比，自己做省下的"},
  {id:"future",title:"以后少花钱",hint:"估算的少损失"},
  {id:"count",title:"情绪和时间",hint:"只记次数"},
  {id:"bad",title:"坏习惯",hint:"会从总数里扣掉"}
 ];
-const BASE_MS=[{name:"一次物理治疗复诊",amt:97},{name:"一次洗牙检查",amt:300},{name:"一次补牙",amt:310},{name:"一个疗程的腰背物理治疗",amt:720},{name:"一颗牙冠",amt:2250},{name:"一次根管 + 牙冠",amt:4650}];
+const BASE_MS=[{name:"一次物理治疗复诊",amt:97},{name:"一次专业收纳（3 小时）",amt:306},{name:"一次 1 卧室深度清洁",amt:380},{name:"一次洗牙检查",amt:300},{name:"一次补牙",amt:310},{name:"一个疗程的腰背物理治疗",amt:720},{name:"一颗牙冠",amt:2250},{name:"一次根管 + 牙冠",amt:4650}];
 const AES_DEFAULT={botox:800,botoxN:3,sculptra:1350,sculptraN:1,ulthera:900,ultheraLines:300,ultheraN:1};
 // share of an item's yearly cost credited to each linked habit, and how often that habit happens
 const LINKS={
@@ -2034,7 +2066,15 @@ window.__bk.ledger={
     if(mode==="db")add.forEach(x=>notesCol().doc(x.id).set(x).catch(()=>{}));else lsSave();
     renderRules();renderGrpSelect();render();renderNotes();return n+add.length}
 };
-{const r0=render;render=function(){r0.apply(this,arguments);try{window.__overview&&window.__overview()}catch(e){}try{window.__savingsRender&&window.__savingsRender()}catch(e){}}}
+function renderPrice(){
+  const box=document.getElementById("peSum");if(!box)return;const map=hMap();
+  document.querySelectorAll("[data-pv]").forEach(e=>{const h=map[e.dataset.pv];e.textContent=h?money(h.val):"–"});
+  const y=String(new Date().getFullYear()),ids=["tidy15","deeporg","hclean","lotion"];let n=0,amt=0;
+  for(const k of Object.keys(days))if(k.startsWith(y)){const c=days[k];for(const id of ids)if(c[id]>0&&map[id]){n+=c[id];amt+=c[id]*map[id].val}}
+  let sold=0;for(const k of Object.keys(amts))if(k.startsWith(y)&&amts[k].declutter)sold+=amts[k].declutter.reduce((a,b)=>a+(+b||0),0);
+  box.innerHTML=`<div><b>${n}</b><span>今年自己做了几次</span></div><div><b>${money(amt)}</b><span>相当于省下（估算）</span></div><div><b>${money(sold)}</b><span>断舍离卖出</span></div>`;
+}
+{const r0=render;render=function(){r0.apply(this,arguments);try{renderPrice()}catch(e){}try{window.__overview&&window.__overview()}catch(e){}try{window.__savingsRender&&window.__savingsRender()}catch(e){}}}
 {const tt=$("toTop"),rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   const upd=()=>{tt.hidden=window.scrollY<400};
   window.addEventListener("scroll",upd,{passive:true});upd();
@@ -2934,8 +2974,12 @@ render();calc();
     {id:"revise",name:"复习",h:235,subs:["今日内容","错题","单词"]},
     {id:"read",name:"读书",h:280,subs:["30分钟","1小时","读书笔记"]},
     {id:"tv",name:"看电视",h:340,subs:["剧集","电影","综艺"]},
-    {id:"need",name:"需求复盘",h:55,subs:["想要还是需要","待买清单","冲动消费"]}
+    {id:"need",name:"需求复盘",h:55,subs:["想要还是需要","待买清单","冲动消费"]},
+    {id:"tidy",name:"收纳",h:200,subs:["每日 15 分钟","衣柜","抽屉","冰箱","储物柜 / 仓库","断舍离"]},
+    {id:"chore",name:"家务",h:120,subs:["全屋打扫","厨房","浴室","洗衣","换床单"]},
+    {id:"care",name:"护肤",h:330,subs:["身体乳","防晒","卸妆洁面","面膜"]}
   ];
+  var SEED_NEW=["tidy","chore","care"];
   var WD=["周日","周一","周二","周三","周四","周五","周六"];
   var WH=[340,20,73,127,180,233,287];
   var LKEY="year-end-planner-v1";
@@ -2964,7 +3008,8 @@ render();calc();
     $("plRange").textContent="从 "+f.getFullYear()+"年"+(f.getMonth()+1)+"月"+f.getDate()+"日 起 · 可以安排到 2027 年 12 月 31 日 · 过去的记录都会保留";}
 
   var state={shortcuts:null,days:{},memos:[]};
-  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];}}catch(e){}
+  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.seeded=c.seeded||[];}}catch(e){}
+  try{if(state.shortcuts&&(function(){var sd=state.seeded||[];return ["tidy","chore","care"].some(function(i){return sd.indexOf(i)<0;});})())state.__seedLater=true;}catch(e){}
   var sel=todayKey,openCat=null,editMode=false,addingShortcut=false;
   var pendStart="",pendEnd="",paneMode="view",editId=null;
   var col=null,chains={};
@@ -2985,8 +3030,14 @@ render();calc();
       .catch(function(e){setStatus(e&&e.code==="quota_exceeded"?"存储已满，请删除一些旧内容":"保存失败，稍后再试");});
   }
   function saveDay(k){var it=state.days[k]||[];if(!it.length)delete state.days[k];write("day-"+k,it.length?{date:k,items:it}:null);}
-  function saveShorts(){write("shortcuts",{list:state.shortcuts});}
-  function ensureCustom(){if(!state.shortcuts)state.shortcuts=JSON.parse(JSON.stringify(DEFAULTS));}
+  function saveShorts(){write("shortcuts",{list:state.shortcuts,seeded:state.seeded||[]});}
+  // add new built-in shortcuts once to lists saved before they existed (deleting one keeps it deleted)
+  function seedShorts(){if(!state.shortcuts)return false;var sd=state.seeded||[],ch=false;
+    SEED_NEW.forEach(function(id){if(sd.indexOf(id)>=0)return;sd.push(id);ch=true;
+      if(!state.shortcuts.some(function(x){return x.id===id;})){var d=DEFAULTS.filter(function(x){return x.id===id;})[0];if(d)state.shortcuts.push(JSON.parse(JSON.stringify(d)));}});
+    state.seeded=sd;return ch;}
+  if(state.__seedLater){delete state.__seedLater;if(seedShorts()){try{localStorage.setItem(LKEY,JSON.stringify(state));}catch(e){}}}
+  function ensureCustom(){if(!state.shortcuts){state.shortcuts=JSON.parse(JSON.stringify(DEFAULTS));state.seeded=SEED_NEW.slice();}}
 
   // ---- calendar ----
   var cal=$("plCal");
@@ -3290,6 +3341,11 @@ render();calc();
         if(L&&L.log(k,"train",1)){sy.led=["train"];msg.push("账本「完成一次训练」+1");}}
     }else if(cat==="water"){var ml=parseMl(sub)||parseMl(it.note)||500;if(isT&&C){sy.water=C.addWater(ml);msg.push("喝水 +"+ml+" ml");}}
     else if(cat==="cook"){if(L&&L.log(k,"meal",1)){sy.led=["meal"];msg.push("账本「自己带饭」+"+L.money(L.val("meal")));}}
+    else if(cat==="tidy"||cat==="chore"||cat==="care"){
+      var hid=cat==="tidy"?(/断舍离/.test(sub)?null:(/每日|15/.test(sub)||!sub?"tidy15":"deeporg")):cat==="chore"?(/全屋|打扫/.test(sub)||!sub?"hclean":null):(/身体乳/.test(sub)?"lotion":/防晒/.test(sub)?"sun":/卸妆|洁面/.test(sub)?"cleanse":null);
+      var HN={tidy15:"收纳 15 分钟",deeporg:"深度收纳一个区域",hclean:"自己做一次全屋打扫",lotion:"洗澡后擦身体乳",sun:"出门涂防晒",cleanse:"晚上认真卸妆洁面"};
+      if(hid&&L&&L.log(k,hid,1)){sy.led=[hid];msg.push("账本「"+HN[hid]+"」+"+(L.money&&L.val?L.money(L.val(hid)):"1"));}
+      else if(cat==="tidy"&&/断舍离/.test(sub))msg.push("卖掉了的话，到账本「断舍离」填卖出的钱");}
     else if(cat==="study"||cat==="revise"){if(L&&L.log(k,"study",1)){sy.led=["study"];msg.push("账本「学习了 30 分钟」+1");}}
     else if(cat==="shop"||cat==="grocery"){var E=window.__expenses,amt=parseAmt(it.note);
       if(E&&amt&&k<=todayKey){sy.exp=E.add(amt,cat==="grocery"?"买菜":"购物",(it.sub?it.sub+" ":"")+(it.note||"").replace(/[$¥]?\s*\d+(\.\d+)?/,"").trim(),k,"plan");msg.push("日常开支 +$"+amt.toFixed(2));}}
@@ -3688,8 +3744,8 @@ render();calc();
         if(!snap.metadata.fromCache)first=false;
         var days={},sc=null,mm=[];
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
-          if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.memos=mm;cacheLocal();renderCal();renderPanel();renderMemos();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+          if(d.id==="shortcuts"){sc=b.list||null;state.seeded=b.seeded||[];}else if(d.id==="memos")mm=b.list||[];else if(b.date&&b.items)days[b.date]=b.items;});
+        state.days=days;state.shortcuts=sc;state.memos=mm;if(seedShorts())saveShorts();cacheLocal();renderCal();renderPanel();renderMemos();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");});
@@ -4750,14 +4806,14 @@ render();calc();
   var $=function(id){return document.getElementById(id)};
   var TITLES={today:["今天",""],set:["设置","备份、主题颜色、添加习惯、算法说明"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
   var TOC={
-    ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
+    ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"],["价格评估","secPrice"]],
     today:[],
     set:[["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
   };
-  var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secAdd:0,secTheme:0,
+  var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secPrice:0,secAdd:0,secTheme:0,
     cutTrain:0,cutFood:0,cutWater:0,cutCardio:1,cutBody:1,cutAdvice:1,cutCal:0,plMemo:0,cyLog:0,cyAdvice:0,cyCal:0,cyHist:0,cySet:1};
   var st={};try{st=JSON.parse(localStorage.getItem("fold-state")||"{}")||{}}catch(e){}
   function saveSt(){try{localStorage.setItem("fold-state",JSON.stringify(st))}catch(e){}}
