@@ -5,6 +5,7 @@
   function btn(c,x,f,id){var b=el("button",c,x);b.type="button";if(id)b.id=id;b.onclick=f;return b}
   function toast(m){try{window.__toastAny&&window.__toastAny(m)}catch(e){}}
   function hrs(h){h=Math.round(h*10)/10;return (h%1?h.toFixed(1):String(h))}
+  function amt(a,p){return p<1?Math.round(a*60)+" / "+Math.round(p*60)+" 分":hrs(a)+" / "+hrs(p)+" 时"}
   function go(tab,id){if(typeof showTab==="function")showTab(tab);setTimeout(function(){var e=id&&$(id);if(!e)return;if(e.classList.contains("folded")){var h=e.firstElementChild;if(h)h.click()}e.scrollIntoView({block:"start"})},60)}
   var KIND={project:"进行中",parked:"停放",routine:"例行"},LT={g:"绿",y:"黄",r:"红"};
 
@@ -20,20 +21,20 @@
     if(T.planned>T.cap*60){var a=el("p","td-alert");a.textContent="今天排了 "+hrs(T.planned/60)+" 小时，超过"+(T.weekend?"周末":"工作日")+"上限 "+hrs(T.cap)+" 小时，挪一项到别的天";card.appendChild(a)}
     if(!st.length){card.appendChild(el("p","td-note","还没有主线。到「设置 › 生活主线」加上每条线每周打算花几小时。"));return}
     var di=dayIdx();
-    function addBtns(row,s){var b=el("div","td-btns");
-      [30,60].forEach(function(m){b.appendChild(btn("td-btn td-keep","+"+m+"分",function(){A.log(s.id,m);toast("「"+s.name+"」记了 "+m+" 分钟")},"tdLn-"+s.id+"-"+m))});
+    function addBtns(row,s,one){var b=el("div","td-btns");
+      (one?[30]:[30,60]).forEach(function(m){b.appendChild(btn("td-btn td-keep","+"+m+"分",function(){A.log(s.id,m);toast("「"+s.name+"」记了 "+m+" 分钟")},"tdLn-"+s.id+"-"+m))});
       var last=T.last[s.id];if(last)b.appendChild(btn("td-btn ghost td-keep","撤销",function(){A.unlog(last)},"tdLnU-"+s.id));row.appendChild(b)}
     function bar(s){var b=el("div","td-bar"),i=el("i");i.style.width=Math.min(100,s.hrs?s.act/s.hrs*100:0)+"%";b.appendChild(i);return b}
     function behind(s){return di>=3&&s.act<s.hrs*di/7*0.6}
     st.filter(function(s){return s.kind==="project"}).forEach(function(s){var p=el("div","ln-p");
       var r=el("div","ln-top");r.appendChild(el("b",null,s.name));r.appendChild(el("span","ln-num",hrs(s.act)+" / "+hrs(s.hrs)+" 小时"+(T.by[s.id]?" · 今天 "+T.by[s.id]+" 分":"")));
       if(behind(s))r.appendChild(el("span","ln-tag","进度落后"));p.appendChild(r);p.appendChild(bar(s));
-      var nx=el("div","ln-next");if(s.next)nx.appendChild(el("span",null,"下一步："+s.next));else nx.appendChild(btn("pl-link td-keep","写下一步 ›",function(){go("set","secLines")}));p.appendChild(nx);
-      addBtns(p,s);card.appendChild(p)});
-    var rest=st.filter(function(s){return s.kind!=="project"});
-    if(rest.length){var g=el("div","ln-rest");rest.forEach(function(s){var r=el("div","ln-row");
-      var n=el("span","ln-name",s.name+(s.kind==="parked"?"（停放）":""));r.appendChild(n);
-      var v=el("div","ln-v");v.appendChild(el("span",null,hrs(s.act)+" / "+hrs(s.hrs)+" 时"));v.appendChild(bar(s));r.appendChild(v);addBtns(r,s);g.appendChild(r)});card.appendChild(g)}
+      var nr=el("div","ln-nrow"),nx=el("div","ln-next");if(s.next)nx.appendChild(el("span",null,"下一步："+s.next));else nx.appendChild(btn("pl-link td-keep","写下一步 ›",function(){go("set","secLines")}));nr.appendChild(nx);
+      addBtns(nr,s);p.appendChild(nr);card.appendChild(p)});
+    [["parked","停放 · 保持不忘"],["routine","例行"]].forEach(function(gk){var rest=st.filter(function(s){return s.kind===gk[0]});if(!rest.length)return;
+      var g=el("div","ln-rest");g.appendChild(el("span","ln-glbl",gk[1]));rest.forEach(function(s){var r=el("div","ln-row");
+      r.appendChild(el("span","ln-name",s.name));
+      var v=el("div","ln-v");v.appendChild(el("span",null,amt(s.act,s.hrs)));v.appendChild(bar(s));r.appendChild(v);addBtns(r,s,true);g.appendChild(r)});card.appendChild(g)});
   }
 
   /* ---------- 每周回顾：计划对比实际 ---------- */

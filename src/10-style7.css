@@ -218,7 +218,7 @@
 .toc[hidden]{display:none!important}
 .tabs button{white-space:nowrap}
 @media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}/* 生活主线 */
-#td-lines .ln-p{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+#td-lines .ln-p{display:flex;flex-direction:column;gap:4px;padding:8px 0;border-top:1px solid var(--line)}
 #td-lines .ln-p:first-of-type{border-top:0}
 #td-lines .ln-top{display:flex;flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
 #td-lines .ln-top b{font-size:1.02rem}
@@ -245,3 +245,9 @@
 .pl-lsel{font-size:.82rem;max-width:100%}
 .pl-min{width:64px}
 @media (max-width:640px){.ln-srow{grid-template-columns:1fr 1fr;padding:8px 0;border-top:1px solid var(--line)}.ln-srow .ln-nx{grid-column:1/-1;order:5}.ln-srow .pl-del{justify-self:end}}
+.ln-nrow{display:flex;flex-direction:row;align-items:center;gap:8px;justify-content:space-between}
+.ln-nrow .ln-next{flex:1;min-width:0;font-size:.88rem}
+#td-lines .ln-nrow .td-btns{flex-wrap:nowrap}
+.ln-glbl{font-size:.75rem;color:var(--muted);letter-spacing:.04em}
+.ln-row{min-height:34px}
+#td-lines .ln-row .td-btn{min-height:32px;padding-top:2px;padding-bottom:2px}
