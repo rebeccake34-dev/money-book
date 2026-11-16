@@ -217,4 +217,31 @@
 .bk-how summary{cursor:pointer;font-size:.86rem;font-weight:600;color:var(--muted)}
 .toc[hidden]{display:none!important}
 .tabs button{white-space:nowrap}
-@media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}
+@media (max-width:560px){.tabs{gap:2px}.tabs button{flex:1 1 auto;padding:10px 3px;font-size:.8rem}}/* 生活主线 */
+#td-lines .ln-p{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line)}
+#td-lines .ln-p:first-of-type{border-top:0}
+#td-lines .ln-top{display:flex;flex-direction:row;align-items:baseline;gap:8px;flex-wrap:wrap}
+#td-lines .ln-top b{font-size:1.02rem}
+.ln-num{color:var(--muted);font-size:.86rem}
+.ln-tag{font-size:.75rem;padding:1px 7px;border-radius:9px;background:var(--warn-soft);color:var(--warn)}
+.ln-next{font-size:.92rem;color:var(--ink)}
+#td-lines .td-btns{flex-wrap:wrap}
+.ln-rest{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.ln-row{display:grid;grid-template-columns:minmax(68px,1fr) minmax(90px,1.4fr) auto;align-items:center;gap:8px;min-height:38px}
+.ln-name{font-size:.94rem}
+.ln-v{display:flex;flex-direction:column;font-size:.82rem;color:var(--muted)}
+.ln-v .td-bar{margin-top:2px}
+.ln-dot{display:inline-block;flex:none;width:9px;height:9px;min-height:0;border-radius:50%;margin-right:5px;vertical-align:middle}
+.ln-dg{background:var(--accent)}.ln-dy{background:var(--warn)}.ln-dr{background:var(--bad)}
+.ln-week h3{margin:0 0 8px}
+.ln-week .tbl{margin-bottom:6px}
+.ln-week tr.ln-sum td{font-weight:600;border-top:1px solid var(--line)}
+.ln-set{display:flex;flex-direction:column;gap:8px}
+.ln-srow{display:grid;grid-template-columns:minmax(90px,1.2fr) minmax(84px,.8fr) auto minmax(140px,2fr) auto;gap:8px;align-items:center}
+.ln-h{display:flex;flex-direction:row;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);white-space:nowrap}
+.ln-h input{width:64px}
+.ln-cap{display:flex;flex-direction:row;flex-wrap:wrap;gap:12px;align-items:center}
+.pl-lrow{display:flex;flex-direction:row;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px}
+.pl-lsel{font-size:.82rem;max-width:100%}
+.pl-min{width:64px}
+@media (max-width:640px){.ln-srow{grid-template-columns:1fr 1fr;padding:8px 0;border-top:1px solid var(--line)}.ln-srow .ln-nx{grid-column:1/-1;order:5}.ln-srow .pl-del{justify-self:end}}

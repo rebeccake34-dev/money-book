@@ -56,9 +56,26 @@ async def main():
             check("记一笔开支", "$19.50" in await pg.inner_text("#td-exp"))
             await pg.click("#tdP-p1"); await pg.wait_for_timeout(400)
             check("计划打勾", "1/1" in await pg.inner_text("#td-plan"))
-            check("本周和本月小结", "净省下" in await pg.inner_text("#td-week") and "净省下" in await pg.inner_text("#td-month"))
+            check("本周小结", "净省下" in await pg.inner_text("#td-week"))
+            check("主线卡显示", "0 / 6 小时" in await pg.inner_text("#td-lines"))
+            await pg.click("#tdLn-ln1-30"); await pg.wait_for_timeout(300)
+            check("主线 +30 分", "0.5 / 6 小时" in await pg.inner_text("#td-lines"))
+            await pg.click("#tdLnU-ln1"); await pg.wait_for_timeout(300)
+            check("主线撤销", "0 / 6 小时" in await pg.inner_text("#td-lines"))
             for t in ["tabLedger", "tabCut", "tabPlan", "tabCycle", "tabSet"]:
                 await pg.click("#" + t); await pg.wait_for_timeout(400)
+                if t == "tabLedger":
+                    check("每周回顾有主线对比", "计划对比实际" in await pg.inner_text("#lineWeek"))
+                if t == "tabPlan":
+                    await pg.evaluate('(()=>{const s=document.getElementById("plln-p1");s.value="ln3";s.dispatchEvent(new Event("change"))})()'); await pg.wait_for_timeout(300)
+                    check("计划归到主线并记用时", await pg.evaluate('document.getElementById("plmin-p1").value') == "30")
+                if t == "tabSet":
+                    await pg.fill("#lnH-ln1", "8"); await pg.press("#lnH-ln1", "Tab"); await pg.wait_for_timeout(300)
+            await pg.click("#tabToday"); await pg.wait_for_timeout(400)
+            tl = await pg.inner_text("#td-lines")
+            check("设置改计划小时", "0 / 8 小时" in tl)
+            check("计划的用时算进主线", "0.5 / 3" in tl)
+            await pg.click("#tabSet"); await pg.wait_for_timeout(300)
             check("页面没有横向溢出", not await pg.evaluate("document.documentElement.scrollWidth>window.innerWidth+1"))
             check("整理习惯列表", "一次都没点过" in await pg.inner_text("#tidyBody"))
             # 备份 -> 另一个空白浏览器导入

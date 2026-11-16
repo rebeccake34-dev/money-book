@@ -18,7 +18,7 @@
     if(onMore)h.appendChild(btn("td-more",moreTxt||"详情 ›",onMore));box.appendChild(h)}
 
   /* ---------- 固定的卡片容器（表单不重建，输入时不会被打断） ---------- */
-  var S={};["warn","top","hab","fit","food","exp","plan","cyc","week","month","sav"].forEach(function(k){S[k]=el(k==="warn"||k==="top"?"div":"section",k==="warn"?"":k==="top"?"td-hero":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
+  var S={};["warn","top","hab","fit","food","exp","plan","cyc","week","sav"].forEach(function(k){S[k]=el(k==="warn"||k==="top"?"div":"section",k==="warn"?"":k==="top"?"td-hero":"td-card");S[k].id="td-"+k;root.appendChild(S[k])});
   var expHead=el("div"),expForm=el("form","td-form"),expAlert=el("p","td-alert");expForm.noValidate=true;expAlert.hidden=true;
   var expSel=el("select"),expAmt=el("input"),expNote=el("input"),expBtn=el("button","btn primary","记一笔");
   expSel.id="tdExpCat";expSel.setAttribute("aria-label","开支分类");
@@ -167,9 +167,6 @@
     // 本周小结
     box=S.week;box.textContent="";
     if(L&&L.ready()){head(box,"本周小结","周一到今天",function(){go("ledger","secWeek")},"回顾 ›");box.appendChild(vlist(verdict(L.weekStart(t),true)))}
-    // 本月小结
-    box=S.month;box.textContent="";
-    if(L&&L.ready()){var nd=new Date();head(box,"本月小结",(nd.getMonth()+1)+"月 1 日到今天",function(){go("ledger","secWeek")},"上月 ›");box.appendChild(vlist(mverdict(nd.getFullYear(),nd.getMonth(),true)))}
     // 储蓄
     box=S.sav;box.textContent="";
     if(window.__savings){var sv=window.__savings.stats();

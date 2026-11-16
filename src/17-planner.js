@@ -43,10 +43,24 @@
   function setRange(){var f=firstDay(),n=Math.round((end-f)/864e5)+1;
     $("plRange").textContent="从 "+f.getFullYear()+"年"+(f.getMonth()+1)+"月"+f.getDate()+"日 起 · 可以安排到 2027 年 12 月 31 日 · 过去的记录都会保留";}
 
-  var state={shortcuts:null,days:{},memos:[]};
-  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];}}catch(e){}
+  var state={shortcuts:null,days:{},memos:[],lines:null};
+  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.lines=c.lines||null;}}catch(e){}
   var sel=todayKey,openCat=null,editMode=false,addingShortcut=false;
-  var pendStart="",pendEnd="",paneMode="view",editId=null;
+  var pendStart="",pendEnd="",paneMode="view",editId=null,pendLine=null;
+  // ---- 主线：每条线每周计划几小时；计划项可以归到某条主线，完成时记实际用时 ----
+  var LDEF=[
+    {id:"ln1",name:"学习",kind:"project",hrs:6,next:"",h:215,cats:["study","revise"]},
+    {id:"ln2",name:"健身",kind:"routine",hrs:4,next:"",h:0,cats:["fit"]},
+    {id:"ln3",name:"读书",kind:"routine",hrs:3,next:"",h:280,cats:["read"]},
+    {id:"ln4",name:"家务",kind:"routine",hrs:4,next:"",h:30,cats:["cook"]}
+  ];
+  function lineList(){return (state.lines&&state.lines.list)||LDEF;}
+  function lineOf(id){var l=lineList();for(var i=0;i<l.length;i++)if(l[i].id===id)return l[i];return null;}
+  function lineCap(){var c=(state.lines&&state.lines.cap)||{};return {wd:c.wd!=null?c.wd:5,we:c.we!=null?c.we:3};}
+  function autoLine(cat){var s=findShort(cat),l=lineList();for(var i=0;i<l.length;i++){if((l[i].cats||[]).indexOf(cat)>=0)return l[i].id;if(s&&s.name===l[i].name)return l[i].id;}return "";}
+  function durMin(it){var a=toMin(it.start),b=toMin(it.end);return a!=null&&b!=null&&b>a?b-a:null;}
+  function itemMin(it){return it.done&&it.line&&lineOf(it.line)?(it.min!=null?it.min:(durMin(it)||30)):0;}
+  function saveLines(){write("lines",{list:lineList(),cap:lineCap()});}
   var col=null,chains={};
 
   function shorts(){return state.shortcuts||DEFAULTS;}
@@ -153,8 +167,9 @@
   function addItem(cat,sub,name){
     var l=state.days[sel]||(state.days[sel]=[]);
     var it={id:uid(),cat:cat,sub:sub||"",name:name||"",note:"",done:false,start:pendStart||"",end:pendStart?(pendEnd||""):""};
+    var ln=pendLine!=null?pendLine:autoLine(cat);if(ln)it.line=ln;
     l.push(it);saveDay(sel);renderCal();renderPanel();
-    var d=parse(sel);toast("已添加「"+label(it)+"」到 "+(d.getMonth()+1)+"月"+d.getDate()+"日"+(it.start?" "+fmtRange(it):""));
+    var d=parse(sel),lo=it.line&&lineOf(it.line);toast("已添加「"+label(it)+"」到 "+(d.getMonth()+1)+"月"+d.getDate()+"日"+(it.start?" "+fmtRange(it):"")+(lo?" · 主线："+lo.name:""));
   }
   // ---- edit an item's time / day in place ----
   function m2t(m){m=Math.max(0,Math.min(23*60+59,m));return pad(Math.floor(m/60))+":"+pad(m%60);}
@@ -190,7 +205,7 @@
   }
   function renderPanel(){
     var a=document.activeElement;
-    if(a&&panel.contains(a)&&(a.classList.contains("pl-note")||(a.closest&&a.closest(".pl-ted")&&a.tagName==="INPUT")))return;
+    if(a&&panel.contains(a)&&(a.classList.contains("pl-note")||a.classList.contains("pl-min")||(a.closest&&a.closest(".pl-ted")&&a.tagName==="INPUT")))return;
     var tlPrev=panel.querySelector(".pl-tl"),tlScroll=tlPrev?tlPrev.scrollTop:null;
     panel.textContent="";
     var d=parse(sel),nItems=(state.days[sel]||[]).length;
@@ -257,7 +272,7 @@
     var list=el("div","pl-list");
     if(!items.length)list.appendChild(el("p","pl-empty","还没有安排。切到「添加计划」加进来。"));
     sorted(items).forEach(function(it){
-      var row=el("div","pl-item"+(it.done?" pl-done":""));row.style.setProperty("--h",hueOf(it.cat));
+      var row=el("div","pl-item"+(it.done?" pl-done":""));var lo0=it.line&&lineOf(it.line);row.style.setProperty("--h",it.cat==="line"&&lo0?lo0.h:hueOf(it.cat));
       var cb=el("input");cb.type="checkbox";cb.checked=!!it.done;cb.id="plcb-"+it.id;cb.setAttribute("aria-label","完成 "+label(it));
       cb.onchange=function(){toggleDone(it,cb.checked);};
       var mid=el("div");mid.appendChild(el("div","pl-name",label(it)));
@@ -265,6 +280,16 @@
       var tbtn=btn("pl-tbtn"+(editId===it.id?" pl-on":""),(it.start?fmtRange(it):"不定时")+"  ✎ 调整时间",function(){editId=editId===it.id?null:it.id;renderPanel();});
       tbtn.setAttribute("aria-expanded",String(editId===it.id));itm.appendChild(tbtn);
       if(editId===it.id)itm.appendChild(timeEditor(it,tbtn));      mid.appendChild(itm);
+      if(it.cat!=="work"){var lr=el("div","pl-lrow"),ls0=el("select","pl-lsel");ls0.id="plln-"+it.id;ls0.setAttribute("aria-label","归到哪条主线");
+        var o0=el("option",null,"不算主线");o0.value="";ls0.appendChild(o0);
+        lineList().forEach(function(l){var o=el("option",null,"主线："+l.name);o.value=l.id;ls0.appendChild(o);});
+        ls0.value=lo0?it.line:"";ls0.onchange=function(){if(ls0.value)it.line=ls0.value;else delete it.line;if(it.line&&it.done&&it.min==null)it.min=durMin(it)||30;saveDay(sel);renderPanel();};
+        lr.appendChild(ls0);
+        if(lo0&&it.done){var mi=el("input","pl-min");mi.type="number";mi.min="0";mi.max="900";mi.step="5";mi.inputMode="numeric";mi.id="plmin-"+it.id;mi.value=itemMin(it);mi.setAttribute("aria-label","实际用时（分钟）");
+          mi.onchange=function(){var v=Math.max(0,Math.min(900,Math.round(+mi.value||0)));it.min=v;mi.value=v;saveDay(sel);try{window.__todayRender&&window.__todayRender();}catch(e){}};
+          mi.onkeydown=function(e){if(e.key==="Enter")mi.blur();};
+          lr.appendChild(el("span","note","实际用时"));lr.appendChild(mi);lr.appendChild(el("span","note","分钟"));}
+        mid.appendChild(lr);}
       var note=el("input","pl-note");note.type="text";note.id="plnote-"+it.id;note.value=it.note||"";note.placeholder="备注：时长、金额、内容…";
       note.onchange=function(){it.note=note.value;saveDay(sel);};
       note.onkeydown=function(e){if(e.key==="Enter")note.blur();};
@@ -289,6 +314,10 @@
     ta.onchange=function(){pendStart=ta.value;renderPanel();};te.onchange=function(){pendEnd=te.value;renderPanel();};
     tb.appendChild(el("span","note","自定义"));tb.appendChild(ta);tb.appendChild(el("span",null,"–"));tb.appendChild(te);
     tq.appendChild(tb);panel.appendChild(tq);
+    var lq=el("div","pl-tq");lq.appendChild(el("span","pl-lbl","主线"));var lch=el("div","pl-tchips");
+    [["","不选"]].concat(lineList().filter(function(l){return l.kind!=="parked";}).concat(lineList().filter(function(l){return l.kind==="parked";})).map(function(l){return [l.id,l.name];})).forEach(function(p){
+      var on=pendLine===p[0];var b=btn("pl-tc"+(on?" pl-on":""),p[1],function(){pendLine=pendLine===p[0]?null:p[0];renderPanel();});b.setAttribute("aria-pressed",String(on));lch.appendChild(b);});
+    lq.appendChild(lch);panel.appendChild(lq);
 
     // shortcuts
     var sec=el("div");sec.appendChild(el("p","pl-lbl","点快捷键添加 · 点开可选细项"));
@@ -391,8 +420,9 @@
   }
   function toggleDone(it,v){
     var msg="";it.done=v;
+    if(v&&it.line&&lineOf(it.line)){if(it.min==null)it.min=durMin(it)||30;msg="主线「"+lineOf(it.line).name+"」记 "+it.min+" 分钟，可在清单里改";}
     if(it.memo){var mo=state.memos.filter(function(m){return m.id===it.memo;})[0];if(mo){if(mo.rep){var a=(mo.doneDates||[]).filter(function(x){return x!==sel;});if(v)a.push(sel);mo.doneDates=a;}else{mo.done=v;mo.doneAt=v?Date.now():null;}saveMemos();renderMemos();}}
-    if(v){var r=syncOn(it,sel);if(r.sy)it.sync=r.sy;msg=r.msg;}
+    if(v){var r=syncOn(it,sel);if(r.sy)it.sync=r.sy;msg=[r.msg,msg].filter(Boolean).join(" · ");}
     else if(it.sync){syncOff(it,sel);msg="已撤销同步的打卡";}
     saveDay(sel);renderCal();renderPanel();
     toast(v?("完成「"+label(it)+"」"+(msg?" · "+msg:"")):(msg||"已取消完成"));
@@ -610,7 +640,7 @@
   window.__bk.plan={
     dump:function(){return JSON.parse(JSON.stringify(state));},
     merge:function(d){if(!d||!d.days)return 0;var n=0;
-      function sig(i){return i.cutRef?"c:"+i.cutRef:i.auto?"a:"+i.auto+"|"+(i.sub||""):i.from?"f:"+i.from:i.memo?"m:"+i.memo:"s:"+[i.cat,i.sub,i.name,i.start,i.end,i.note].join("|");}
+      function sig(i){return i.cat==="line"?"l:"+i.id:i.cutRef?"c:"+i.cutRef:i.auto?"a:"+i.auto+"|"+(i.sub||""):i.from?"f:"+i.from:i.memo?"m:"+i.memo:"s:"+[i.cat,i.sub,i.name,i.start,i.end,i.note].join("|");}
       Object.keys(d.days).forEach(function(k){if(!/^\d{4}-\d\d-\d\d$/.test(k))return;var b=d.days[k]||[];if(!b.length)return;
         var a=(state.days[k]||[]).slice(),ids={},sigs={},ch=false;a.forEach(function(i){ids[i.id]=1;sigs[sig(i)]=1;});
         b.forEach(function(i){if(!i||!i.id||ids[i.id]||sigs[sig(i)])return;a.push(i);ids[i.id]=1;sigs[sig(i)]=1;ch=true;});
@@ -618,7 +648,35 @@
       var mid={},mc=false;state.memos.forEach(function(m){mid[m.id]=1;});
       (d.memos||[]).forEach(function(m){if(m&&m.id&&!mid[m.id]){state.memos.push(m);mid[m.id]=1;mc=true;n++;}});if(mc)saveMemos();
       if(!state.shortcuts&&d.shortcuts){state.shortcuts=d.shortcuts;saveShorts();}
-      renderCal();renderPanel();renderMemos();return n;}
+      if(!state.lines&&d.lines&&d.lines.list){state.lines=d.lines;saveLines();n++;}
+      renderCal();renderPanel();renderMemos();linesChanged();return n;}
+  };
+  // ---- 主线接口：今天页、每周回顾、设置页都从这里取数 ----
+  function linesChanged(){try{window.__todayRender&&window.__todayRender();}catch(e){}try{window.__linesRender&&window.__linesRender();}catch(e){}}
+  function wkStart(k){var d=parse(k||todayKey),w=(d.getDay()+6)%7;d.setDate(d.getDate()-w);return ymd(d);}
+  function addD(k,n){var d=parse(k);d.setDate(d.getDate()+n);return ymd(d);}
+  function weekMins(ws){var o={};for(var i=0;i<7;i++){(state.days[addD(ws,i)]||[]).forEach(function(it){var m=itemMin(it);if(m)o[it.line]=(o[it.line]||0)+m;});}return o;}
+  function light(r){return r>=0.9?"g":r>=0.6?"y":"r";}
+  function firstLine(){var f="9999";Object.keys(state.days).forEach(function(k){if(k<f&&(state.days[k]||[]).some(function(i){return i.line;}))f=k;});return f;}
+  window.__lines={
+    list:function(){return JSON.parse(JSON.stringify(lineList()));},
+    cap:lineCap,
+    set:function(list,cap){state.lines={list:JSON.parse(JSON.stringify(list)),cap:cap||lineCap(),at:Date.now()};saveLines();renderPanel();linesChanged();},
+    weekStart:wkStart,addDays:addD,
+    week:function(ws){return weekMins(ws||wkStart());},
+    // 一周的计划对比实际：hrs 计划小时，act 实际小时，ratio，light（g/y/r），low 连续几周低于 60%（不含本周）
+    status:function(ws){ws=ws||wkStart();var cur=ws===wkStart(),m=weekMins(ws);
+      return lineList().filter(function(l){return l.hrs>0;}).map(function(l){var act=(m[l.id]||0)/60,r=act/l.hrs,low=0;
+        var base=cur?addD(ws,-7):ws;for(var i=0;i<2;i++){var pk=addD(base,-7*i);if(addD(pk,6)<firstLine())break;var pm=weekMins(pk);if(((pm[l.id]||0)/60)/l.hrs<0.6)low++;else break;}
+        return {id:l.id,name:l.name,kind:l.kind,hrs:l.hrs,next:l.next||"",h:l.h,act:Math.round(act*10)/10,ratio:r,light:light(r),low:low,pre:addD(ws,6)<firstLine()};});},
+    // 今天：每条线今天记了多少分钟、最后一次快速记录（可撤销）、今天排了多少小时
+    today:function(){var items=state.days[todayKey]||[],by={},last={},planned=0;
+      items.forEach(function(it){var m=itemMin(it);if(m)by[it.line]=(by[it.line]||0)+m;if(it.cat==="line"&&it.quick)last[it.line]=it.id;
+        if(it.cat!=="work"&&it.cat!=="line"){var d=durMin(it);if(d)planned+=d;}});
+      var wd=parse(todayKey).getDay(),c=lineCap();return {by:by,last:last,planned:planned,cap:(wd===0||wd===6)?c.we:c.wd,weekend:wd===0||wd===6};},
+    log:function(id,min){var l=lineOf(id);if(!l)return null;var it={id:uid(),cat:"line",sub:"",name:l.name,note:"",done:true,start:"",end:"",line:id,min:min,quick:1};
+      (state.days[todayKey]||(state.days[todayKey]=[])).push(it);saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return it.id;},
+    unlog:function(itemId){var l=state.days[todayKey]||[],n=l.length;state.days[todayKey]=l.filter(function(i){return i.id!==itemId;});if(state.days[todayKey].length!==n){saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return true;}return false;}
   };
   window.__workOn=function(k){return (state.days[k]||[]).filter(function(i){return i.cat==="work"&&i.start;}).map(function(i){return {start:i.start,end:i.end};});};
   window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");
@@ -764,12 +822,12 @@
         if(!snap.metadata.fromCache){clearTimeout(timer);setStatus("已同步");}
         if(first&&snap.empty&&!snap.metadata.fromCache){first=false;
           Object.keys(state.days).forEach(function(k){if(state.days[k].length)write("day-"+k,{date:k,items:state.days[k]});});
-          if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();return;}
+          if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();if(state.lines)saveLines();return;}
         if(!snap.metadata.fromCache)first=false;
-        var days={},sc=null,mm=[];
+        var days={},sc=null,mm=[],ln=null;
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
-          if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.memos=mm;cacheLocal();renderCal();renderPanel();renderMemos();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+          if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
+        state.days=days;state.shortcuts=sc;state.memos=mm;state.lines=ln;cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");});
