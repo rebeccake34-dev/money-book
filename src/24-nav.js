@@ -4,7 +4,7 @@
   var TOC={
     ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
+    set:[["成长奖励","secGame"],["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]

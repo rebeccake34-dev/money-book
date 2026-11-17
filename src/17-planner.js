@@ -678,6 +678,8 @@
       (state.days[todayKey]||(state.days[todayKey]=[])).push(it);saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return it.id;},
     unlog:function(itemId){var l=state.days[todayKey]||[],n=l.length;state.days[todayKey]=l.filter(function(i){return i.id!==itemId;});if(state.days[todayKey].length!==n){saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return true;}return false;}
   };
+  // 成长等级用：某一天主线分钟、其他已完成事项数、是不是上班日
+  window.__planXp=function(k){var m=0,o=0,w=false;(state.days[k]||[]).forEach(function(i){if(i.cat==="work"){if(i.start)w=true;return;}var x=itemMin(i);if(x)m+=x;else if(i.done&&i.cat!=="line")o++;});return {min:m,other:o,work:w};};
   window.__workOn=function(k){return (state.days[k]||[]).filter(function(i){return i.cat==="work"&&i.start;}).map(function(i){return {start:i.start,end:i.end};});};
   window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");
     setTimeout(function(){var c=cal.querySelector('[data-k="'+k+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"});},60);};

@@ -251,3 +251,29 @@
 .ln-glbl{font-size:.75rem;color:var(--muted);letter-spacing:.04em}
 .ln-row{min-height:34px}
 #td-lines .ln-row .td-btn{min-height:32px;padding-top:2px;padding-bottom:2px}
+/* 成长等级 */
+.gm-today{display:flex;align-items:center;gap:12px}
+.gm-v{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.gm-v b{font-size:.95rem}
+.gm-streak{flex:none;display:flex;flex-direction:column;align-items:center;min-width:64px;padding:6px 8px;border-radius:12px;background:var(--glass-in,var(--bg));border:1px solid var(--line)}
+.gm-streak b{font-family:var(--mono);font-size:1.3rem;color:var(--accent);line-height:1.1}
+.gm-streak small{font-size:.7rem;color:var(--muted)}
+.gm-boss .td-v{min-width:0;overflow-wrap:anywhere}
+.gm-shop{display:flex;flex-direction:column;gap:2px;border-top:1px solid var(--line);padding-top:6px}
+.gm-item{display:flex;align-items:center;gap:10px;min-height:44px}
+.gm-it{flex:1;min-width:0;display:flex;flex-direction:column}
+.gm-it span{font-size:.92rem;overflow-wrap:anywhere}
+.gm-it small{font-size:.76rem;color:var(--muted)}
+.gm-item .td-btn:disabled{opacity:.5;cursor:default}
+.td-btn.gm-warn{border-color:var(--warn);color:var(--warn)}
+.gm-week{display:flex;flex-direction:column;gap:6px}
+.gm-week:empty{display:none}
+.gm-set{display:flex;flex-direction:column;gap:8px}
+.gm-srow{display:grid;grid-template-columns:minmax(120px,2fr) auto auto minmax(90px,1fr) auto;gap:8px;align-items:center}
+.gm-srow .ln-h input{width:72px}
+.gm-brow{display:grid;grid-template-columns:auto minmax(140px,1fr) auto auto;gap:8px;align-items:center}
+.gm-brow .ln-h input{width:72px}
+.gm-mon{font-weight:600;font-size:.9rem;min-width:36px}
+.gm-done{font-size:.78rem;color:var(--good,var(--accent))}
+@media (max-width:640px){.gm-srow{grid-template-columns:1fr 1fr;padding:8px 0;border-top:1px solid var(--line)}.gm-srow>input{grid-column:1/-1}.gm-srow .pl-del{justify-self:end}.gm-brow{grid-template-columns:auto 1fr}.gm-brow .ln-h{grid-column:2}}
+.gm-boss .td-k,#td-game .td-k{white-space:nowrap}

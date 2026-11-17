@@ -62,6 +62,22 @@ async def main():
             check("主线 +30 分", "0.5 / 6 小时" in await pg.inner_text("#td-lines"))
             await pg.click("#tdLnU-ln1"); await pg.wait_for_timeout(300)
             check("主线撤销", "0 / 6 小时" in await pg.inner_text("#td-lines"))
+            check("成长卡显示", "Lv.1" in await pg.inner_text("#td-game"))
+            x0 = await pg.evaluate("window.__game.calc().today.xp")
+            for _ in range(4):
+                await pg.click("#tdLn-ln1-60"); await pg.wait_for_timeout(250)
+            check("主线用时加经验", await pg.evaluate("window.__game.calc().today.xp") == x0 + 240)
+            a0 = await pg.evaluate("window.__game.calc().avail")
+            await pg.click("#gmShop"); await pg.wait_for_timeout(250)
+            await pg.click("#gmR-r3"); await pg.wait_for_timeout(250)
+            check("超预算要再点一次", "确认兑换" in await pg.inner_text("#gmR-r3"))
+            await pg.click("#gmR-r3"); await pg.wait_for_timeout(400)
+            check("兑换扣经验", await pg.evaluate("window.__game.calc().avail") == a0 - 200)
+            check("兑换自动记开支", "$26.50" in await pg.inner_text("#td-exp"))
+            await pg.click("#gmRU"); await pg.wait_for_timeout(400)
+            check("撤销兑换", await pg.evaluate("window.__game.calc().avail") == a0 and "$19.50" in await pg.inner_text("#td-exp"))
+            for _ in range(4):
+                await pg.click("#tdLnU-ln1"); await pg.wait_for_timeout(250)
             for t in ["tabLedger", "tabCut", "tabPlan", "tabCycle", "tabSet"]:
                 await pg.click("#" + t); await pg.wait_for_timeout(400)
                 if t == "tabLedger":
