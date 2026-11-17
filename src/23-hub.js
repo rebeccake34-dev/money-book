@@ -215,6 +215,7 @@
     if(d.cut)out.push("运动打卡 "+cnt(d.cut.days)+" 天");
     if(d.plan)out.push("日常计划 "+cnt(d.plan.days)+" 天"+((d.plan.memos||[]).length?"，备忘 "+d.plan.memos.length+" 条":""));
     if(d.cycle)out.push("生理期 "+(d.cycle.periods||[]).length+" 次，每天记录 "+cnt(d.cycle.logs)+" 天");
+    if(d.mood&&d.mood.days&&Object.keys(d.mood.days).length)out.push("心情 "+Object.keys(d.mood.days).length+" 天");
     if(d.game&&(d.game.used||[]).length)out.push("奖励兑换 "+d.game.used.length+" 次");
     if(d.pay&&(d.pay.payslips||[]).length)out.push("工资单 "+d.pay.payslips.length+" 张");
     return out}
@@ -232,7 +233,7 @@
     bkPending=o;bkMode="confirm";renderBackup()}
   function doMerge(){var o=bkPending,L=window.__ledger;if(!o)return;if(!L||!L.ready()){toast("还在读取记录，等几秒再试");return}
     var B=window.__bk||{},n=0,bad=0;
-    ["ledger","exp","savings","cut","plan","cycle","pay","game"].forEach(function(k){if(!B[k]||!o.data[k])return;try{n+=B[k].merge(JSON.parse(JSON.stringify(o.data[k])))||0}catch(e){bad++;try{window.__debugPush&&window.__debugPush("merge-"+k,e)}catch(x){}}});
+    ["ledger","exp","savings","cut","plan","cycle","pay","game","mood"].forEach(function(k){if(!B[k]||!o.data[k])return;try{n+=B[k].merge(JSON.parse(JSON.stringify(o.data[k])))||0}catch(e){bad++;try{window.__debugPush&&window.__debugPush("merge-"+k,e)}catch(x){}}});
     if(o.data.theme&&!lsGet("theme-color")){lsSet("theme-color",o.data.theme)}
     bkPending=null;bkMode=null;renderBackup();sched();
     toast(bad?"合并了一部分，有 "+bad+" 个板块没成功，可以再导入一次":n?"合并完成：补上了 "+n+" 处记录":"两边已经一致，没有需要补的记录")}

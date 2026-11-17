@@ -973,7 +973,34 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .ord-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .ord-btn.ghost{border-style:dashed;color:var(--muted)}
 .ord-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-#cut .burn-in label{flex:none;flex-direction:row;flex-wrap:nowrap;white-space:nowrap}</style>
+#cut .burn-in label{flex:none;flex-direction:row;flex-wrap:nowrap;white-space:nowrap}
+/* 今天心情 */
+.md-faces{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.md-face{display:flex;flex-direction:column;align-items:center;gap:2px;border:1px solid var(--line);background:var(--paper);border-radius:14px;padding:8px 2px 6px;cursor:pointer;color:var(--muted);min-height:64px;font:inherit}
+.md-face .md-e{font-size:1.7rem;line-height:1;filter:grayscale(.55);opacity:.75;transition:transform .15s,filter .15s,opacity .15s}
+.md-face small{font-size:.7rem;white-space:nowrap}
+.md-face.on{border-color:var(--accent);background:var(--accent-soft,var(--bg));color:var(--ink);box-shadow:0 0 0 1px var(--accent) inset}
+.md-face.on .md-e{filter:none;opacity:1;transform:scale(1.15)}
+.md-face:hover .md-e{filter:none;opacity:1}
+.md-face:focus-visible,.md-tag:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.md-tags{display:flex;flex-wrap:wrap;gap:6px}
+.md-tag{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.82rem;cursor:pointer;min-height:32px}
+.md-tag.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.md-note{font-size:.9rem}
+.md-week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;border-top:1px solid var(--line);padding-top:8px}
+.md-day{display:flex;flex-direction:column;align-items:center;gap:1px}
+.md-day .md-de{font-size:1.15rem;line-height:1.3;color:var(--muted)}
+.md-day small{font-size:.68rem;color:var(--muted)}
+.md-day.today small{color:var(--accent);font-weight:600}
+/* 板块管理 */
+.blk-g{border:1px solid var(--line);border-radius:10px;padding:8px 12px 10px;margin:0}
+.blk-g legend{font-weight:600;font-size:.9rem;padding:0 4px}
+.blk-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:4px 12px}
+.blk-it{display:flex;align-items:center;gap:8px;min-height:36px;font-size:.9rem;cursor:pointer}
+.blk-it input{width:20px;height:20px;flex:none}
+.ord-row.off span{color:var(--muted)}
+.td-foot{display:flex;justify-content:center;padding:4px 0 8px}
+.blk-it{flex-direction:row!important;justify-content:flex-start;text-align:left;font-weight:400}</style>
 <style>/* ---- 质感层：存折纸感。深色「存折页」是唯一的重点，其余都是安静的纸面 ----
    tokens: --accent-deep 存折页底色 · --sh 带色调的阴影 · --hi 纸面高光 · --trough 凹槽 · --numf 大数字字体 */
 :root{--accent-deep:#14573a;--sh:rgba(23,60,45,.13);--hi:rgba(255,255,255,.9);--trough:#e3ebe6;
@@ -1270,7 +1297,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2350</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/18-0005</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1320,6 +1347,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
     <h2>每周和每月回顾</h2>
     <div class="ln-week" id="lineWeek"></div>
     <div class="gm-week" id="gameWeek"></div>
+    <div class="gm-week" id="moodWeek"></div>
     <div class="wk-verdict" id="weekVerdict"></div>
     <div class="chart-wrap"><svg id="chart" viewBox="0 0 600 220" role="img" aria-label="最近 8 周每周净省下的金额"></svg></div>
     <div class="readout" id="readout">点或指向柱子，看那一周的明细。</div>
@@ -1601,7 +1629,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/17-2350</div>
+  <div class="sync">页面版本 11/18-0005</div>
   </div>
 
   <div id="plan" hidden>
@@ -1642,6 +1670,10 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
   <section class="card" id="secGame">
     <h2>成长等级和奖励</h2>
     <div id="gmSetBody" style="display:flex;flex-direction:column;gap:12px"></div>
+  </section>
+  <section class="card" id="secBlocks">
+    <h2>板块管理</h2>
+    <div id="blkBody" style="display:flex;flex-direction:column;gap:12px"></div>
   </section>
   <section class="card" id="secBackup">
     <h2>数据备份</h2>
@@ -5088,6 +5120,7 @@ render();calc();
     if(d.cut)out.push("运动打卡 "+cnt(d.cut.days)+" 天");
     if(d.plan)out.push("日常计划 "+cnt(d.plan.days)+" 天"+((d.plan.memos||[]).length?"，备忘 "+d.plan.memos.length+" 条":""));
     if(d.cycle)out.push("生理期 "+(d.cycle.periods||[]).length+" 次，每天记录 "+cnt(d.cycle.logs)+" 天");
+    if(d.mood&&d.mood.days&&Object.keys(d.mood.days).length)out.push("心情 "+Object.keys(d.mood.days).length+" 天");
     if(d.game&&(d.game.used||[]).length)out.push("奖励兑换 "+d.game.used.length+" 次");
     if(d.pay&&(d.pay.payslips||[]).length)out.push("工资单 "+d.pay.payslips.length+" 张");
     return out}
@@ -5105,7 +5138,7 @@ render();calc();
     bkPending=o;bkMode="confirm";renderBackup()}
   function doMerge(){var o=bkPending,L=window.__ledger;if(!o)return;if(!L||!L.ready()){toast("还在读取记录，等几秒再试");return}
     var B=window.__bk||{},n=0,bad=0;
-    ["ledger","exp","savings","cut","plan","cycle","pay","game"].forEach(function(k){if(!B[k]||!o.data[k])return;try{n+=B[k].merge(JSON.parse(JSON.stringify(o.data[k])))||0}catch(e){bad++;try{window.__debugPush&&window.__debugPush("merge-"+k,e)}catch(x){}}});
+    ["ledger","exp","savings","cut","plan","cycle","pay","game","mood"].forEach(function(k){if(!B[k]||!o.data[k])return;try{n+=B[k].merge(JSON.parse(JSON.stringify(o.data[k])))||0}catch(e){bad++;try{window.__debugPush&&window.__debugPush("merge-"+k,e)}catch(x){}}});
     if(o.data.theme&&!lsGet("theme-color")){lsSet("theme-color",o.data.theme)}
     bkPending=null;bkMode=null;renderBackup();sched();
     toast(bad?"合并了一部分，有 "+bad+" 个板块没成功，可以再导入一次":n?"合并完成：补上了 "+n+" 处记录":"两边已经一致，没有需要补的记录")}
@@ -5259,7 +5292,7 @@ render();calc();
   if(!S.start)S.start=wkStart(tkey());
   var ref=null,tm=null,loaded=!(window.claude&&window.claude.use);
   function shop(){return S.shop||DEF_SHOP}
-  function save(){S.at=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  function save(){memo=null;S.at=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
     if(!ref)return;clearTimeout(tm);tm=setTimeout(function(){ref.set(JSON.parse(JSON.stringify(S))).catch(function(){toast("成长记录没保存上，稍后再试")})},300)}
 
   /* ---------- 经验值计算（全部来自已有记录） ---------- */
@@ -5271,6 +5304,7 @@ render();calc();
     if(C){try{var r=C.record(k);if(r){var f=0,tg=C.targets(parse(k));
       if(r.exTotal&&r.exDone>=r.exTotal)f+=50;if(r.cardio)f+=30;if(tg.water&&r.water>=tg.water)f+=10;if(tg.pro&&r.pro>=tg.pro)f+=10;add("运动",f)}}catch(e){}}
     if(E&&E.day(k)>0)add("记账",10);
+    if(window.__mood&&window.__mood.get(k))add("心情",5);
     var tot=parts.reduce(function(s,p){return s+p[1]},0);
     return {k:k,xp:tot,parts:parts,work:P.work,target:P.work?TGT.work:TGT.rest}}
   // 一周结束后的结算：主线达标、预算没超、转入储蓄
@@ -5279,7 +5313,8 @@ render();calc();
     if(E){var x=E.week(ws);if(x.totalBudget>0&&!x.over.length&&x.total>0)out.push(["开支没超预算",WEEK.budget])}
     if(L&&L.ready()){var tr=L.transfers()[ws];if(tr>0)out.push(["本周省下的钱转入储蓄",WEEK.save])}
     return out}
-  function calc(){var t=tkey(),days=[],k=S.start,total=0,streak=0,best=0;
+  var memo=null;function calc(){if(memo&&Date.now()-memo.at<150)return memo.g;var g=calc0();memo={at:Date.now(),g:g};return g}
+  function calc0(){var t=tkey(),days=[],k=S.start,total=0,streak=0,best=0;
     if(k>t)k=t;
     for(;k<=t;k=addD(k,1)){var d=dayXp(k);days.push(d);total+=d.xp;
       var hit=d.xp>=d.target;if(k<t){if(hit){streak++;}else streak=Math.floor(streak/2)}else if(hit)streak++;if(streak>best)best=streak}
@@ -5357,7 +5392,7 @@ render();calc();
   function renderSet(){var box=$("gmSetBody");if(!box)return;var a=document.activeElement;if(a&&box.contains(a)&&a.tagName!=="BUTTON")return;box.textContent="";
     var rl=el("ul","td-list");
     ["主线用时：每分钟 1 XP（计划里归到主线并打勾，或今天页「+30分」）","其他计划打勾：每项 5 XP，每天最多 50","好习惯打卡：每次 10 XP，每天最多 60（坏习惯不扣经验，只在账本里扣钱）",
-     "运动：力量动作全部完成 50，有氧 30，喝水达标 10，蛋白质达标 10","记账：当天记过开支 10",
+     "运动：力量动作全部完成 50，有氧 30，喝水达标 10，蛋白质达标 10","记账：当天记过开支 10；记下今天心情 5",
      "每日目标：上班日（计划里有带时间的上班）"+TGT.work+"，休息日 "+TGT.rest+"；达标连击 +1，没达标连击减半，不清零",
      "每 "+LV+" XP 升一级；每周一结算上周的主线、预算和储蓄奖励（见「回顾」）"].forEach(function(t){rl.appendChild(el("li",null,t))});
     box.appendChild(rl);
@@ -5391,7 +5426,7 @@ render();calc();
       n.onchange=sv;x.onchange=sv;[n,xw].forEach(function(e){r.appendChild(e)});if(B.done)r.appendChild(el("span","gm-done","已通关"));box.appendChild(r)});
   }
 
-  var timer=null;function all(){clearTimeout(timer);timer=setTimeout(function(){try{renderToday()}catch(e){try{window.__debugPush&&window.__debugPush("game",e)}catch(x){}}try{renderWeek()}catch(e){}try{if(!$("setView").hidden)renderSet()}catch(e){}},80)}
+  var timer=null;function all(){memo=null;clearTimeout(timer);timer=setTimeout(function(){try{renderToday()}catch(e){try{window.__debugPush&&window.__debugPush("game",e)}catch(x){}}try{renderWeek()}catch(e){}try{if(!$("setView").hidden)renderSet()}catch(e){}},80)}
   window.__gameRender=all;
   window.__game={calc:calc,day:dayXp};
   ["__todayRender","__todayShown","__overview","__cutRendered"].forEach(function(n){var f=window[n];window[n]=function(){var r;try{r=f&&f.apply(this,arguments)}finally{all()}return r}});
@@ -5416,13 +5451,97 @@ render();calc();
   }).catch(function(){loaded=true;all()});
   setTimeout(function(){if(!loaded){loaded=true;all()}},8000);
 })();</script>
+<script>/* 今天心情：五个笑脸点一下记录，可选原因和一句话；近 7 天一排；记满 5 天后对比运动日/不运动日、上班日/休息日的心情。
+   数据：localStorage mood-v1，账号里 data/users/<id>/mood = {days:{"YYYY-MM-DD":{v:1-5,tags:[],note,t}}}。 */
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+  function btn(c,x,f,id){var b=el("button",c,x);b.type="button";if(id)b.id=id;b.onclick=f;return b}
+  function pad(n){return String(n).padStart(2,"0")}
+  function ymd(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
+  function parse(k){var p=k.split("-");return new Date(+p[0],+p[1]-1,+p[2],12)}
+  function addD(k,n){var d=parse(k);d.setDate(d.getDate()+n);return ymd(d)}
+  function tkey(){return ymd(new Date())}
+  var FACES=[["😣","很差"],["😟","不太好"],["😐","一般"],["🙂","不错"],["😄","很好"]];
+  var TAGS=["睡眠","运动","工作","学习","身体","家人朋友","钱","天气","吃得好","放松"];
+  var WD=["日","一","二","三","四","五","六"];
+  var KEY="mood-v1",S={days:{}};
+  try{var c=JSON.parse(localStorage.getItem(KEY)||"null");if(c&&c.days)S=c}catch(e){}
+  var ref=null,tm=null,noteOpen=false;
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+    if(!ref)return;clearTimeout(tm);tm=setTimeout(function(){ref.set(JSON.parse(JSON.stringify(S))).catch(function(){try{window.__toastAny("心情没保存上，稍后再试")}catch(e){}})},400)}
+  function changed(){save();render();try{window.__gameRender&&window.__gameRender()}catch(e){}}
+  function setV(v){var k=tkey(),d=S.days[k];if(d&&d.v===v){delete S.days[k];noteOpen=false}else{S.days[k]=Object.assign({tags:[],note:""},d||{},{v:v,t:Date.now()});noteOpen=true}changed()}
+  function avg(a){return a.length?a.reduce(function(s,x){return s+x},0)/a.length:null}
+  // 记满 5 天后：运动日 vs 不运动日、上班日 vs 休息日（差 0.5 以上才说）
+  function insights(){var out=[],t=tkey(),C=window.__cut,fit=[],nofit=[],wk=[],off=[];
+    for(var i=0;i<30;i++){var k=addD(t,-i),d=S.days[k];if(!d)continue;
+      var r=null;try{r=C&&C.record(k)}catch(e){}var tr=!!(r&&((r.exTotal&&r.exDone>=r.exTotal)||r.cardio));(tr?fit:nofit).push(d.v);
+      var P=window.__planXp?window.__planXp(k):null;if(P)(P.work?wk:off).push(d.v)}
+    if(fit.length+nofit.length<5)return out;
+    function f(n){return n.toFixed(1)}
+    if(fit.length>=2&&nofit.length>=2){var a=avg(fit),b=avg(nofit);if(Math.abs(a-b)>=0.5)out.push((a>b?"运动的日子心情更好":"运动的日子心情反而低一些")+"：平均 "+f(a)+" 对 "+f(b))}
+    if(wk.length>=2&&off.length>=2){var x=avg(wk),y=avg(off);if(Math.abs(x-y)>=0.5)out.push((x<y?"上班日心情低一些":"上班日心情更好")+"：平均 "+f(x)+" 对 "+f(y))}
+    var tc={};Object.keys(S.days).forEach(function(k){if(k<addD(t,-29))return;var d=S.days[k];(d.tags||[]).forEach(function(g){var o=tc[g]||(tc[g]={n:0,s:0});o.n++;o.s+=d.v})});
+    var low=Object.keys(tc).filter(function(g){return tc[g].n>=3&&tc[g].s/tc[g].n<=2.5}).sort(function(a,b){return tc[a].s/tc[a].n-tc[b].s/tc[b].n})[0];
+    if(low)out.push("「"+low+"」常跟低落的日子一起出现（"+tc[low].n+" 次）");
+    return out}
+
+  var card=el("section","td-card");card.id="td-mood";
+  function place(){var root=$("todayView");if(!root)return false;if(card.parentNode!==root){var h=$("td-hab");root.insertBefore(card,h||null)}return true}
+  function render(){var root=$("todayView");if(!root||root.hidden||!place())return;
+    var a=document.activeElement;if(a&&card.contains(a)&&a.tagName==="INPUT")return;
+    var k=tkey(),d=S.days[k];card.textContent="";
+    var h=el("div","td-h");h.appendChild(el("b",null,"今天心情"));h.appendChild(el("span","td-sub",d?FACES[d.v-1][1]+(d.tags&&d.tags.length?" · "+d.tags.join("、"):""):"点一个笑脸，再点一次取消"));
+    if(d)h.appendChild(btn("td-more",noteOpen?"收起":"原因 ›",function(){noteOpen=!noteOpen;render()},"mdMore"));card.appendChild(h);
+    var row=el("div","md-faces");row.setAttribute("role","group");row.setAttribute("aria-label","今天心情");
+    FACES.forEach(function(f,i){var b=btn("md-face td-keep"+(d&&d.v===i+1?" on":""),null,function(){setV(i+1)},"mdF"+(i+1));
+      b.setAttribute("aria-pressed",String(!!(d&&d.v===i+1)));b.setAttribute("aria-label",f[1]);b.appendChild(el("span","md-e",f[0]));b.appendChild(el("small",null,f[1]));row.appendChild(b)});
+    card.appendChild(row);
+    if(d&&noteOpen){var tg=el("div","md-tags");TAGS.forEach(function(g,i){var on=(d.tags||[]).indexOf(g)>=0,b=btn("md-tag td-keep"+(on?" on":""),g,function(){var l=(d.tags||[]).slice(),j=l.indexOf(g);if(j>=0)l.splice(j,1);else l.push(g);d.tags=l;changed()},"mdT"+i);
+        b.setAttribute("aria-pressed",String(on));tg.appendChild(b)});card.appendChild(tg);
+      var n=el("input","md-note");n.type="text";n.id="mdNote";n.maxLength=80;n.placeholder="一句话记下为什么（可不填）";n.value=d.note||"";n.setAttribute("aria-label","心情备注");
+      n.onchange=function(){d.note=n.value.trim();save()};n.onkeydown=function(e){if(e.key==="Enter"){n.blur()}};card.appendChild(n)}
+    // 近 7 天
+    var wk=el("div","md-week");for(var i=6;i>=0;i--){var kk=addD(k,-i),dd=S.days[kk],c=el("div","md-day"+(i===0?" today":""));
+      c.appendChild(el("span","md-de",dd?FACES[dd.v-1][0]:"·"));c.appendChild(el("small",null,i===0?"今天":"周"+WD[parse(kk).getDay()]));
+      c.title=kk+(dd?" "+FACES[dd.v-1][1]+(dd.note?"："+dd.note:""):" 没记");wk.appendChild(c)}
+    card.appendChild(wk);
+    var ins=insights();if(ins.length){var u=el("ul","td-list");ins.forEach(function(t){u.appendChild(el("li",null,t))});card.appendChild(u)}
+  }
+  // 每周回顾里一行
+  function renderWeek(){var box=$("moodWeek"),L=window.__ledger;if(!box)return;box.textContent="";
+    var ws=L&&L.weekStart?L.weekStart():null;if(!ws)return;var cur=[],prev=[];
+    for(var i=0;i<7;i++){var a=S.days[addD(ws,i)],b=S.days[addD(ws,i-7)];if(a)cur.push(a.v);if(b)prev.push(b.v)}
+    if(!cur.length&&!prev.length)return;box.appendChild(el("h3",null,"心情"));
+    var best=null;for(var j=0;j<7;j++){var x=S.days[addD(ws,j)];if(x&&(!best||x.v>best.v))best={v:x.v,k:addD(ws,j)}}
+    var u=el("ul","td-list");
+    u.appendChild(el("li",null,"本周记了 "+cur.length+" 天"+(cur.length?"，平均 "+avg(cur).toFixed(1)+" "+FACES[Math.round(avg(cur))-1][0]:"")+(prev.length?"（上周 "+avg(prev).toFixed(1)+"）":"")));
+    if(best)u.appendChild(el("li","good","最开心的一天：周"+WD[parse(best.k).getDay()]+" "+FACES[best.v-1][0]+(S.days[best.k].note?"「"+S.days[best.k].note+"」":"")));
+    box.appendChild(u)}
+  var timer=null;function all(){clearTimeout(timer);timer=setTimeout(function(){try{render()}catch(e){try{window.__debugPush&&window.__debugPush("mood",e)}catch(x){}}try{renderWeek()}catch(e){}},70)}
+  window.__mood={get:function(k){var d=S.days[k||tkey()];return d?JSON.parse(JSON.stringify(d)):null}};
+  ["__todayRender","__todayShown","__overview"].forEach(function(n){var f=window[n];window[n]=function(){var r;try{r=f&&f.apply(this,arguments)}finally{all()}return r}});
+  window.__bk=window.__bk||{};
+  window.__bk.mood={dump:function(){return JSON.parse(JSON.stringify(S))},
+    merge:function(d){if(!d||!d.days)return 0;var n=0;Object.keys(d.days).forEach(function(k){if(!/^\d{4}-\d\d-\d\d$/.test(k))return;var a=S.days[k],b=d.days[k];if(!b||!b.v)return;if(!a||(b.t||0)>(a.t||0)){S.days[k]=b;n++}});if(n)save();all();return n}};
+  all();
+  if(!(window.claude&&window.claude.use))return;
+  Promise.all([window.claude.use("db"),window.claude.use("user")]).then(function(r){var db=r[0],user=r[1];if(!db||!user)return;
+    return user.id().then(function(id){if(!id)return;ref=db.doc("data/users/"+id+"/mood");var first=true;
+      ref.onSnapshot(function(s){if(s.metadata.hasPendingWrites)return;
+        if(!s.exists){if(first&&!s.metadata.fromCache){first=false;if(Object.keys(S.days).length)save()}return}
+        first=false;var b=JSON.parse(JSON.stringify(s.data()));S={days:b.days||{}};try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}all()},function(){ref=null});
+    });
+  }).catch(function(){});
+})();</script>
 <script>(function(){
   var $=function(id){return document.getElementById(id)};
-  var TITLES={today:["今天",""],set:["设置","备份、主题颜色、添加习惯、算法说明"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
+  var TITLES={today:["今天",""],set:["设置","主线、奖励、板块、备份、主题颜色、习惯"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
   var TOC={
     ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["生活主线","secLines"],["成长奖励","secGame"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
+    set:[["生活主线","secLines"],["成长奖励","secGame"],["板块管理","secBlocks"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["有氧与消耗","cutCardio"],["饮食","cutFood"],["喝水","cutWater"],["健身日历","cutCal"],["身体变化","cutBody"],["调整建议","cutAdvice"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
@@ -5443,13 +5562,41 @@ render();calc();
     TOC[t]=ids.map(function(id){return [NAMES[id],id]})}
   function saveOrd(t,o){ord[t]=o;try{localStorage.setItem("sec-order-v1",JSON.stringify(ord))}catch(e){}applyOrd(t)}
   Object.keys(ORD_DEF).forEach(applyOrd);
+  // ---- 板块管理：不需要的板块或页面可以隐藏，在「设置 › 板块管理」找回（存在这台设备上） ----
+  var BLK=[["tabs","页面",[["运动打卡","tabCut"],["日常计划","tabPlan"],["生理期","tabCycle"]]],
+    ["today","今天页",[["成长等级","td-game"],["生活主线","td-lines"],["今天心情","td-mood"],["习惯打卡","td-hab"],["运动","td-fit"],["饮食","td-food"],["开支","td-exp"],["今天的计划","td-plan"],["生理期","td-cyc"],["本周小结","td-week"],["储蓄","td-sav"]]],
+    ["ledger","省钱账本",TOC.ledger.filter(function(x){return x[1]!=="secLedger"})],["cut","运动打卡",TOC.cut],["set","设置",TOC.set.filter(function(x){return x[1]!=="secBlocks"})]];
+  var LINK={tabCut:["td-fit","td-food"],tabPlan:["td-plan"],tabCycle:["td-cyc"]},TABV={tabCut:"cut",tabPlan:"plan",tabCycle:"cycle"};
+  var HID={};try{(JSON.parse(localStorage.getItem("hidden-blocks-v1")||"[]")||[]).forEach(function(id){HID[id]=1})}catch(e){}
+  function isHid(id){if(HID[id])return true;for(var t in LINK)if(HID[t]&&LINK[t].indexOf(id)>=0)return true;return false}
+  var hst=document.createElement("style");hst.id="hideStyle";document.head.appendChild(hst);
+  function applyHid(){var ids=[];BLK.forEach(function(g){g[2].forEach(function(x){if(isHid(x[1]))ids.push("#"+x[1])})});
+    hst.textContent=ids.length?ids.join(",")+"{display:none!important}":"";
+    for(var t in TABV)if(HID[t]&&typeof cur!=="undefined"&&cur===TABV[t]&&typeof showTab==="function")showTab("today")}
+  function setHid(id,v){if(v)HID[id]=1;else delete HID[id];try{localStorage.setItem("hidden-blocks-v1",JSON.stringify(Object.keys(HID)))}catch(e){}applyHid();buildToc();renderBlocks()}
+  function nameOf(id){var n=id;BLK.forEach(function(g){g[2].forEach(function(x){if(x[1]===id)n=x[0]})});return n}
+  function renderBlocks(){var box=$("blkBody");if(!box)return;box.textContent="";
+    function e(t,c,x){var d=document.createElement(t);if(c)d.className=c;if(x!=null)d.textContent=x;return d}
+    var n=Object.keys(HID).length;
+    box.appendChild(e("p","note","取消勾选就会隐藏，记录不会删除，随时可以在这里勾回来。也可以在各页目录栏点「管理板块」快速隐藏或调整顺序。"+(n?" 现在隐藏了 "+n+" 个。":"")));
+    BLK.forEach(function(g){var f=e("fieldset","blk-g");f.appendChild(e("legend",null,g[1]));var w=e("div","blk-list");
+      g[2].forEach(function(x){var l=e("label","blk-it"),c=e("input");c.type="checkbox";c.id="blk-"+x[1];c.checked=!HID[x[1]];c.onchange=function(){setHid(x[1],!c.checked)};
+        l.appendChild(c);l.appendChild(e("span",null,x[0]));w.appendChild(l)});f.appendChild(w);box.appendChild(f)});
+    if(n){var b=e("button","btn","全部显示");b.type="button";b.id="blkAll";b.onclick=function(){HID={};setHid("_",false)};box.appendChild(b)}}
+  window.__blocksShown=renderBlocks;
+  {var fs=window.__setShown;window.__setShown=function(){var r;try{r=fs&&fs.apply(this,arguments)}finally{try{renderBlocks()}catch(x){}}return r}}
+  {var tv=$("todayView");if(tv){var tf=document.createElement("div");tf.className="td-foot";var tb=document.createElement("button");tb.type="button";tb.className="td-more";tb.id="tdBlocks";tb.textContent="管理首页板块 ›";
+    tb.onclick=function(){if(typeof showTab==="function")showTab("set");setTimeout(function(){var s=$("secBlocks");if(s)s.scrollIntoView({block:"start"})},60)};tf.appendChild(tb);tv.appendChild(tf)}}
   function ordPanel(){var p=$("ordPanel");if(!p){p=document.createElement("div");p.id="ordPanel";p.className="ord-panel";var nav=$("toc");nav.parentNode.insertBefore(p,nav.nextSibling)}
-    p.textContent="";p.hidden=!(ordOpen&&ORD_DEF[cur]);if(p.hidden)return;
-    var o=ordOf(cur),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent="调整板块顺序";h.appendChild(b);
+    var canOrd=!!ORD_DEF[cur],grp=BLK.filter(function(g){return g[0]===cur})[0];
+    p.textContent="";p.hidden=!(ordOpen&&grp);if(p.hidden)return;
+    var o=canOrd?ordOf(cur):grp[2].map(function(x){return x[1]}),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent=canOrd?"板块顺序和显示":"显示哪些板块";h.appendChild(b);
     function mk(txt,cls,f,id,lbl){var x=document.createElement("button");x.type="button";x.className=cls;x.textContent=txt;x.onclick=f;if(id)x.id=id;if(lbl)x.setAttribute("aria-label",lbl);return x}
-    h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
+    if(canOrd)h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
     h.appendChild(mk("完成","ord-btn primary",function(){ordOpen=false;buildToc()},"ordDone"));p.appendChild(h);
-    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row";var n=document.createElement("span");n.textContent=(i+1)+". "+NAMES[id];r.appendChild(n);
+    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row"+(HID[id]?" off":"");var n=document.createElement("span");n.textContent=(canOrd?(i+1)+". ":"")+(NAMES[id]||nameOf(id))+(HID[id]?"（已隐藏）":"");r.appendChild(n);
+      if(id!=="secBlocks")r.appendChild(mk(HID[id]?"显示":"隐藏","ord-btn"+(HID[id]?" primary":""),function(){setHid(id,!HID[id])},"ordH-"+id,(HID[id]?"显示 ":"隐藏 ")+(NAMES[id]||nameOf(id))));
+      if(!canOrd){p.appendChild(r);return}
       function mv(d){var a=o.slice(),j=i+d;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;saveOrd(cur,a);buildToc();var f=$("ord"+(d<0?"U":"D")+"-"+id);if(f)f.focus()}
       var u=mk("↑","ord-btn",function(){mv(-1)},"ordU-"+id,"上移 "+NAMES[id]),d=mk("↓","ord-btn",function(){mv(1)},"ordD-"+id,"下移 "+NAMES[id]);u.disabled=i===0;d.disabled=i===o.length-1;
       r.appendChild(u);r.appendChild(d);p.appendChild(r)});
@@ -5476,10 +5623,10 @@ render();calc();
   function anyOpen(){return TOC[cur].some(function(x){return x[1] in FOLD&&!$(x[1]).classList.contains("folded")});}
   function buildToc(){
     var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden){var op=$("ordPanel");if(op)op.hidden=true;return;}
-    TOC[cur].forEach(function(x){var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
+    TOC[cur].forEach(function(x){if(typeof isHid==="function"&&isHid(x[1]))return;var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
     if(cur!=="plan"&&cur!=="set"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
       a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
-    if(ORD_DEF[cur]){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起排序":"调整顺序";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
+    if(BLK.some(function(g){return g[0]===cur})){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起":"管理板块";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
     nav.scrollLeft=0;ordPanel();
   }
   var rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -5561,7 +5708,7 @@ render();calc();
   new MutationObserver(shadeUpd).observe(pp,{attributes:true,attributeFilter:["class"]});
   window.addEventListener("resize",shadeUpd);
   ["tabToday","tabLedger","tabCut","tabPlan","tabCycle","tabSet"].forEach(function(id){$(id).addEventListener("click",function(){setTimeout(shadeUpd,0)})});
-  applyTab(tabNow());shadeUpd();
+  applyHid();applyTab(tabNow());shadeUpd();
   setTimeout(fab,800);
 })();</script>
 <script>/* 动效：标签栏滑动胶囊、切换页面、展开区域、新加的行、勾选弹一下、数字跳动。样式在 10-style9b.css */

@@ -34,7 +34,7 @@
   if(!S.start)S.start=wkStart(tkey());
   var ref=null,tm=null,loaded=!(window.claude&&window.claude.use);
   function shop(){return S.shop||DEF_SHOP}
-  function save(){S.at=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+  function save(){memo=null;S.at=Date.now();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
     if(!ref)return;clearTimeout(tm);tm=setTimeout(function(){ref.set(JSON.parse(JSON.stringify(S))).catch(function(){toast("成长记录没保存上，稍后再试")})},300)}
 
   /* ---------- 经验值计算（全部来自已有记录） ---------- */
@@ -46,6 +46,7 @@
     if(C){try{var r=C.record(k);if(r){var f=0,tg=C.targets(parse(k));
       if(r.exTotal&&r.exDone>=r.exTotal)f+=50;if(r.cardio)f+=30;if(tg.water&&r.water>=tg.water)f+=10;if(tg.pro&&r.pro>=tg.pro)f+=10;add("运动",f)}}catch(e){}}
     if(E&&E.day(k)>0)add("记账",10);
+    if(window.__mood&&window.__mood.get(k))add("心情",5);
     var tot=parts.reduce(function(s,p){return s+p[1]},0);
     return {k:k,xp:tot,parts:parts,work:P.work,target:P.work?TGT.work:TGT.rest}}
   // 一周结束后的结算：主线达标、预算没超、转入储蓄
@@ -54,7 +55,8 @@
     if(E){var x=E.week(ws);if(x.totalBudget>0&&!x.over.length&&x.total>0)out.push(["开支没超预算",WEEK.budget])}
     if(L&&L.ready()){var tr=L.transfers()[ws];if(tr>0)out.push(["本周省下的钱转入储蓄",WEEK.save])}
     return out}
-  function calc(){var t=tkey(),days=[],k=S.start,total=0,streak=0,best=0;
+  var memo=null;function calc(){if(memo&&Date.now()-memo.at<150)return memo.g;var g=calc0();memo={at:Date.now(),g:g};return g}
+  function calc0(){var t=tkey(),days=[],k=S.start,total=0,streak=0,best=0;
     if(k>t)k=t;
     for(;k<=t;k=addD(k,1)){var d=dayXp(k);days.push(d);total+=d.xp;
       var hit=d.xp>=d.target;if(k<t){if(hit){streak++;}else streak=Math.floor(streak/2)}else if(hit)streak++;if(streak>best)best=streak}
@@ -132,7 +134,7 @@
   function renderSet(){var box=$("gmSetBody");if(!box)return;var a=document.activeElement;if(a&&box.contains(a)&&a.tagName!=="BUTTON")return;box.textContent="";
     var rl=el("ul","td-list");
     ["主线用时：每分钟 1 XP（计划里归到主线并打勾，或今天页「+30分」）","其他计划打勾：每项 5 XP，每天最多 50","好习惯打卡：每次 10 XP，每天最多 60（坏习惯不扣经验，只在账本里扣钱）",
-     "运动：力量动作全部完成 50，有氧 30，喝水达标 10，蛋白质达标 10","记账：当天记过开支 10",
+     "运动：力量动作全部完成 50，有氧 30，喝水达标 10，蛋白质达标 10","记账：当天记过开支 10；记下今天心情 5",
      "每日目标：上班日（计划里有带时间的上班）"+TGT.work+"，休息日 "+TGT.rest+"；达标连击 +1，没达标连击减半，不清零",
      "每 "+LV+" XP 升一级；每周一结算上周的主线、预算和储蓄奖励（见「回顾」）"].forEach(function(t){rl.appendChild(el("li",null,t))});
     box.appendChild(rl);
@@ -166,7 +168,7 @@
       n.onchange=sv;x.onchange=sv;[n,xw].forEach(function(e){r.appendChild(e)});if(B.done)r.appendChild(el("span","gm-done","已通关"));box.appendChild(r)});
   }
 
-  var timer=null;function all(){clearTimeout(timer);timer=setTimeout(function(){try{renderToday()}catch(e){try{window.__debugPush&&window.__debugPush("game",e)}catch(x){}}try{renderWeek()}catch(e){}try{if(!$("setView").hidden)renderSet()}catch(e){}},80)}
+  var timer=null;function all(){memo=null;clearTimeout(timer);timer=setTimeout(function(){try{renderToday()}catch(e){try{window.__debugPush&&window.__debugPush("game",e)}catch(x){}}try{renderWeek()}catch(e){}try{if(!$("setView").hidden)renderSet()}catch(e){}},80)}
   window.__gameRender=all;
   window.__game={calc:calc,day:dayXp};
   ["__todayRender","__todayShown","__overview","__cutRendered"].forEach(function(n){var f=window[n];window[n]=function(){var r;try{r=f&&f.apply(this,arguments)}finally{all()}return r}});

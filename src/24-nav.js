@@ -1,10 +1,10 @@
 (function(){
   var $=function(id){return document.getElementById(id)};
-  var TITLES={today:["今天",""],set:["设置","备份、主题颜色、添加习惯、算法说明"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
+  var TITLES={today:["今天",""],set:["设置","主线、奖励、板块、备份、主题颜色、习惯"],ledger:["好习惯省钱账本",""],cut:["运动打卡","训练 · 饮食 · 喝水 · 身体变化，每天打卡"],plan:["日常计划","每天的安排、备忘提醒，一直排到 2027 年底"],cycle:["生理期","记录经期和身体感受，预测下次，按周期调整训练和安排"]};
   var TOC={
     ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["生活主线","secLines"],["成长奖励","secGame"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
+    set:[["生活主线","secLines"],["成长奖励","secGame"],["板块管理","secBlocks"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["有氧与消耗","cutCardio"],["饮食","cutFood"],["喝水","cutWater"],["健身日历","cutCal"],["身体变化","cutBody"],["调整建议","cutAdvice"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
@@ -25,13 +25,41 @@
     TOC[t]=ids.map(function(id){return [NAMES[id],id]})}
   function saveOrd(t,o){ord[t]=o;try{localStorage.setItem("sec-order-v1",JSON.stringify(ord))}catch(e){}applyOrd(t)}
   Object.keys(ORD_DEF).forEach(applyOrd);
+  // ---- 板块管理：不需要的板块或页面可以隐藏，在「设置 › 板块管理」找回（存在这台设备上） ----
+  var BLK=[["tabs","页面",[["运动打卡","tabCut"],["日常计划","tabPlan"],["生理期","tabCycle"]]],
+    ["today","今天页",[["成长等级","td-game"],["生活主线","td-lines"],["今天心情","td-mood"],["习惯打卡","td-hab"],["运动","td-fit"],["饮食","td-food"],["开支","td-exp"],["今天的计划","td-plan"],["生理期","td-cyc"],["本周小结","td-week"],["储蓄","td-sav"]]],
+    ["ledger","省钱账本",TOC.ledger.filter(function(x){return x[1]!=="secLedger"})],["cut","运动打卡",TOC.cut],["set","设置",TOC.set.filter(function(x){return x[1]!=="secBlocks"})]];
+  var LINK={tabCut:["td-fit","td-food"],tabPlan:["td-plan"],tabCycle:["td-cyc"]},TABV={tabCut:"cut",tabPlan:"plan",tabCycle:"cycle"};
+  var HID={};try{(JSON.parse(localStorage.getItem("hidden-blocks-v1")||"[]")||[]).forEach(function(id){HID[id]=1})}catch(e){}
+  function isHid(id){if(HID[id])return true;for(var t in LINK)if(HID[t]&&LINK[t].indexOf(id)>=0)return true;return false}
+  var hst=document.createElement("style");hst.id="hideStyle";document.head.appendChild(hst);
+  function applyHid(){var ids=[];BLK.forEach(function(g){g[2].forEach(function(x){if(isHid(x[1]))ids.push("#"+x[1])})});
+    hst.textContent=ids.length?ids.join(",")+"{display:none!important}":"";
+    for(var t in TABV)if(HID[t]&&typeof cur!=="undefined"&&cur===TABV[t]&&typeof showTab==="function")showTab("today")}
+  function setHid(id,v){if(v)HID[id]=1;else delete HID[id];try{localStorage.setItem("hidden-blocks-v1",JSON.stringify(Object.keys(HID)))}catch(e){}applyHid();buildToc();renderBlocks()}
+  function nameOf(id){var n=id;BLK.forEach(function(g){g[2].forEach(function(x){if(x[1]===id)n=x[0]})});return n}
+  function renderBlocks(){var box=$("blkBody");if(!box)return;box.textContent="";
+    function e(t,c,x){var d=document.createElement(t);if(c)d.className=c;if(x!=null)d.textContent=x;return d}
+    var n=Object.keys(HID).length;
+    box.appendChild(e("p","note","取消勾选就会隐藏，记录不会删除，随时可以在这里勾回来。也可以在各页目录栏点「管理板块」快速隐藏或调整顺序。"+(n?" 现在隐藏了 "+n+" 个。":"")));
+    BLK.forEach(function(g){var f=e("fieldset","blk-g");f.appendChild(e("legend",null,g[1]));var w=e("div","blk-list");
+      g[2].forEach(function(x){var l=e("label","blk-it"),c=e("input");c.type="checkbox";c.id="blk-"+x[1];c.checked=!HID[x[1]];c.onchange=function(){setHid(x[1],!c.checked)};
+        l.appendChild(c);l.appendChild(e("span",null,x[0]));w.appendChild(l)});f.appendChild(w);box.appendChild(f)});
+    if(n){var b=e("button","btn","全部显示");b.type="button";b.id="blkAll";b.onclick=function(){HID={};setHid("_",false)};box.appendChild(b)}}
+  window.__blocksShown=renderBlocks;
+  {var fs=window.__setShown;window.__setShown=function(){var r;try{r=fs&&fs.apply(this,arguments)}finally{try{renderBlocks()}catch(x){}}return r}}
+  {var tv=$("todayView");if(tv){var tf=document.createElement("div");tf.className="td-foot";var tb=document.createElement("button");tb.type="button";tb.className="td-more";tb.id="tdBlocks";tb.textContent="管理首页板块 ›";
+    tb.onclick=function(){if(typeof showTab==="function")showTab("set");setTimeout(function(){var s=$("secBlocks");if(s)s.scrollIntoView({block:"start"})},60)};tf.appendChild(tb);tv.appendChild(tf)}}
   function ordPanel(){var p=$("ordPanel");if(!p){p=document.createElement("div");p.id="ordPanel";p.className="ord-panel";var nav=$("toc");nav.parentNode.insertBefore(p,nav.nextSibling)}
-    p.textContent="";p.hidden=!(ordOpen&&ORD_DEF[cur]);if(p.hidden)return;
-    var o=ordOf(cur),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent="调整板块顺序";h.appendChild(b);
+    var canOrd=!!ORD_DEF[cur],grp=BLK.filter(function(g){return g[0]===cur})[0];
+    p.textContent="";p.hidden=!(ordOpen&&grp);if(p.hidden)return;
+    var o=canOrd?ordOf(cur):grp[2].map(function(x){return x[1]}),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent=canOrd?"板块顺序和显示":"显示哪些板块";h.appendChild(b);
     function mk(txt,cls,f,id,lbl){var x=document.createElement("button");x.type="button";x.className=cls;x.textContent=txt;x.onclick=f;if(id)x.id=id;if(lbl)x.setAttribute("aria-label",lbl);return x}
-    h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
+    if(canOrd)h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
     h.appendChild(mk("完成","ord-btn primary",function(){ordOpen=false;buildToc()},"ordDone"));p.appendChild(h);
-    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row";var n=document.createElement("span");n.textContent=(i+1)+". "+NAMES[id];r.appendChild(n);
+    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row"+(HID[id]?" off":"");var n=document.createElement("span");n.textContent=(canOrd?(i+1)+". ":"")+(NAMES[id]||nameOf(id))+(HID[id]?"（已隐藏）":"");r.appendChild(n);
+      if(id!=="secBlocks")r.appendChild(mk(HID[id]?"显示":"隐藏","ord-btn"+(HID[id]?" primary":""),function(){setHid(id,!HID[id])},"ordH-"+id,(HID[id]?"显示 ":"隐藏 ")+(NAMES[id]||nameOf(id))));
+      if(!canOrd){p.appendChild(r);return}
       function mv(d){var a=o.slice(),j=i+d;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;saveOrd(cur,a);buildToc();var f=$("ord"+(d<0?"U":"D")+"-"+id);if(f)f.focus()}
       var u=mk("↑","ord-btn",function(){mv(-1)},"ordU-"+id,"上移 "+NAMES[id]),d=mk("↓","ord-btn",function(){mv(1)},"ordD-"+id,"下移 "+NAMES[id]);u.disabled=i===0;d.disabled=i===o.length-1;
       r.appendChild(u);r.appendChild(d);p.appendChild(r)});
@@ -58,10 +86,10 @@
   function anyOpen(){return TOC[cur].some(function(x){return x[1] in FOLD&&!$(x[1]).classList.contains("folded")});}
   function buildToc(){
     var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden){var op=$("ordPanel");if(op)op.hidden=true;return;}
-    TOC[cur].forEach(function(x){var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
+    TOC[cur].forEach(function(x){if(typeof isHid==="function"&&isHid(x[1]))return;var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
     if(cur!=="plan"&&cur!=="set"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
       a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
-    if(ORD_DEF[cur]){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起排序":"调整顺序";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
+    if(BLK.some(function(g){return g[0]===cur})){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起":"管理板块";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
     nav.scrollLeft=0;ordPanel();
   }
   var rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -143,6 +171,6 @@
   new MutationObserver(shadeUpd).observe(pp,{attributes:true,attributeFilter:["class"]});
   window.addEventListener("resize",shadeUpd);
   ["tabToday","tabLedger","tabCut","tabPlan","tabCycle","tabSet"].forEach(function(id){$(id).addEventListener("click",function(){setTimeout(shadeUpd,0)})});
-  applyTab(tabNow());shadeUpd();
+  applyHid();applyTab(tabNow());shadeUpd();
   setTimeout(fab,800);
 })();
