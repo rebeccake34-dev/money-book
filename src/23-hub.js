@@ -124,7 +124,7 @@
       if(T.exTotal&&T.exDone<T.exTotal)r.appendChild(btn("td-btn td-keep","全部完成",function(){lastEx=C.checkAllEx();toast("已勾选今天的全部动作")},"tdExAll"));
       else if(lastEx&&lastEx.length)r.appendChild(btn("td-btn ghost td-keep","撤销",function(){var x=lastEx;lastEx=null;C.uncheckEx(x)},"tdExUndo"));
       box.appendChild(r);
-      var r2=el("label","td-row"),ck=el("input");r2.appendChild(el("span","td-k","有氧"));r2.appendChild(el("span","td-v",T.cardio?"已完成":"还没做"));
+      var r2=el("label","td-row"),ck=el("input");r2.appendChild(el("span","td-k","有氧"));r2.appendChild(el("span","td-v",(T.cardio?"已完成":"还没做")+(T.burn?" · 运动消耗约 "+T.burn+" kcal":"")));
       ck.type="checkbox";ck.id="tdCardio";ck.className="td-keep";ck.checked=!!T.cardio;ck.onchange=function(){C.setCardio(ck.checked)};r2.appendChild(ck);box.appendChild(r2);
       var r3=el("div","td-row"),wv=el("div","td-v"),bar=el("div","td-bar"),bi=el("i");r3.appendChild(el("span","td-k","喝水"));
       wv.appendChild(el("span",null,T.water+" / "+T.waterT+" ml"));bi.style.width=Math.min(100,T.waterT?T.water/T.waterT*100:0)+"%";bar.appendChild(bi);wv.appendChild(bar);r3.appendChild(wv);

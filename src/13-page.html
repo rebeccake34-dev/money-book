@@ -1,7 +1,7 @@
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2245</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2320</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -209,7 +209,7 @@
     </div>
   </section>
   <section class="panel" id="cutCardio">
-    <h2>有氧建议 <small>目标 8,000–10,000 步</small></h2>
+    <h2>有氧与运动消耗 <span class="fold-sum" id="cardioSum"></span> <small>目标 8,000–10,000 步</small></h2>
     <p style="margin:0" id="cardioText"></p>
     <div class="row">
       <label for="steps" class="note">今日步数</label>
@@ -222,6 +222,16 @@
       <span class="note" id="cardioWeek"></span>
     </div>
     <div class="bar" id="stepBar"><i></i></div>
+    <div class="burn">
+      <div class="row burn-in">
+        <input type="search" id="burnQ" placeholder="搜运动记消耗：跑步、游泳、羽毛球…" aria-label="搜索运动">
+        <label class="row note" style="gap:6px"><input type="number" id="burnMin" value="30" min="1" max="600" inputmode="numeric" aria-label="运动分钟" style="width:76px">分钟</label>
+      </div>
+      <div class="burn-res" id="burnRes"></div>
+      <ul class="burn-list" id="burnList"></ul>
+      <p class="note" id="burnNet" style="margin:0"></p>
+      <details class="sub" id="burnLib"><summary>运动热量表 · 按你的体重算，点「＋」记 30 分钟</summary><div id="burnTable"></div></details>
+    </div>
   </section>
   <section class="panel" id="cutBody" aria-label="身体变化">
     <h2>身体变化 <small>早上空腹称，每周至少 3 次；围度每周量 1 次</small></h2>
@@ -322,7 +332,7 @@
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/17-2245</div>
+  <div class="sync">页面版本 11/17-2320</div>
   </div>
 
   <div id="plan" hidden>

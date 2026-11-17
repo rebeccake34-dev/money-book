@@ -33,6 +33,20 @@ const TR=(name,list,cardio)=>({name,type:"train",ex:list.map(n=>[n,dbSets(n)]),c
 const REC={name:"主动恢复",type:"rest",ex:[["散步 / 拉伸 / 泡沫轴","15–20 分钟"]],cardio:"坡度走 30–40 分钟，心率保持最大心率的 60–70%。"};
 const CAR={name:"有氧日",type:"rest",ex:[],cardio:"坡度走 30–40 分钟；状态好可改做 HIIT：单车 30 秒冲刺 + 90 秒慢速 × 6–8 轮。"};
 const OFF={name:"完全休息",type:"rest",ex:[],cardio:"只保留日常步数，好好休息。"};
+/* 运动热量库：[名称, MET, 是否算有氧, 搜索别名]。消耗 ≈ MET × 体重(kg) × 小时（含基础代谢，是大概值） */
+const ACTS=[
+ ["慢走 3 km/h",2.8,0,"散步 walk"],["快走 5 km/h",3.5,1,"走路 walk"],["快走 6 km/h",5,1,"走路 walk"],["坡度走 8–12%",6,1,"爬坡 跑步机 incline"],
+ ["爬楼梯",8,1,"楼梯 stairs"],["徒步 / 爬山",6,1,"hiking 登山"],["慢跑 8 km/h",8.3,1,"跑步 run jog"],["跑步 10 km/h",9.8,1,"run"],["跑步 12 km/h",11.8,1,"run"],
+ ["单车 轻松",4,1,"骑车 自行车 bike"],["单车 中等",6.8,1,"骑车 健身车 bike"],["动感单车",8.5,1,"spinning 单车课"],["单车 HIIT",8.5,1,"冲刺 bike"],
+ ["椭圆机 中等",5,1,"elliptical"],["划船机 中等",7,1,"rowing"],["跳绳 中速",11.8,1,"rope"],["游泳 慢速",5.8,1,"自由泳 蛙泳 swim"],["游泳 中速",8.3,1,"swim"],
+ ["HIIT 训练",8,1,"间歇 燃脂 tabata"],["有氧操 / 跳操",7.3,1,"帕梅拉 aerobic"],["尊巴",6.5,1,"zumba 跳舞"],["跳舞 一般",5,1,"舞蹈 dance"],["搏击操",7,1,"拳击 kickbox"],
+ ["拳击训练",7.8,1,"打沙袋 boxing"],["力量训练 一般",3.5,0,"撸铁 器械 gym"],["力量训练 大强度",6,0,"撸铁 举重 gym"],["自重训练",3.8,0,"俯卧撑 深蹲 引体"],
+ ["普拉提",3,0,"pilates"],["瑜伽",2.5,0,"yoga"],["拉伸 / 泡沫轴",2.3,0,"stretch"],["太极",3,0,"taichi"],
+ ["羽毛球",5.5,1,"badminton"],["乒乓球",4,1,"table tennis"],["网球",7.3,1,"tennis"],["篮球",6.5,1,"basketball"],["足球",7,1,"soccer"],["排球",4,1,"volleyball"],
+ ["轮滑 / 滑板",7,1,"skate"],["滑雪",7,1,"ski"],["攀岩",7.5,1,"climbing 抱石"],
+ ["站着工作",2.5,0,"上班 零售 站立"],["搬重物",5,0,"搬货 搬家"],["打扫 / 拖地",3.3,0,"家务 吸尘 cleaning"],["做饭 / 备餐",2.5,0,"厨房 cooking"],["逛街 / 购物",2.3,0,"shopping"],["遛狗",3,0,"dog"]
+];
+const CARDIO_MET={"坡度走":6,"快走":4.3,"跑步":9.8,"单车":6.8,"单车 HIIT":8.5,"椭圆机":5,"游泳":7,"其他":5};
 const TEMPLATES=[
  {id:"orig",name:"原有搭配：上下肢 + 臀腿",who:"通用 · 每周 4 练",desc:"拉 / 深蹲 / 推 / 臀，中间穿插恢复和有氧。你之前一直在用的这套。",days:PLAN_ORIG},
  {id:"fglute",name:"女生 · 臀腿塑形",who:"女生 · 每周 4 练",desc:"两天臀腿 + 两天上肢，臀部训练量最高，适合想练翘臀、改善体态。",days:{
@@ -443,6 +457,7 @@ function render(){
   {let m=0,n=0;for(let i=0;i<7;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.cardio){n++;m+=+r.cardioMin||0}}$("cardioWeek").textContent=`近 7 天有氧 ${n} 次`+(m?` · 共 ${m} 分钟`:"")}
   $("cardioDone").checked=!!day.cardio;
   setBar($("stepBar"),+day.steps||0,9000);
+  try{renderBurn()}catch(e){}
 
   // water
   $("cupBtns").innerHTML=(settings.cups||[250,500]).map(ml=>`<button class="waterbtn" data-ml="${ml}" type="button">+${ml} ml</button>`).join("");
@@ -615,7 +630,7 @@ window.__cutSetTime=function(k,ref,start){try{const r=ensureRec(k);
 window.__bk=window.__bk||{};
 window.__bk.cut={
   dump:()=>{allDays[todayKey]=day;return JSON.parse(JSON.stringify({days:allDays,settings}))},
-  merge:d=>{if(!d)return 0;let n=0;const rich=r=>r?((r.food||[]).length+(r.water||[]).length+Object.values(r.ex||{}).filter(Boolean).length+(r.weight?1:0)+(r.steps?1:0)+(r.cardio?1:0)+(r.waist?1:0)):0;
+  merge:d=>{if(!d)return 0;let n=0;const rich=r=>r?((r.food||[]).length+(r.water||[]).length+(r.burn||[]).length+Object.values(r.ex||{}).filter(Boolean).length+(r.weight?1:0)+(r.steps?1:0)+(r.cardio?1:0)+(r.waist?1:0)):0;
     const had=Object.keys(allDays).some(k=>rich(k===todayKey?day:allDays[k])>0);
     Object.keys(d.days||{}).forEach(k=>{if(!/^\d{4}-\d\d-\d\d$/.test(k))return;const b=d.days[k],a=k===todayKey?day:allDays[k];if(!b||!rich(b))return;
       const take=!a||!rich(a)?true:(a.at&&b.at?b.at>a.at:rich(b)>rich(a));
@@ -637,7 +652,7 @@ window.__cut={
   waterCount:()=>day.water.length,
   planFor:d=>{const p=plans()[d.getDay()]||OFF;return {name:p.name,type:p.type}},
   targets:d=>{const p=keyOf(d)===todayKey?curPlan():(plans()[d.getDay()]||OFF),tr=p.type==="train";return {plan:p.name,type:p.type,kcal:kOf(tr),pro:proT(),water:tr?2500:2000}},
-  today:()=>{const p=curPlan(),t=totals(day);return {plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>day.ex[i]).length,exTotal:p.ex.length,cardio:!!day.cardio,water:t.water,waterT:waterT(),pro:t.pro,proT:proT(),kcal:t.kcal,kcalT:kcalT()}},
+  today:()=>{const p=curPlan(),t=totals(day);return {burn:burnOf(day).total,plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>day.ex[i]).length,exTotal:p.ex.length,cardio:!!day.cardio,water:t.water,waterT:waterT(),pro:t.pro,proT:proT(),kcal:t.kcal,kcalT:kcalT()}},
   checkAllEx:()=>{const idx=[];curPlan().ex.forEach((_,i)=>{if(!day.ex[i]){day.ex[i]=true;idx.push(i)}});if(idx.length)save();return idx},
   uncheckEx:idx=>{(idx||[]).forEach(i=>{day.ex[i]=false});save()},
   record:k=>{const r=k===todayKey?day:allDays[k];if(!r)return null;const t=totals(r),d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10),12),p=planOf(r,d);
@@ -695,6 +710,33 @@ $("steps").addEventListener("change",e=>{day.steps=e.target.value===""?null:Math
 $("cardioDone").addEventListener("change",e=>{day.cardio=e.target.checked;save()});
 $("cardioType").addEventListener("change",e=>{day.cardioType=e.target.value||null;if(e.target.value&&!day.cardio)day.cardio=true;save()});
 $("cardioMin").addEventListener("change",e=>{const v=Math.round(+e.target.value);day.cardioMin=v>0?Math.min(600,v):null;if(v>0&&!day.cardio)day.cardio=true;save()});
+/* ---------- 运动消耗 ---------- */
+function bodyW(){return latestWeight()||calcWeight()||null}
+function kcalOf(met,min){return Math.round(met*(bodyW()||60)*min/60)}
+function burnOf(r){if(!r)return {total:0,list:[],card:0,steps:0};const list=(r.burn||[]).slice(),w=bodyW()||60;let total=list.reduce((a,b)=>a+(+b.kcal||0),0),card=0;
+  if(r.cardioType&&r.cardioMin&&!list.some(b=>b.cardio)){card=Math.round((CARDIO_MET[r.cardioType]||5)*w*r.cardioMin/60);total+=card}
+  const steps=r.steps?Math.round(r.steps*w*0.0005):0;return {total,list,card,steps}}
+function burnRes(){const q=$("burnQ").value.trim().toLowerCase(),box=$("burnRes"),min=Math.max(1,Math.min(600,Math.round(+$("burnMin").value||30)));
+  if(!q){box.innerHTML="";return}
+  const r=ACTS.map((a,i)=>({a,i})).filter(x=>(x.a[0]+" "+x.a[3]).toLowerCase().includes(q)).slice(0,6);
+  box.innerHTML=r.length?r.map(x=>`<button type="button" class="burn-item" data-act="${x.i}"><span>${esc(x.a[0])} · ${min} 分钟</span><b>约 ${kcalOf(x.a[1],min)} kcal ＋</b></button>`).join(""):`<p class="note">没找到这项运动，可以选个接近的。</p>`}
+function renderBurn(){const B=burnOf(day),t=totals(day),w=bodyW();
+  $("burnList").innerHTML=B.list.map(b=>`<li><span>${esc(b.name)} · ${b.min} 分钟</span><b>${b.kcal} kcal</b><button type="button" class="burn-x" data-burnx="${b.t}" aria-label="删除 ${esc(b.name)}">✕</button></li>`).join("")+
+    (B.card?`<li><span>有氧记录：${esc(day.cardioType)} · ${day.cardioMin} 分钟</span><b>${B.card} kcal</b><span></span></li>`:"");
+  $("cardioSum").textContent=B.total?"消耗约 "+B.total+" kcal":"";
+  $("burnNet").textContent=(B.total?`今天运动消耗约 ${B.total} kcal`+(t.kcal?`；吃了 ${t.kcal}，扣掉运动约 ${t.kcal-B.total} kcal`:"")+"。热量目标没有加回运动消耗，减脂更稳。":"搜一项运动、填分钟，点「＋」记下大概消耗。")+
+    (B.steps?` 步数另外约消耗 ${B.steps} kcal。`:"")+(w?"":" 按 60 kg 估算，记了体重会更准。");
+  const min=30;$("burnTable").innerHTML=`<p class="note">按${w?"你最近的体重 "+w+" kg":" 60 kg"}算，每 30 分钟大约消耗：</p><ul class="burn-tbl">`+
+    ACTS.map((a,i)=>`<li><span>${esc(a[0])}</span><b>${kcalOf(a[1],min)}</b><button type="button" class="burn-add" data-act="${i}" aria-label="记 30 分钟${esc(a[0])}">＋</button></li>`).join("")+"</ul>";
+  if($("burnQ").value)burnRes()}
+function addBurn(i,min){const a=ACTS[i];if(!a)return;min=Math.max(1,Math.min(600,Math.round(min||30)));
+  (day.burn=day.burn||[]).push({name:a[0],min,met:a[1],kcal:kcalOf(a[1],min),cardio:!!a[2],t:Date.now()});
+  if(a[2])day.cardio=true;save();try{window.__toastAny(`记下了：${a[0]} ${min} 分钟，约 ${kcalOf(a[1],min)} kcal`+(a[2]?"，有氧已打勾":""))}catch(e){}}
+$("burnQ").addEventListener("input",burnRes);$("burnMin").addEventListener("input",burnRes);
+$("burnRes").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;addBurn(+b.dataset.act,+$("burnMin").value);$("burnQ").value="";burnRes()});
+$("burnTable").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(b)addBurn(+b.dataset.act,30)});
+$("burnList").addEventListener("click",e=>{const b=e.target.closest("[data-burnx]");if(!b)return;const t=+b.dataset.burnx;day.burn=(day.burn||[]).filter(x=>x.t!==t);
+  if(!day.burn.some(x=>x.cardio)&&!day.cardioType&&!day.cardioMin)day.cardio=false;save()});
 $("cupBtns").addEventListener("click",e=>{const b=e.target.closest("[data-ml]");if(!b)return;
   if(b.dataset.rmcup!=null){settings.cups=(settings.cups||[]).filter(x=>x!==+b.dataset.ml);saveSettings();return}
   day.water.push({ml:+b.dataset.ml,t:Date.now()});save()});

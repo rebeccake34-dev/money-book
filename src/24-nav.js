@@ -4,8 +4,8 @@
   var TOC={
     ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["成长奖励","secGame"],["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
-    cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
+    set:[["生活主线","secLines"],["成长奖励","secGame"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
+    cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["有氧与消耗","cutCardio"],["饮食","cutFood"],["喝水","cutWater"],["健身日历","cutCal"],["身体变化","cutBody"],["调整建议","cutAdvice"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
   };
@@ -14,6 +14,28 @@
   var st={};try{st=JSON.parse(localStorage.getItem("fold-state")||"{}")||{}}catch(e){}
   function saveSt(){try{localStorage.setItem("fold-state",JSON.stringify(st))}catch(e){}}
   function isF(id){return id in st?!!st[id]:!!FOLD[id]}
+  // ---- 运动、设置页的板块顺序：默认把常用的放前面，也可以自己调（存在这台设备上） ----
+  var ORD_DEF={cut:TOC.cut.map(function(x){return x[1]}),set:TOC.set.map(function(x){return x[1]})},NAMES={},ordOpen=false,ANCH={};
+  Object.keys(ORD_DEF).forEach(function(t){TOC[t].forEach(function(x){NAMES[x[1]]=x[0]})});
+  var ord={};try{ord=JSON.parse(localStorage.getItem("sec-order-v1")||"{}")||{}}catch(e){}
+  function ordOf(t){var d=ORD_DEF[t],o=(ord[t]||[]).filter(function(id){return d.indexOf(id)>=0});d.forEach(function(id){if(o.indexOf(id)<0)o.push(id)});return o}
+  function applyOrd(t){var ids=ordOf(t),els=ids.map(function(id){return $(id)}).filter(Boolean);if(!els.length)return;var par=els[0].parentNode;
+    if(!(t in ANCH)){var last=els.reduce(function(a,b){return a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?b:a});ANCH[t]=last.nextSibling;if(ANCH[t]&&ANCH[t].nodeType!==1)ANCH[t]=last.nextElementSibling}
+    els.forEach(function(e){if(e.parentNode!==par)return;par.insertBefore(e,ANCH[t]||null);if(e.id==="cutTrain"){var pe=$("planEditor");if(pe)par.insertBefore(pe,ANCH[t]||null)}});
+    TOC[t]=ids.map(function(id){return [NAMES[id],id]})}
+  function saveOrd(t,o){ord[t]=o;try{localStorage.setItem("sec-order-v1",JSON.stringify(ord))}catch(e){}applyOrd(t)}
+  Object.keys(ORD_DEF).forEach(applyOrd);
+  function ordPanel(){var p=$("ordPanel");if(!p){p=document.createElement("div");p.id="ordPanel";p.className="ord-panel";var nav=$("toc");nav.parentNode.insertBefore(p,nav.nextSibling)}
+    p.textContent="";p.hidden=!(ordOpen&&ORD_DEF[cur]);if(p.hidden)return;
+    var o=ordOf(cur),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent="调整板块顺序";h.appendChild(b);
+    function mk(txt,cls,f,id,lbl){var x=document.createElement("button");x.type="button";x.className=cls;x.textContent=txt;x.onclick=f;if(id)x.id=id;if(lbl)x.setAttribute("aria-label",lbl);return x}
+    h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
+    h.appendChild(mk("完成","ord-btn primary",function(){ordOpen=false;buildToc()},"ordDone"));p.appendChild(h);
+    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row";var n=document.createElement("span");n.textContent=(i+1)+". "+NAMES[id];r.appendChild(n);
+      function mv(d){var a=o.slice(),j=i+d;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;saveOrd(cur,a);buildToc();var f=$("ord"+(d<0?"U":"D")+"-"+id);if(f)f.focus()}
+      var u=mk("↑","ord-btn",function(){mv(-1)},"ordU-"+id,"上移 "+NAMES[id]),d=mk("↓","ord-btn",function(){mv(1)},"ordD-"+id,"下移 "+NAMES[id]);u.disabled=i===0;d.disabled=i===o.length-1;
+      r.appendChild(u);r.appendChild(d);p.appendChild(r)});
+  }
   Object.keys(FOLD).forEach(function(id){var e=$(id);if(!e)return;e.classList.add("fold");e.classList.toggle("folded",isF(id));});
   function setF(id,v){var e=$(id);if(!e)return;st[id]=v?1:0;saveSt();e.classList.toggle("folded",v);syncHead(e);if(id==="cutTrain")try{trainSum()}catch(x){}}
   function syncHead(e){var h=e.firstElementChild;if(h){h.setAttribute("aria-expanded",String(!e.classList.contains("folded")));}}
@@ -35,11 +57,12 @@
   function tabNow(){return $("tabToday").getAttribute("aria-selected")==="true"?"today":$("tabSet").getAttribute("aria-selected")==="true"?"set":$("tabCut").getAttribute("aria-selected")==="true"?"cut":$("tabPlan").getAttribute("aria-selected")==="true"?"plan":$("tabCycle").getAttribute("aria-selected")==="true"?"cycle":"ledger";}
   function anyOpen(){return TOC[cur].some(function(x){return x[1] in FOLD&&!$(x[1]).classList.contains("folded")});}
   function buildToc(){
-    var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden)return;
+    var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden){var op=$("ordPanel");if(op)op.hidden=true;return;}
     TOC[cur].forEach(function(x){var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
     if(cur!=="plan"&&cur!=="set"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
       a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
-    nav.scrollLeft=0;
+    if(ORD_DEF[cur]){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起排序":"调整顺序";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
+    nav.scrollLeft=0;ordPanel();
   }
   var rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   function scrollTo(e){if(e)e.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"});}
@@ -54,7 +77,7 @@
     scrollTo(e);
   }
   function applyTab(t){
-    cur=t;var T=TITLES[t];
+    if(t!==cur)ordOpen=false;cur=t;var T=TITLES[t];
     document.querySelector("header h1").textContent=T[0];
     document.title=T[0];
     var sub=T[1];if(t==="today"){var dn=new Date();sub=(dn.getMonth()+1)+"月"+dn.getDate()+"日 "+["周日","周一","周二","周三","周四","周五","周六"][dn.getDay()]+" · 一页记完今天"}

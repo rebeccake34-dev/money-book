@@ -65,7 +65,7 @@
   function weekXp(G,ws){return G.days.filter(function(d){return d.k>=ws&&d.k<=addD(ws,6)}).reduce(function(s,d){return s+d.xp},0)}
 
   /* ---------- 兑换 ---------- */
-  var armed=null,shopOpen=false;
+  var armed=null,shopOpen=false,folded=false;try{folded=localStorage.getItem("gm-fold")==="1"}catch(e){}
   function redeem(r,G){var E=window.__expenses,t=tkey();if(G.avail<r.xp){toast("经验值还差 "+(r.xp-G.avail));return}
     var u={id:uid(),date:t,rid:r.id,name:r.name,xp:+r.xp,cost:+r.cost||0,exp:null};
     if(u.cost>0&&E)u.exp=E.add(u.cost,r.cat||"娱乐","奖励："+r.name,t,"reward");
@@ -84,8 +84,12 @@
   function renderToday(){var root=$("todayView");if(!root||root.hidden||!place())return;var L=window.__ledger;card.textContent="";
     if(!L||!L.ready()||!loaded){var h0=el("div","td-h");h0.appendChild(el("b",null,"成长等级"));h0.appendChild(el("span","td-sub","正在读取记录…"));card.appendChild(h0);return}
     var G=calc(),T=G.today,E=window.__expenses;
-    var h=el("div","td-h");h.appendChild(el("b",null,"Lv."+G.lv+" "+G.title));h.appendChild(el("span","td-sub","累计 "+G.total+" XP · 距 Lv."+(G.lv+1)+" 还差 "+(LV-G.into)));
-    h.appendChild(btn("td-more","规则 ›",function(){go("set","secGame")}));card.appendChild(h);card.appendChild(bar(G.into/LV));
+    var h=el("div","td-h");h.appendChild(el("b",null,"Lv."+G.lv+" "+G.title));
+    h.appendChild(el("span","td-sub",folded?"今天 "+T.xp+"/"+T.target+(T.xp>=T.target?" ✓":"")+" · 连击 "+G.streak+" · 可用 "+G.avail:"累计 "+G.total+" XP · 距 Lv."+(G.lv+1)+" 还差 "+(LV-G.into)));
+    if(!folded)h.appendChild(btn("td-more","规则 ›",function(){go("set","secGame")}));
+    var fb=btn("td-more gm-fold",folded?"展开 ▾":"收起 ▴",function(){folded=!folded;try{localStorage.setItem("gm-fold",folded?"1":"0")}catch(e){}if(folded){shopOpen=false;armed=null}renderToday()},"gmFold");
+    fb.setAttribute("aria-expanded",String(!folded));h.appendChild(fb);card.appendChild(h);card.appendChild(bar(G.into/LV));
+    card.classList.toggle("gm-folded",folded);if(folded)return;
     var r=el("div","gm-today"),v=el("div","gm-v");
     v.appendChild(el("b",null,"今天 "+T.xp+" / "+T.target+" XP"+(T.xp>=T.target?" ✓":"")));
     v.appendChild(el("span","td-note",(T.work?"上班日目标":"休息日目标")+(T.parts.length?" · "+T.parts.map(function(p){return p[0]+" "+p[1]}).join(" · "):" · 打卡、计划打勾、记账都会自动加分")));

@@ -944,7 +944,36 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .gm-mon{font-weight:600;font-size:.9rem;min-width:36px}
 .gm-done{font-size:.78rem;color:var(--good,var(--accent))}
 @media (max-width:640px){.gm-srow{grid-template-columns:1fr 1fr;padding:8px 0;border-top:1px solid var(--line)}.gm-srow>input{grid-column:1/-1}.gm-srow .pl-del{justify-self:end}.gm-brow{grid-template-columns:auto 1fr}.gm-brow .ln-h{grid-column:2}}
-.gm-boss .td-k,#td-game .td-k{white-space:nowrap}</style>
+.gm-boss .td-k,#td-game .td-k{white-space:nowrap}
+/* 运动消耗 */
+#cut .burn{display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
+#cut .burn-in{flex-wrap:nowrap}
+#cut .burn-in input[type=search]{flex:1;min-width:0;width:auto}
+#cut .burn-res{display:flex;flex-direction:column;gap:4px}
+#cut .burn-res:empty,#cut .burn-list:empty{display:none}
+#cut .burn-item{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;width:100%;min-height:42px}
+#cut .burn-item b{flex:none;color:var(--accent);font-weight:600;font-size:.85rem}
+#cut .burn-list,#cut ul.burn-tbl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+#cut .burn-list li,#cut ul.burn-tbl li{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;min-height:38px;border-top:1px solid var(--line);font-size:.9rem}
+#cut .burn-list li:first-child,#cut ul.burn-tbl li:first-child{border-top:0}
+#cut .burn-list b,#cut ul.burn-tbl b{font-family:var(--mono);font-size:.85rem;font-weight:600}
+#cut .burn-x,#cut .burn-add{padding:4px 10px;min-height:32px}
+#cut ul.burn-tbl{max-height:360px;overflow:auto}
+#td-game .gm-fold{padding-left:10px}
+#td-game.gm-folded{gap:8px}
+/* 板块排序 */
+.ord-panel{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:0 0 12px;display:flex;flex-direction:column;gap:2px}
+.ord-panel[hidden]{display:none}
+.ord-h{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.ord-h b{flex:1;font-size:.95rem}
+.ord-row{display:flex;align-items:center;gap:6px;min-height:42px;border-top:1px solid var(--line)}
+.ord-row span{flex:1;font-size:.92rem}
+.ord-btn{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:8px;min-width:40px;min-height:36px;padding:4px 10px;cursor:pointer;font:inherit;font-size:.85rem}
+.ord-btn:disabled{opacity:.35;cursor:default}
+.ord-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.ord-btn.ghost{border-style:dashed;color:var(--muted)}
+.ord-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+#cut .burn-in label{flex:none;flex-direction:row;flex-wrap:nowrap;white-space:nowrap}</style>
 <style>/* ---- 质感层：存折纸感。深色「存折页」是唯一的重点，其余都是安静的纸面 ----
    tokens: --accent-deep 存折页底色 · --sh 带色调的阴影 · --hi 纸面高光 · --trough 凹槽 · --numf 大数字字体 */
 :root{--accent-deep:#14573a;--sh:rgba(23,60,45,.13);--hi:rgba(255,255,255,.9);--trough:#e3ebe6;
@@ -1241,7 +1270,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2245</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2320</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1449,7 +1478,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
     </div>
   </section>
   <section class="panel" id="cutCardio">
-    <h2>有氧建议 <small>目标 8,000–10,000 步</small></h2>
+    <h2>有氧与运动消耗 <span class="fold-sum" id="cardioSum"></span> <small>目标 8,000–10,000 步</small></h2>
     <p style="margin:0" id="cardioText"></p>
     <div class="row">
       <label for="steps" class="note">今日步数</label>
@@ -1462,6 +1491,16 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
       <span class="note" id="cardioWeek"></span>
     </div>
     <div class="bar" id="stepBar"><i></i></div>
+    <div class="burn">
+      <div class="row burn-in">
+        <input type="search" id="burnQ" placeholder="搜运动记消耗：跑步、游泳、羽毛球…" aria-label="搜索运动">
+        <label class="row note" style="gap:6px"><input type="number" id="burnMin" value="30" min="1" max="600" inputmode="numeric" aria-label="运动分钟" style="width:76px">分钟</label>
+      </div>
+      <div class="burn-res" id="burnRes"></div>
+      <ul class="burn-list" id="burnList"></ul>
+      <p class="note" id="burnNet" style="margin:0"></p>
+      <details class="sub" id="burnLib"><summary>运动热量表 · 按你的体重算，点「＋」记 30 分钟</summary><div id="burnTable"></div></details>
+    </div>
   </section>
   <section class="panel" id="cutBody" aria-label="身体变化">
     <h2>身体变化 <small>早上空腹称，每周至少 3 次；围度每周量 1 次</small></h2>
@@ -1562,7 +1601,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/17-2245</div>
+  <div class="sync">页面版本 11/17-2320</div>
   </div>
 
   <div id="plan" hidden>
@@ -2310,6 +2349,20 @@ const TR=(name,list,cardio)=>({name,type:"train",ex:list.map(n=>[n,dbSets(n)]),c
 const REC={name:"主动恢复",type:"rest",ex:[["散步 / 拉伸 / 泡沫轴","15–20 分钟"]],cardio:"坡度走 30–40 分钟，心率保持最大心率的 60–70%。"};
 const CAR={name:"有氧日",type:"rest",ex:[],cardio:"坡度走 30–40 分钟；状态好可改做 HIIT：单车 30 秒冲刺 + 90 秒慢速 × 6–8 轮。"};
 const OFF={name:"完全休息",type:"rest",ex:[],cardio:"只保留日常步数，好好休息。"};
+/* 运动热量库：[名称, MET, 是否算有氧, 搜索别名]。消耗 ≈ MET × 体重(kg) × 小时（含基础代谢，是大概值） */
+const ACTS=[
+ ["慢走 3 km/h",2.8,0,"散步 walk"],["快走 5 km/h",3.5,1,"走路 walk"],["快走 6 km/h",5,1,"走路 walk"],["坡度走 8–12%",6,1,"爬坡 跑步机 incline"],
+ ["爬楼梯",8,1,"楼梯 stairs"],["徒步 / 爬山",6,1,"hiking 登山"],["慢跑 8 km/h",8.3,1,"跑步 run jog"],["跑步 10 km/h",9.8,1,"run"],["跑步 12 km/h",11.8,1,"run"],
+ ["单车 轻松",4,1,"骑车 自行车 bike"],["单车 中等",6.8,1,"骑车 健身车 bike"],["动感单车",8.5,1,"spinning 单车课"],["单车 HIIT",8.5,1,"冲刺 bike"],
+ ["椭圆机 中等",5,1,"elliptical"],["划船机 中等",7,1,"rowing"],["跳绳 中速",11.8,1,"rope"],["游泳 慢速",5.8,1,"自由泳 蛙泳 swim"],["游泳 中速",8.3,1,"swim"],
+ ["HIIT 训练",8,1,"间歇 燃脂 tabata"],["有氧操 / 跳操",7.3,1,"帕梅拉 aerobic"],["尊巴",6.5,1,"zumba 跳舞"],["跳舞 一般",5,1,"舞蹈 dance"],["搏击操",7,1,"拳击 kickbox"],
+ ["拳击训练",7.8,1,"打沙袋 boxing"],["力量训练 一般",3.5,0,"撸铁 器械 gym"],["力量训练 大强度",6,0,"撸铁 举重 gym"],["自重训练",3.8,0,"俯卧撑 深蹲 引体"],
+ ["普拉提",3,0,"pilates"],["瑜伽",2.5,0,"yoga"],["拉伸 / 泡沫轴",2.3,0,"stretch"],["太极",3,0,"taichi"],
+ ["羽毛球",5.5,1,"badminton"],["乒乓球",4,1,"table tennis"],["网球",7.3,1,"tennis"],["篮球",6.5,1,"basketball"],["足球",7,1,"soccer"],["排球",4,1,"volleyball"],
+ ["轮滑 / 滑板",7,1,"skate"],["滑雪",7,1,"ski"],["攀岩",7.5,1,"climbing 抱石"],
+ ["站着工作",2.5,0,"上班 零售 站立"],["搬重物",5,0,"搬货 搬家"],["打扫 / 拖地",3.3,0,"家务 吸尘 cleaning"],["做饭 / 备餐",2.5,0,"厨房 cooking"],["逛街 / 购物",2.3,0,"shopping"],["遛狗",3,0,"dog"]
+];
+const CARDIO_MET={"坡度走":6,"快走":4.3,"跑步":9.8,"单车":6.8,"单车 HIIT":8.5,"椭圆机":5,"游泳":7,"其他":5};
 const TEMPLATES=[
  {id:"orig",name:"原有搭配：上下肢 + 臀腿",who:"通用 · 每周 4 练",desc:"拉 / 深蹲 / 推 / 臀，中间穿插恢复和有氧。你之前一直在用的这套。",days:PLAN_ORIG},
  {id:"fglute",name:"女生 · 臀腿塑形",who:"女生 · 每周 4 练",desc:"两天臀腿 + 两天上肢，臀部训练量最高，适合想练翘臀、改善体态。",days:{
@@ -2720,6 +2773,7 @@ function render(){
   {let m=0,n=0;for(let i=0;i<7;i++){const r=allDays[keyOf(dayAgo(i))];if(r&&r.cardio){n++;m+=+r.cardioMin||0}}$("cardioWeek").textContent=`近 7 天有氧 ${n} 次`+(m?` · 共 ${m} 分钟`:"")}
   $("cardioDone").checked=!!day.cardio;
   setBar($("stepBar"),+day.steps||0,9000);
+  try{renderBurn()}catch(e){}
 
   // water
   $("cupBtns").innerHTML=(settings.cups||[250,500]).map(ml=>`<button class="waterbtn" data-ml="${ml}" type="button">+${ml} ml</button>`).join("");
@@ -2892,7 +2946,7 @@ window.__cutSetTime=function(k,ref,start){try{const r=ensureRec(k);
 window.__bk=window.__bk||{};
 window.__bk.cut={
   dump:()=>{allDays[todayKey]=day;return JSON.parse(JSON.stringify({days:allDays,settings}))},
-  merge:d=>{if(!d)return 0;let n=0;const rich=r=>r?((r.food||[]).length+(r.water||[]).length+Object.values(r.ex||{}).filter(Boolean).length+(r.weight?1:0)+(r.steps?1:0)+(r.cardio?1:0)+(r.waist?1:0)):0;
+  merge:d=>{if(!d)return 0;let n=0;const rich=r=>r?((r.food||[]).length+(r.water||[]).length+(r.burn||[]).length+Object.values(r.ex||{}).filter(Boolean).length+(r.weight?1:0)+(r.steps?1:0)+(r.cardio?1:0)+(r.waist?1:0)):0;
     const had=Object.keys(allDays).some(k=>rich(k===todayKey?day:allDays[k])>0);
     Object.keys(d.days||{}).forEach(k=>{if(!/^\d{4}-\d\d-\d\d$/.test(k))return;const b=d.days[k],a=k===todayKey?day:allDays[k];if(!b||!rich(b))return;
       const take=!a||!rich(a)?true:(a.at&&b.at?b.at>a.at:rich(b)>rich(a));
@@ -2914,7 +2968,7 @@ window.__cut={
   waterCount:()=>day.water.length,
   planFor:d=>{const p=plans()[d.getDay()]||OFF;return {name:p.name,type:p.type}},
   targets:d=>{const p=keyOf(d)===todayKey?curPlan():(plans()[d.getDay()]||OFF),tr=p.type==="train";return {plan:p.name,type:p.type,kcal:kOf(tr),pro:proT(),water:tr?2500:2000}},
-  today:()=>{const p=curPlan(),t=totals(day);return {plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>day.ex[i]).length,exTotal:p.ex.length,cardio:!!day.cardio,water:t.water,waterT:waterT(),pro:t.pro,proT:proT(),kcal:t.kcal,kcalT:kcalT()}},
+  today:()=>{const p=curPlan(),t=totals(day);return {burn:burnOf(day).total,plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>day.ex[i]).length,exTotal:p.ex.length,cardio:!!day.cardio,water:t.water,waterT:waterT(),pro:t.pro,proT:proT(),kcal:t.kcal,kcalT:kcalT()}},
   checkAllEx:()=>{const idx=[];curPlan().ex.forEach((_,i)=>{if(!day.ex[i]){day.ex[i]=true;idx.push(i)}});if(idx.length)save();return idx},
   uncheckEx:idx=>{(idx||[]).forEach(i=>{day.ex[i]=false});save()},
   record:k=>{const r=k===todayKey?day:allDays[k];if(!r)return null;const t=totals(r),d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10),12),p=planOf(r,d);
@@ -2972,6 +3026,33 @@ $("steps").addEventListener("change",e=>{day.steps=e.target.value===""?null:Math
 $("cardioDone").addEventListener("change",e=>{day.cardio=e.target.checked;save()});
 $("cardioType").addEventListener("change",e=>{day.cardioType=e.target.value||null;if(e.target.value&&!day.cardio)day.cardio=true;save()});
 $("cardioMin").addEventListener("change",e=>{const v=Math.round(+e.target.value);day.cardioMin=v>0?Math.min(600,v):null;if(v>0&&!day.cardio)day.cardio=true;save()});
+/* ---------- 运动消耗 ---------- */
+function bodyW(){return latestWeight()||calcWeight()||null}
+function kcalOf(met,min){return Math.round(met*(bodyW()||60)*min/60)}
+function burnOf(r){if(!r)return {total:0,list:[],card:0,steps:0};const list=(r.burn||[]).slice(),w=bodyW()||60;let total=list.reduce((a,b)=>a+(+b.kcal||0),0),card=0;
+  if(r.cardioType&&r.cardioMin&&!list.some(b=>b.cardio)){card=Math.round((CARDIO_MET[r.cardioType]||5)*w*r.cardioMin/60);total+=card}
+  const steps=r.steps?Math.round(r.steps*w*0.0005):0;return {total,list,card,steps}}
+function burnRes(){const q=$("burnQ").value.trim().toLowerCase(),box=$("burnRes"),min=Math.max(1,Math.min(600,Math.round(+$("burnMin").value||30)));
+  if(!q){box.innerHTML="";return}
+  const r=ACTS.map((a,i)=>({a,i})).filter(x=>(x.a[0]+" "+x.a[3]).toLowerCase().includes(q)).slice(0,6);
+  box.innerHTML=r.length?r.map(x=>`<button type="button" class="burn-item" data-act="${x.i}"><span>${esc(x.a[0])} · ${min} 分钟</span><b>约 ${kcalOf(x.a[1],min)} kcal ＋</b></button>`).join(""):`<p class="note">没找到这项运动，可以选个接近的。</p>`}
+function renderBurn(){const B=burnOf(day),t=totals(day),w=bodyW();
+  $("burnList").innerHTML=B.list.map(b=>`<li><span>${esc(b.name)} · ${b.min} 分钟</span><b>${b.kcal} kcal</b><button type="button" class="burn-x" data-burnx="${b.t}" aria-label="删除 ${esc(b.name)}">✕</button></li>`).join("")+
+    (B.card?`<li><span>有氧记录：${esc(day.cardioType)} · ${day.cardioMin} 分钟</span><b>${B.card} kcal</b><span></span></li>`:"");
+  $("cardioSum").textContent=B.total?"消耗约 "+B.total+" kcal":"";
+  $("burnNet").textContent=(B.total?`今天运动消耗约 ${B.total} kcal`+(t.kcal?`；吃了 ${t.kcal}，扣掉运动约 ${t.kcal-B.total} kcal`:"")+"。热量目标没有加回运动消耗，减脂更稳。":"搜一项运动、填分钟，点「＋」记下大概消耗。")+
+    (B.steps?` 步数另外约消耗 ${B.steps} kcal。`:"")+(w?"":" 按 60 kg 估算，记了体重会更准。");
+  const min=30;$("burnTable").innerHTML=`<p class="note">按${w?"你最近的体重 "+w+" kg":" 60 kg"}算，每 30 分钟大约消耗：</p><ul class="burn-tbl">`+
+    ACTS.map((a,i)=>`<li><span>${esc(a[0])}</span><b>${kcalOf(a[1],min)}</b><button type="button" class="burn-add" data-act="${i}" aria-label="记 30 分钟${esc(a[0])}">＋</button></li>`).join("")+"</ul>";
+  if($("burnQ").value)burnRes()}
+function addBurn(i,min){const a=ACTS[i];if(!a)return;min=Math.max(1,Math.min(600,Math.round(min||30)));
+  (day.burn=day.burn||[]).push({name:a[0],min,met:a[1],kcal:kcalOf(a[1],min),cardio:!!a[2],t:Date.now()});
+  if(a[2])day.cardio=true;save();try{window.__toastAny(`记下了：${a[0]} ${min} 分钟，约 ${kcalOf(a[1],min)} kcal`+(a[2]?"，有氧已打勾":""))}catch(e){}}
+$("burnQ").addEventListener("input",burnRes);$("burnMin").addEventListener("input",burnRes);
+$("burnRes").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(!b)return;addBurn(+b.dataset.act,+$("burnMin").value);$("burnQ").value="";burnRes()});
+$("burnTable").addEventListener("click",e=>{const b=e.target.closest("[data-act]");if(b)addBurn(+b.dataset.act,30)});
+$("burnList").addEventListener("click",e=>{const b=e.target.closest("[data-burnx]");if(!b)return;const t=+b.dataset.burnx;day.burn=(day.burn||[]).filter(x=>x.t!==t);
+  if(!day.burn.some(x=>x.cardio)&&!day.cardioType&&!day.cardioMin)day.cardio=false;save()});
 $("cupBtns").addEventListener("click",e=>{const b=e.target.closest("[data-ml]");if(!b)return;
   if(b.dataset.rmcup!=null){settings.cups=(settings.cups||[]).filter(x=>x!==+b.dataset.ml);saveSettings();return}
   day.water.push({ml:+b.dataset.ml,t:Date.now()});save()});
@@ -4902,7 +4983,7 @@ render();calc();
       if(T.exTotal&&T.exDone<T.exTotal)r.appendChild(btn("td-btn td-keep","全部完成",function(){lastEx=C.checkAllEx();toast("已勾选今天的全部动作")},"tdExAll"));
       else if(lastEx&&lastEx.length)r.appendChild(btn("td-btn ghost td-keep","撤销",function(){var x=lastEx;lastEx=null;C.uncheckEx(x)},"tdExUndo"));
       box.appendChild(r);
-      var r2=el("label","td-row"),ck=el("input");r2.appendChild(el("span","td-k","有氧"));r2.appendChild(el("span","td-v",T.cardio?"已完成":"还没做"));
+      var r2=el("label","td-row"),ck=el("input");r2.appendChild(el("span","td-k","有氧"));r2.appendChild(el("span","td-v",(T.cardio?"已完成":"还没做")+(T.burn?" · 运动消耗约 "+T.burn+" kcal":"")));
       ck.type="checkbox";ck.id="tdCardio";ck.className="td-keep";ck.checked=!!T.cardio;ck.onchange=function(){C.setCardio(ck.checked)};r2.appendChild(ck);box.appendChild(r2);
       var r3=el("div","td-row"),wv=el("div","td-v"),bar=el("div","td-bar"),bi=el("i");r3.appendChild(el("span","td-k","喝水"));
       wv.appendChild(el("span",null,T.water+" / "+T.waterT+" ml"));bi.style.width=Math.min(100,T.waterT?T.water/T.waterT*100:0)+"%";bar.appendChild(bi);wv.appendChild(bar);r3.appendChild(wv);
@@ -5195,7 +5276,7 @@ render();calc();
   function weekXp(G,ws){return G.days.filter(function(d){return d.k>=ws&&d.k<=addD(ws,6)}).reduce(function(s,d){return s+d.xp},0)}
 
   /* ---------- 兑换 ---------- */
-  var armed=null,shopOpen=false;
+  var armed=null,shopOpen=false,folded=false;try{folded=localStorage.getItem("gm-fold")==="1"}catch(e){}
   function redeem(r,G){var E=window.__expenses,t=tkey();if(G.avail<r.xp){toast("经验值还差 "+(r.xp-G.avail));return}
     var u={id:uid(),date:t,rid:r.id,name:r.name,xp:+r.xp,cost:+r.cost||0,exp:null};
     if(u.cost>0&&E)u.exp=E.add(u.cost,r.cat||"娱乐","奖励："+r.name,t,"reward");
@@ -5214,8 +5295,12 @@ render();calc();
   function renderToday(){var root=$("todayView");if(!root||root.hidden||!place())return;var L=window.__ledger;card.textContent="";
     if(!L||!L.ready()||!loaded){var h0=el("div","td-h");h0.appendChild(el("b",null,"成长等级"));h0.appendChild(el("span","td-sub","正在读取记录…"));card.appendChild(h0);return}
     var G=calc(),T=G.today,E=window.__expenses;
-    var h=el("div","td-h");h.appendChild(el("b",null,"Lv."+G.lv+" "+G.title));h.appendChild(el("span","td-sub","累计 "+G.total+" XP · 距 Lv."+(G.lv+1)+" 还差 "+(LV-G.into)));
-    h.appendChild(btn("td-more","规则 ›",function(){go("set","secGame")}));card.appendChild(h);card.appendChild(bar(G.into/LV));
+    var h=el("div","td-h");h.appendChild(el("b",null,"Lv."+G.lv+" "+G.title));
+    h.appendChild(el("span","td-sub",folded?"今天 "+T.xp+"/"+T.target+(T.xp>=T.target?" ✓":"")+" · 连击 "+G.streak+" · 可用 "+G.avail:"累计 "+G.total+" XP · 距 Lv."+(G.lv+1)+" 还差 "+(LV-G.into)));
+    if(!folded)h.appendChild(btn("td-more","规则 ›",function(){go("set","secGame")}));
+    var fb=btn("td-more gm-fold",folded?"展开 ▾":"收起 ▴",function(){folded=!folded;try{localStorage.setItem("gm-fold",folded?"1":"0")}catch(e){}if(folded){shopOpen=false;armed=null}renderToday()},"gmFold");
+    fb.setAttribute("aria-expanded",String(!folded));h.appendChild(fb);card.appendChild(h);card.appendChild(bar(G.into/LV));
+    card.classList.toggle("gm-folded",folded);if(folded)return;
     var r=el("div","gm-today"),v=el("div","gm-v");
     v.appendChild(el("b",null,"今天 "+T.xp+" / "+T.target+" XP"+(T.xp>=T.target?" ✓":"")));
     v.appendChild(el("span","td-note",(T.work?"上班日目标":"休息日目标")+(T.parts.length?" · "+T.parts.map(function(p){return p[0]+" "+p[1]}).join(" · "):" · 打卡、计划打勾、记账都会自动加分")));
@@ -5323,8 +5408,8 @@ render();calc();
   var TOC={
     ledger:[["本周省钱","secLedger"],["储蓄","savSec"],["日常开支","expSec"],["工资排班","paySec"],["习惯打卡","groups"],["回顾","secWeek"],["累计","secMs"],["便签","secNotes"],["价格清单","secAes"]],
     today:[],
-    set:[["成长奖励","secGame"],["数据备份","secBackup"],["主题颜色","secTheme"],["添加习惯","secAdd"],["整理习惯","secTidy"],["算法说明","secRules"]],
-    cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["饮食","cutFood"],["喝水","cutWater"],["有氧","cutCardio"],["身体变化","cutBody"],["调整建议","cutAdvice"],["健身日历","cutCal"],["我的目标","goalBox"]],
+    set:[["生活主线","secLines"],["成长奖励","secGame"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
+    cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["有氧与消耗","cutCardio"],["饮食","cutFood"],["喝水","cutWater"],["健身日历","cutCal"],["身体变化","cutBody"],["调整建议","cutAdvice"],["我的目标","goalBox"]],
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
   };
@@ -5333,6 +5418,28 @@ render();calc();
   var st={};try{st=JSON.parse(localStorage.getItem("fold-state")||"{}")||{}}catch(e){}
   function saveSt(){try{localStorage.setItem("fold-state",JSON.stringify(st))}catch(e){}}
   function isF(id){return id in st?!!st[id]:!!FOLD[id]}
+  // ---- 运动、设置页的板块顺序：默认把常用的放前面，也可以自己调（存在这台设备上） ----
+  var ORD_DEF={cut:TOC.cut.map(function(x){return x[1]}),set:TOC.set.map(function(x){return x[1]})},NAMES={},ordOpen=false,ANCH={};
+  Object.keys(ORD_DEF).forEach(function(t){TOC[t].forEach(function(x){NAMES[x[1]]=x[0]})});
+  var ord={};try{ord=JSON.parse(localStorage.getItem("sec-order-v1")||"{}")||{}}catch(e){}
+  function ordOf(t){var d=ORD_DEF[t],o=(ord[t]||[]).filter(function(id){return d.indexOf(id)>=0});d.forEach(function(id){if(o.indexOf(id)<0)o.push(id)});return o}
+  function applyOrd(t){var ids=ordOf(t),els=ids.map(function(id){return $(id)}).filter(Boolean);if(!els.length)return;var par=els[0].parentNode;
+    if(!(t in ANCH)){var last=els.reduce(function(a,b){return a.compareDocumentPosition(b)&Node.DOCUMENT_POSITION_FOLLOWING?b:a});ANCH[t]=last.nextSibling;if(ANCH[t]&&ANCH[t].nodeType!==1)ANCH[t]=last.nextElementSibling}
+    els.forEach(function(e){if(e.parentNode!==par)return;par.insertBefore(e,ANCH[t]||null);if(e.id==="cutTrain"){var pe=$("planEditor");if(pe)par.insertBefore(pe,ANCH[t]||null)}});
+    TOC[t]=ids.map(function(id){return [NAMES[id],id]})}
+  function saveOrd(t,o){ord[t]=o;try{localStorage.setItem("sec-order-v1",JSON.stringify(ord))}catch(e){}applyOrd(t)}
+  Object.keys(ORD_DEF).forEach(applyOrd);
+  function ordPanel(){var p=$("ordPanel");if(!p){p=document.createElement("div");p.id="ordPanel";p.className="ord-panel";var nav=$("toc");nav.parentNode.insertBefore(p,nav.nextSibling)}
+    p.textContent="";p.hidden=!(ordOpen&&ORD_DEF[cur]);if(p.hidden)return;
+    var o=ordOf(cur),h=document.createElement("div");h.className="ord-h";var b=document.createElement("b");b.textContent="调整板块顺序";h.appendChild(b);
+    function mk(txt,cls,f,id,lbl){var x=document.createElement("button");x.type="button";x.className=cls;x.textContent=txt;x.onclick=f;if(id)x.id=id;if(lbl)x.setAttribute("aria-label",lbl);return x}
+    h.appendChild(mk("恢复默认","ord-btn ghost",function(){saveOrd(cur,ORD_DEF[cur].slice());buildToc()},"ordReset"));
+    h.appendChild(mk("完成","ord-btn primary",function(){ordOpen=false;buildToc()},"ordDone"));p.appendChild(h);
+    o.forEach(function(id,i){var r=document.createElement("div");r.className="ord-row";var n=document.createElement("span");n.textContent=(i+1)+". "+NAMES[id];r.appendChild(n);
+      function mv(d){var a=o.slice(),j=i+d;if(j<0||j>=a.length)return;var t=a[i];a[i]=a[j];a[j]=t;saveOrd(cur,a);buildToc();var f=$("ord"+(d<0?"U":"D")+"-"+id);if(f)f.focus()}
+      var u=mk("↑","ord-btn",function(){mv(-1)},"ordU-"+id,"上移 "+NAMES[id]),d=mk("↓","ord-btn",function(){mv(1)},"ordD-"+id,"下移 "+NAMES[id]);u.disabled=i===0;d.disabled=i===o.length-1;
+      r.appendChild(u);r.appendChild(d);p.appendChild(r)});
+  }
   Object.keys(FOLD).forEach(function(id){var e=$(id);if(!e)return;e.classList.add("fold");e.classList.toggle("folded",isF(id));});
   function setF(id,v){var e=$(id);if(!e)return;st[id]=v?1:0;saveSt();e.classList.toggle("folded",v);syncHead(e);if(id==="cutTrain")try{trainSum()}catch(x){}}
   function syncHead(e){var h=e.firstElementChild;if(h){h.setAttribute("aria-expanded",String(!e.classList.contains("folded")));}}
@@ -5354,11 +5461,12 @@ render();calc();
   function tabNow(){return $("tabToday").getAttribute("aria-selected")==="true"?"today":$("tabSet").getAttribute("aria-selected")==="true"?"set":$("tabCut").getAttribute("aria-selected")==="true"?"cut":$("tabPlan").getAttribute("aria-selected")==="true"?"plan":$("tabCycle").getAttribute("aria-selected")==="true"?"cycle":"ledger";}
   function anyOpen(){return TOC[cur].some(function(x){return x[1] in FOLD&&!$(x[1]).classList.contains("folded")});}
   function buildToc(){
-    var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden)return;
+    var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden){var op=$("ordPanel");if(op)op.hidden=true;return;}
     TOC[cur].forEach(function(x){var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
     if(cur!=="plan"&&cur!=="set"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
       a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
-    nav.scrollLeft=0;
+    if(ORD_DEF[cur]){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起排序":"调整顺序";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
+    nav.scrollLeft=0;ordPanel();
   }
   var rm=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;
   function scrollTo(e){if(e)e.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"});}
@@ -5373,7 +5481,7 @@ render();calc();
     scrollTo(e);
   }
   function applyTab(t){
-    cur=t;var T=TITLES[t];
+    if(t!==cur)ordOpen=false;cur=t;var T=TITLES[t];
     document.querySelector("header h1").textContent=T[0];
     document.title=T[0];
     var sub=T[1];if(t==="today"){var dn=new Date();sub=(dn.getMonth()+1)+"月"+dn.getDate()+"日 "+["周日","周一","周二","周三","周四","周五","周六"][dn.getDay()]+" · 一页记完今天"}
