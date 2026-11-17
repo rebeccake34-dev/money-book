@@ -1,0 +1,77 @@
+/* ---- 液态玻璃层：半透明磨砂面 + 跟主题色走的背景光。颜色变量在 18-theme.js 里按主题色生成 ----
+   --glass 外层玻璃（带模糊） · --glass-2 玻璃里的小块（不再模糊，省电） · --glass-in 输入框 · --glass-bar 吸顶条
+   --glass-bd 亮边 · --glass-hi 顶部高光 · --glass-sheen 上半部反光 · --orb1/2/3 背景光斑 */
+:root{--gblur:blur(24px) saturate(175%);--gblur-s:blur(16px) saturate(160%)}
+html{background:var(--bgbase,var(--bg))}
+body{background:transparent}
+body::before{opacity:1;inset:-12%;background-image:
+  radial-gradient(38% 32% at 10% 6%,var(--orb1),transparent 72%),
+  radial-gradient(42% 36% at 94% 20%,var(--orb2),transparent 72%),
+  radial-gradient(48% 40% at 26% 78%,var(--orb3),transparent 72%),
+  radial-gradient(40% 36% at 88% 94%,var(--orb1),transparent 72%)}
+header{border-bottom:0}
+
+/* 外层玻璃：卡片、面板、标签栏 */
+.card,.td-card,#cut .panel,.pl-memo,.pl-panel,.ov-row,.tabs,.sheet-box,.pl-ym{
+  background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 42%),var(--glass);
+  border:1px solid var(--glass-bd);
+  -webkit-backdrop-filter:var(--gblur);backdrop-filter:var(--gblur);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 1px 2px var(--sh),0 14px 34px -18px var(--sh)}
+.card,.td-card,#cut .panel,.pl-memo{border-radius:22px}
+.ov-row{border-radius:18px}
+.pl-panel{background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 30%),var(--glass-strong)}
+.sheet-box{border-radius:24px;background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 40%),var(--glass-strong)}
+
+/* 玻璃里的小块和按钮：半透明，不再叠模糊 */
+.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,#plan .pl-btn,.toc button,.seg,.cy-seg,.pay-row,.pl-info,.pl-sum,.pl-cd,.cy-nb,.pl-day,.fold>:first-child::after{
+  background:var(--glass-2);border-color:var(--glass-bd);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 1px 2px var(--sh)}
+.btn,.td-btn,#plan .pl-btn,.cy-nb{border-radius:999px}
+.tile,.gtoggle,.td-chipw,.pay-row,.pl-day{border-radius:16px}
+.tile:active,.gtoggle:active,.btn:active,.td-btn:active,.ov-row:active{transform:scale(.98);box-shadow:inset 0 1px 3px var(--sh)}
+.btn.primary,#cut button.primary{color:#fff;border-color:transparent;
+  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0) 55%),var(--accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.12),0 6px 16px -8px var(--accent)}
+
+/* 标签栏：胶囊，选中的那格是一块更亮的玻璃 */
+.tabs{border-radius:999px;padding:5px}
+.tabs button{border-radius:999px}
+.tabs button[aria-selected="true"],.pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.25)),var(--glass-2);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 2px 8px -2px var(--sh)}
+
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tabs button[aria-selected="true"],:root:not([data-theme="light"]) .pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2)}}
+:root[data-theme="dark"] .tabs button[aria-selected="true"],:root[data-theme="dark"] .pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2)}
+
+/* 吸顶的目录和月份条 */
+.toc,.pl-mnav{border-radius:20px;background:var(--glass-bar);-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s)}
+
+/* 输入框 */
+input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea,
+#cut input[type=text],#cut input[type=number],.pl-item input[type=text],#plan .pl-itime input[type=time],.aes-body input{
+  background:var(--glass-in);border-color:var(--glass-bd);box-shadow:inset 0 1px 2px var(--sh)}
+
+/* 存折页：深色玻璃，主题色透出来 */
+.ledger,.td-hero{
+  background:
+    radial-gradient(120% 80% at 0% 0%,rgba(255,255,255,.32),rgba(255,255,255,0) 55%),
+    linear-gradient(155deg,var(--accent-deep),var(--accent) 135%);
+  background:
+    radial-gradient(120% 80% at 0% 0%,rgba(255,255,255,.32),rgba(255,255,255,0) 55%),
+    linear-gradient(155deg,color-mix(in srgb,var(--accent-deep) 86%,transparent),color-mix(in srgb,var(--accent) 78%,transparent) 135%);
+  -webkit-backdrop-filter:var(--gblur);backdrop-filter:var(--gblur);
+  border:1px solid rgba(255,255,255,.28);border-radius:24px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.15),0 18px 40px -20px var(--accent-deep)}
+
+.ledger .save-row{background:rgba(255,255,255,.78);-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);border:1px solid rgba(255,255,255,.6);border-radius:16px;box-shadow:inset 0 1px 0 #fff,0 4px 14px -6px rgba(0,0,0,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ledger .save-row{background:rgba(10,14,20,.45);border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}}
+
+/* 提示条、回到顶部 */
+.toast{background:hsl(var(--th) 25% 14% / .72);color:#fff;-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);border:1px solid rgba(255,255,255,.14);border-radius:999px}
+.todayfab,.totop{-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 20px -8px var(--sh)}
+
+/* 不支持模糊、或系统打开了「降低透明度」：退回实心面 */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  html:root{--glass:var(--paper);--glass-strong:var(--paper);--glass-2:var(--paper);--glass-bar:var(--bg);--glass-in:var(--bg)}}
+@media (prefers-reduced-transparency:reduce){
+  html:root{--glass:var(--paper);--glass-strong:var(--paper);--glass-2:var(--paper);--glass-bar:var(--bg);--glass-in:var(--bg)}
+  body::before{opacity:.35}}

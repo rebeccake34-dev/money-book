@@ -1028,6 +1028,83 @@ input[type=color]{box-shadow:none}
 #cut,:root[data-theme="dark"] #cut{--water:var(--calm);--water-soft:var(--calm-soft);--warn:var(--gold);--warn-soft:var(--gold-soft)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #cut{--water:var(--calm);--water-soft:var(--calm-soft);--warn:var(--gold);--warn-soft:var(--gold-soft)}}
 .pl-dh{font-weight:600}</style>
+<style>/* ---- 液态玻璃层：半透明磨砂面 + 跟主题色走的背景光。颜色变量在 18-theme.js 里按主题色生成 ----
+   --glass 外层玻璃（带模糊） · --glass-2 玻璃里的小块（不再模糊，省电） · --glass-in 输入框 · --glass-bar 吸顶条
+   --glass-bd 亮边 · --glass-hi 顶部高光 · --glass-sheen 上半部反光 · --orb1/2/3 背景光斑 */
+:root{--gblur:blur(24px) saturate(175%);--gblur-s:blur(16px) saturate(160%)}
+html{background:var(--bgbase,var(--bg))}
+body{background:transparent}
+body::before{opacity:1;inset:-12%;background-image:
+  radial-gradient(38% 32% at 10% 6%,var(--orb1),transparent 72%),
+  radial-gradient(42% 36% at 94% 20%,var(--orb2),transparent 72%),
+  radial-gradient(48% 40% at 26% 78%,var(--orb3),transparent 72%),
+  radial-gradient(40% 36% at 88% 94%,var(--orb1),transparent 72%)}
+header{border-bottom:0}
+
+/* 外层玻璃：卡片、面板、标签栏 */
+.card,.td-card,#cut .panel,.pl-memo,.pl-panel,.ov-row,.tabs,.sheet-box,.pl-ym{
+  background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 42%),var(--glass);
+  border:1px solid var(--glass-bd);
+  -webkit-backdrop-filter:var(--gblur);backdrop-filter:var(--gblur);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 1px 2px var(--sh),0 14px 34px -18px var(--sh)}
+.card,.td-card,#cut .panel,.pl-memo{border-radius:22px}
+.ov-row{border-radius:18px}
+.pl-panel{background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 30%),var(--glass-strong)}
+.sheet-box{border-radius:24px;background:linear-gradient(180deg,var(--glass-sheen),rgba(255,255,255,0) 40%),var(--glass-strong)}
+
+/* 玻璃里的小块和按钮：半透明，不再叠模糊 */
+.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,#plan .pl-btn,.toc button,.seg,.cy-seg,.pay-row,.pl-info,.pl-sum,.pl-cd,.cy-nb,.pl-day,.fold>:first-child::after{
+  background:var(--glass-2);border-color:var(--glass-bd);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 1px 2px var(--sh)}
+.btn,.td-btn,#plan .pl-btn,.cy-nb{border-radius:999px}
+.tile,.gtoggle,.td-chipw,.pay-row,.pl-day{border-radius:16px}
+.tile:active,.gtoggle:active,.btn:active,.td-btn:active,.ov-row:active{transform:scale(.98);box-shadow:inset 0 1px 3px var(--sh)}
+.btn.primary,#cut button.primary{color:#fff;border-color:transparent;
+  background:linear-gradient(180deg,rgba(255,255,255,.38),rgba(255,255,255,0) 55%),var(--accent);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.55),inset 0 -1px 0 rgba(0,0,0,.12),0 6px 16px -8px var(--accent)}
+
+/* 标签栏：胶囊，选中的那格是一块更亮的玻璃 */
+.tabs{border-radius:999px;padding:5px}
+.tabs button{border-radius:999px}
+.tabs button[aria-selected="true"],.pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.25)),var(--glass-2);
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 0 0 .5px var(--glass-edge),0 2px 8px -2px var(--sh)}
+
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tabs button[aria-selected="true"],:root:not([data-theme="light"]) .pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2)}}
+:root[data-theme="dark"] .tabs button[aria-selected="true"],:root[data-theme="dark"] .pl-pbtn[aria-selected=true]{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2)}
+
+/* 吸顶的目录和月份条 */
+.toc,.pl-mnav{border-radius:20px;background:var(--glass-bar);-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s)}
+
+/* 输入框 */
+input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea,
+#cut input[type=text],#cut input[type=number],.pl-item input[type=text],#plan .pl-itime input[type=time],.aes-body input{
+  background:var(--glass-in);border-color:var(--glass-bd);box-shadow:inset 0 1px 2px var(--sh)}
+
+/* 存折页：深色玻璃，主题色透出来 */
+.ledger,.td-hero{
+  background:
+    radial-gradient(120% 80% at 0% 0%,rgba(255,255,255,.32),rgba(255,255,255,0) 55%),
+    linear-gradient(155deg,var(--accent-deep),var(--accent) 135%);
+  background:
+    radial-gradient(120% 80% at 0% 0%,rgba(255,255,255,.32),rgba(255,255,255,0) 55%),
+    linear-gradient(155deg,color-mix(in srgb,var(--accent-deep) 86%,transparent),color-mix(in srgb,var(--accent) 78%,transparent) 135%);
+  -webkit-backdrop-filter:var(--gblur);backdrop-filter:var(--gblur);
+  border:1px solid rgba(255,255,255,.28);border-radius:24px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.45),inset 0 -1px 0 rgba(0,0,0,.15),0 18px 40px -20px var(--accent-deep)}
+
+.ledger .save-row{background:rgba(255,255,255,.78);-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);border:1px solid rgba(255,255,255,.6);border-radius:16px;box-shadow:inset 0 1px 0 #fff,0 4px 14px -6px rgba(0,0,0,.25)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .ledger .save-row{background:rgba(10,14,20,.45);border-color:rgba(255,255,255,.12);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}}
+
+/* 提示条、回到顶部 */
+.toast{background:hsl(var(--th) 25% 14% / .72);color:#fff;-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);border:1px solid rgba(255,255,255,.14);border-radius:999px}
+.todayfab,.totop{-webkit-backdrop-filter:var(--gblur-s);backdrop-filter:var(--gblur-s);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 8px 20px -8px var(--sh)}
+
+/* 不支持模糊、或系统打开了「降低透明度」：退回实心面 */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  html:root{--glass:var(--paper);--glass-strong:var(--paper);--glass-2:var(--paper);--glass-bar:var(--bg);--glass-in:var(--bg)}}
+@media (prefers-reduced-transparency:reduce){
+  html:root{--glass:var(--paper);--glass-strong:var(--paper);--glass-2:var(--paper);--glass-bar:var(--bg);--glass-in:var(--bg)}
+  body::before{opacity:.35}}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>(function(){
   var VER="11/14-1500",log=[],busy=false;
@@ -1049,7 +1126,7 @@ input[type=color]{box-shadow:none}
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/16-1900</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2115</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1369,7 +1446,7 @@ input[type=color]{box-shadow:none}
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/16-1900</div>
+  <div class="sync">页面版本 11/17-2115</div>
   </div>
 
   <div id="plan" hidden>
@@ -3806,8 +3883,8 @@ render();calc();
   function apply(hex){
     let [h,s,l]=hsl(hex);
     const la=Math.min(Math.max(l,26),44), sa=Math.max(s,30);
-    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,30),94)};--paper:${c(h,35,99)};--ink:${c(h,35,13)};--muted:${c(h,12,40)};--line:${c(h,22,86)};--accent-deep:${c(h,Math.max(sa,45),Math.max(la-15,16))};--sh:hsl(${h} 45% 22% / .14);--hi:rgba(255,255,255,.9);--trough:${c(h,Math.min(s,28),91.5)};--th:${h};--gold:hsl(36 62% 35%);--gold-soft:hsl(38 58% 91%);--bad:hsl(6 48% 46%);--bad-soft:hsl(8 58% 93.5%);--calm:${c(h+38,34,42)};--calm-soft:${c(h+38,42,93)};--cy-p:hsl(346 46% 50%);--cy-ps:hsl(346 55% 94%);--cy-f:${c(h+32,36,50)};--cy-fs:${c(h+32,42,92)};--cy-o:${c(h+58,36,46)};--cy-g:${c(h-36,34,40)};--cy-gs:${c(h-36,36,91)};--cy-l:hsl(36 52% 40%);--cy-ls:hsl(38 55% 90%);`;
-    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,7.5)};--paper:${c(h,18,12.5)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,21)};--accent-deep:${c(h,Math.min(sa,55),17)};--sh:rgba(0,0,0,.55);--hi:hsl(${h} 40% 90% / .06);--trough:${c(h,22,5.5)};--th:${h};--gold:hsl(38 62% 64%);--gold-soft:hsl(38 40% 16%);--bad:hsl(8 68% 70%);--bad-soft:hsl(8 34% 17%);--calm:${c(h+38,50,76)};--calm-soft:${c(h+38,28,19)};--cy-p:hsl(346 62% 72%);--cy-ps:hsl(346 32% 19%);--cy-f:${c(h+32,50,76)};--cy-fs:${c(h+32,28,20)};--cy-o:${c(h+58,50,74)};--cy-g:${c(h-36,42,66)};--cy-gs:${c(h-36,26,17)};--cy-l:hsl(38 58% 64%);--cy-ls:hsl(38 38% 16%);`;
+    const light=`--accent:${c(h,sa,la)};--accent-soft:${c(h,Math.min(sa,70),92)};--bg:${c(h,Math.min(s,30),94)};--paper:${c(h,35,99)};--ink:${c(h,35,13)};--muted:${c(h,12,40)};--line:${c(h,22,86)};--accent-deep:${c(h,Math.max(sa,45),Math.max(la-15,16))};--sh:hsl(${h} 45% 22% / .14);--hi:rgba(255,255,255,.9);--trough:${c(h,Math.min(s,28),91.5)};--th:${h};--gold:hsl(36 62% 35%);--gold-soft:hsl(38 58% 91%);--bad:hsl(6 48% 46%);--bad-soft:hsl(8 58% 93.5%);--calm:${c(h+38,34,42)};--calm-soft:${c(h+38,42,93)};--cy-p:hsl(346 46% 50%);--cy-ps:hsl(346 55% 94%);--cy-f:${c(h+32,36,50)};--cy-fs:${c(h+32,42,92)};--cy-o:${c(h+58,36,46)};--cy-g:${c(h-36,34,40)};--cy-gs:${c(h-36,36,91)};--cy-l:hsl(36 52% 40%);--cy-ls:hsl(38 55% 90%);--bgbase:${c(h,Math.min(s,40),94)};--glass:hsl(${h} 45% 99% / .56);--glass-strong:hsl(${h} 45% 99% / .8);--glass-2:hsl(${h} 50% 100% / .55);--glass-in:hsl(${h} 50% 100% / .62);--glass-bar:hsl(${h} 40% 96% / .62);--glass-bd:rgba(255,255,255,.72);--glass-edge:hsl(${h} 35% 40% / .12);--glass-hi:rgba(255,255,255,.95);--glass-sheen:rgba(255,255,255,.55);--orb1:hsl(${h} 85% 68% / .5);--orb2:hsl(${h+45} 80% 72% / .42);--orb3:hsl(${h-55} 75% 74% / .36);`;
+    const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,7.5)};--paper:${c(h,18,12.5)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,21)};--accent-deep:${c(h,Math.min(sa,55),17)};--sh:rgba(0,0,0,.55);--hi:hsl(${h} 40% 90% / .06);--trough:${c(h,22,5.5)};--th:${h};--gold:hsl(38 62% 64%);--gold-soft:hsl(38 40% 16%);--bad:hsl(8 68% 70%);--bad-soft:hsl(8 34% 17%);--calm:${c(h+38,50,76)};--calm-soft:${c(h+38,28,19)};--cy-p:hsl(346 62% 72%);--cy-ps:hsl(346 32% 19%);--cy-f:${c(h+32,50,76)};--cy-fs:${c(h+32,28,20)};--cy-o:${c(h+58,50,74)};--cy-g:${c(h-36,42,66)};--cy-gs:${c(h-36,26,17)};--cy-l:hsl(38 58% 64%);--cy-ls:hsl(38 38% 16%);--bgbase:${c(h,24,7)};--glass:hsl(${h} 22% 16% / .52);--glass-strong:hsl(${h} 22% 13% / .82);--glass-2:hsl(${h} 25% 26% / .38);--glass-in:hsl(${h} 25% 8% / .45);--glass-bar:hsl(${h} 22% 9% / .6);--glass-bd:rgba(255,255,255,.12);--glass-edge:rgba(0,0,0,.35);--glass-hi:rgba(255,255,255,.16);--glass-sheen:rgba(255,255,255,.07);--orb1:hsl(${h} 70% 42% / .45);--orb2:hsl(${h+45} 60% 38% / .36);--orb3:hsl(${h-55} 55% 36% / .3);`;
     let st=document.getElementById("themeStyle");
     if(!st){st=document.createElement("style");st.id="themeStyle";document.body.appendChild(st)}
     st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
