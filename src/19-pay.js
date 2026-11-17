@@ -2,6 +2,7 @@
   const box=document.getElementById("paySec");if(!box)return;
   const KEY="pay-sync-v1";
   window.__pay=()=>data.payslips;
+  window.__shifts=()=>data.shifts.slice();
   window.__bk=window.__bk||{};
   window.__bk.pay={dump:()=>JSON.parse(JSON.stringify(data)),
     merge:d=>{if(!d||!Array.isArray(d.payslips))return 0;const newer=(d.syncedAt||"")>(data.syncedAt||"")||d.payslips.length>data.payslips.length;if(!newer)return 0;
@@ -80,6 +81,7 @@
     if(ps.length>6){const mb=el("button","btn pay-more",showAll?"收起":"查看全部 "+ps.length+" 张");mb.type="button";mb.onclick=()=>{showAll=!showAll;render()};box.appendChild(mb)}
   }
   render();
+  try{window.__onShifts&&window.__onShifts(data.shifts)}catch(e){}
   if(!(window.claude&&window.claude.use))return;
   Promise.all([window.claude.use("db"),window.claude.use("user")]).then(([db,user])=>{
     if(!db||!user)return;

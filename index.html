@@ -1270,7 +1270,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2320</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2350</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1601,7 +1601,7 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/17-2320</div>
+  <div class="sync">页面版本 11/17-2350</div>
   </div>
 
   <div id="plan" hidden>
@@ -3916,6 +3916,18 @@ render();calc();
   };
   // 成长等级用：某一天主线分钟、其他已完成事项数、是不是上班日
   window.__planXp=function(k){var m=0,o=0,w=false;(state.days[k]||[]).forEach(function(i){if(i.cat==="work"){if(i.start)w=true;return;}var x=itemMin(i);if(x)m+=x;else if(i.done&&i.cat!=="line")o++;});return {min:m,other:o,work:w};};
+  // ---- 排班 → 日常计划：工资单同步来的排班自动放进计划（每天一条「上班」，已有就只更新时间和备注） ----
+  var plReady=!(window.claude&&window.claude.use),shPend=null;
+  function applyShifts(list){if(!Array.isArray(list)||!list.length)return 0;if(!plReady){shPend=list;return 0;}var n=0,sub="上班";
+    Object.keys(state.days).sort().forEach(function(k){(state.days[k]||[]).forEach(function(i){if(i.roster&&i.sub)sub=i.sub;});});
+    list.forEach(function(sh){if(!sh||!/^\d{4}-\d\d-\d\d$/.test(sh.date||"")||!sh.start)return;if(parse(sh.date)>end)return;
+      var k=sh.date,l=state.days[k]||(state.days[k]=[]),note="排班"+(sh.store?" · "+sh.store:"")+(sh.cash?" · 收银":"");
+      var it=l.filter(function(i){return i.roster;})[0];
+      if(!it){l.push({id:"roster"+k.replace(/-/g,""),cat:"work",sub:sub,name:"",note:note,done:k<todayKey,start:sh.start,end:sh.end||"",roster:true});saveDay(k);n++;return;}
+      if(it.start!==sh.start||it.end!==(sh.end||"")){it.start=sh.start;it.end=sh.end||"";if(!it.note||/排班/.test(it.note))it.note=note;saveDay(k);n++;}});
+    if(n){renderCal();renderPanel();try{window.__todayRender&&window.__todayRender();}catch(e){}}return n;}
+  window.__onShifts=function(list){applyShifts(list);};
+  function planReady(){plReady=true;var p=shPend||(window.__shifts&&window.__shifts());shPend=null;if(p)applyShifts(p);}
   window.__workOn=function(k){return (state.days[k]||[]).filter(function(i){return i.cat==="work"&&i.start;}).map(function(i){return {start:i.start,end:i.end};});};
   window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");
     setTimeout(function(){var c=cal.querySelector('[data-k="'+k+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"});},60);};
@@ -4051,24 +4063,24 @@ render();calc();
   if(!(window.claude&&window.claude.use)){setStatus("内容保存在这个浏览器里");return;}
   Promise.all([window.claude.use("db"),window.claude.use("user")]).then(function(r){
     var db=r[0],user=r[1];
-    if(!db||!user){setStatus("内容保存在这个浏览器里");return;}
+    if(!db||!user){setStatus("内容保存在这个浏览器里");planReady();return;}
     return user.id().then(function(id){
-      if(!id){setStatus("内容保存在这个浏览器里");return;}
+      if(!id){setStatus("内容保存在这个浏览器里");planReady();return;}
       col=db.doc("data/users/"+id+"/planner").collection("days");
       var timer=setTimeout(function(){setStatus("暂时连不上，显示的是本机内容");},10000),first=true;
       col.onSnapshot(function(snap){
         if(!snap.metadata.fromCache){clearTimeout(timer);setStatus("已同步");}
         if(first&&snap.empty&&!snap.metadata.fromCache){first=false;
           Object.keys(state.days).forEach(function(k){if(state.days[k].length)write("day-"+k,{date:k,items:state.days[k]});});
-          if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();if(state.lines)saveLines();return;}
+          if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();if(state.lines)saveLines();planReady();return;}
         if(!snap.metadata.fromCache)first=false;
         var days={},sc=null,mm=[],ln=null;
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
           if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.memos=mm;state.lines=ln;cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
-      },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;});
+        state.days=days;state.shortcuts=sc;state.memos=mm;state.lines=ln;cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+      },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;planReady();});
     });
-  }).catch(function(){setStatus("内容保存在这个浏览器里");});
+  }).catch(function(){setStatus("内容保存在这个浏览器里");planReady();});
 })();</script>
 <script>(function(){
   const KEY="theme-color", DEF="#1f84cc";
@@ -4106,6 +4118,7 @@ render();calc();
   const box=document.getElementById("paySec");if(!box)return;
   const KEY="pay-sync-v1";
   window.__pay=()=>data.payslips;
+  window.__shifts=()=>data.shifts.slice();
   window.__bk=window.__bk||{};
   window.__bk.pay={dump:()=>JSON.parse(JSON.stringify(data)),
     merge:d=>{if(!d||!Array.isArray(d.payslips))return 0;const newer=(d.syncedAt||"")>(data.syncedAt||"")||d.payslips.length>data.payslips.length;if(!newer)return 0;
@@ -4184,6 +4197,7 @@ render();calc();
     if(ps.length>6){const mb=el("button","btn pay-more",showAll?"收起":"查看全部 "+ps.length+" 张");mb.type="button";mb.onclick=()=>{showAll=!showAll;render()};box.appendChild(mb)}
   }
   render();
+  try{window.__onShifts&&window.__onShifts(data.shifts)}catch(e){}
   if(!(window.claude&&window.claude.use))return;
   Promise.all([window.claude.use("db"),window.claude.use("user")]).then(([db,user])=>{
     if(!db||!user)return;

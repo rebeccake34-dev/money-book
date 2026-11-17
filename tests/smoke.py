@@ -18,6 +18,7 @@ SEED = {
     "expenses-v1": {"months": {today.isoformat()[:7]: [{"id": "e1", "date": k(0), "amt": 12.5, "cat": "餐饮", "note": "午饭", "src": ""}]}, "budget": 600, "wk": {"餐饮": 10}},
     "savings-v1": {"goal": 10000, "goalNote": "", "start": 2000, "startDate": k(30), "entries": [{"id": "s1", "date": k(20), "amt": 300, "note": ""}], "pct": 10, "costs": []},
     "year-end-planner-v1": {"shortcuts": None, "days": {k(0): [{"id": "p1", "cat": "other", "sub": "", "name": "买牛奶", "note": "", "done": False, "start": "09:00", "end": "09:30"}]}, "memos": []},
+    "pay-sync-v1": {"payslips": [], "shifts": [{"date": k(-2), "start": "09:00", "end": "17:00", "store": "测试店", "cash": True}], "syncedAt": None},
     "cycle-v1": {"periods": [{"s": k(40), "e": k(36)}, {"s": k(12), "e": k(8)}], "logs": {}, "set": {}, "at": 5},
     "cut-day-" + k(1): {"food": [{"name": "虾 去壳 熟100g", "kcal": 100, "pro": 24, "t": 1}], "water": [], "ex": {}},
     "cut-day-" + k(2): {"food": [{"name": "虾 去壳 熟100g", "kcal": 100, "pro": 24, "t": 1}], "water": [], "ex": {}},
@@ -43,6 +44,7 @@ async def main():
         for w, h in [(400, 800), (1300, 900)]:
             print("宽度 %d" % w)
             pg = await page(b, w, h)
+            check("排班自动进日常计划", await pg.evaluate('window.__workOn("%s")' % k(-2)) == [{"start": "09:00", "end": "17:00"}])
             check("默认打开「今天」", await pg.get_attribute("#tabToday", "aria-selected") == "true")
             await pg.click("#tdH-meal"); await pg.wait_for_timeout(300)
             check("习惯点一下 +1", "×2" in await pg.inner_text("#tdH-meal"))
