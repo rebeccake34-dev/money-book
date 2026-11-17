@@ -9,7 +9,7 @@
     plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
   };
-  var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secAdd:0,secTheme:0,
+  var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secAdd:1,secTheme:1,secLines:0,secGame:1,secBlocks:1,secBackup:1,secTidy:1,secRules:1,
     cutTrain:0,cutFood:0,cutWater:0,cutCardio:1,cutBody:1,cutAdvice:1,cutCal:0,plMemo:0,cyLog:0,cyAdvice:0,cyCal:0,cyHist:0,cySet:1};
   var st={};try{st=JSON.parse(localStorage.getItem("fold-state")||"{}")||{}}catch(e){}
   function saveSt(){try{localStorage.setItem("fold-state",JSON.stringify(st))}catch(e){}}
@@ -49,7 +49,7 @@
   window.__blocksShown=renderBlocks;
   {var fs=window.__setShown;window.__setShown=function(){var r;try{r=fs&&fs.apply(this,arguments)}finally{try{renderBlocks()}catch(x){}}return r}}
   {var tv=$("todayView");if(tv){var tf=document.createElement("div");tf.className="td-foot";var tb=document.createElement("button");tb.type="button";tb.className="td-more";tb.id="tdBlocks";tb.textContent="管理首页板块 ›";
-    tb.onclick=function(){if(typeof showTab==="function")showTab("set");setTimeout(function(){var s=$("secBlocks");if(s)s.scrollIntoView({block:"start"})},60)};tf.appendChild(tb);tv.appendChild(tf)}}
+    tb.onclick=function(){if(typeof showTab==="function")showTab("set");setTimeout(function(){go("secBlocks")},60)};tf.appendChild(tb);tv.appendChild(tf)}}
   function ordPanel(){var p=$("ordPanel");if(!p){p=document.createElement("div");p.id="ordPanel";p.className="ord-panel";var nav=$("toc");nav.parentNode.insertBefore(p,nav.nextSibling)}
     var canOrd=!!ORD_DEF[cur],grp=BLK.filter(function(g){return g[0]===cur})[0];
     p.textContent="";p.hidden=!(ordOpen&&grp);if(p.hidden)return;
@@ -87,7 +87,7 @@
   function buildToc(){
     var nav=$("toc");nav.textContent="";nav.hidden=!TOC[cur].length;if(nav.hidden){var op=$("ordPanel");if(op)op.hidden=true;return;}
     TOC[cur].forEach(function(x){if(typeof isHid==="function"&&isHid(x[1]))return;var b=document.createElement("button");b.type="button";b.textContent=x[0];b.onclick=function(){go(x[1])};nav.appendChild(b);});
-    if(cur!=="plan"&&cur!=="set"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
+    if(cur!=="plan"){var a=document.createElement("button");a.type="button";a.className="toc-all";var o=anyOpen();a.textContent=o?"全部收起":"全部展开";
       a.onclick=function(){var v=anyOpen();TOC[cur].forEach(function(x){if(x[1] in FOLD)setF(x[1],v)});buildToc();};nav.appendChild(a);}
     if(BLK.some(function(g){return g[0]===cur})){var ob=document.createElement("button");ob.type="button";ob.className="toc-all";ob.id="ordBtn";ob.textContent=ordOpen?"收起":"管理板块";ob.onclick=function(){ordOpen=!ordOpen;buildToc()};nav.appendChild(ob)}
     nav.scrollLeft=0;ordPanel();

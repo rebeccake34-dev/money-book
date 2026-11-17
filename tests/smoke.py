@@ -140,7 +140,11 @@ async def main():
             # 备份 -> 另一个空白浏览器导入
             txt = await pg.evaluate('(()=>{const B=window.__bk,o={app:"money-book",v:1,at:Date.now(),data:{}};for(const k in B)o.data[k]=B[k].dump();return JSON.stringify(o)})()')
             pg2 = await page(b, w, h, seed=False)
-            await pg2.click("#tabSet"); await pg2.click("#bkPaste"); await pg2.fill("#bkPasteTa", txt); await pg2.click("#bkRead"); await pg2.click("#bkDo"); await pg2.wait_for_timeout(1000)
+            await pg2.click("#tabSet"); await pg2.wait_for_timeout(300)
+            check("设置板块默认收起", "folded" in (await pg2.get_attribute("#secBackup", "class")))
+            await pg2.click("#secBackup > h2"); await pg2.wait_for_timeout(200)
+            check("设置板块可展开", await pg2.is_visible("#bkPaste"))
+            await pg2.click("#bkPaste"); await pg2.fill("#bkPasteTa", txt); await pg2.click("#bkRead"); await pg2.click("#bkDo"); await pg2.wait_for_timeout(1000)
             check("导入合并", "合并完成" in await pg2.inner_text("#toast"))
             await pg2.click("#bkPaste"); await pg2.fill("#bkPasteTa", txt); await pg2.click("#bkRead"); await pg2.click("#bkDo"); await pg2.wait_for_timeout(600)
             check("重复导入不重复记", "已经一致" in await pg2.inner_text("#toast"))

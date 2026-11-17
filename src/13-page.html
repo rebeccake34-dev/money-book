@@ -1,7 +1,7 @@
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/18-0005</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/18-0015</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -333,7 +333,7 @@
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/18-0005</div>
+  <div class="sync">页面版本 11/18-0015</div>
   </div>
 
   <div id="plan" hidden>
@@ -416,8 +416,8 @@
     <div id="tidyBody" style="display:flex;flex-direction:column;gap:10px"></div>
   </section>
   <section class="card" id="secRules">
-    <details>
-      <summary>每个数字是怎么算的（可以改金额、删除自己加的习惯）</summary>
+    <h2>算法说明</h2>
+    <p class="note" style="margin:0">每个数字是怎么算的（可以改金额、删除自己加的习惯）</p>
       <div class="tbl">
         <table>
           <thead><tr><th>习惯</th><th>每次</th><th>依据</th></tr></thead>
@@ -425,7 +425,6 @@
         </table>
       </div>
       <p class="note">"依据"里的价格都是澳元。"以后少花"的金额是把十年内可能避免的治疗费，按需要做这件事的次数平均摊开。这是降低风险的估算，不是保证。改了金额后，过去的记录会按新金额重新计算。</p>
-    </details>
   </section>
   </div>
 </div>
