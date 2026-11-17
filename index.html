@@ -1105,9 +1105,98 @@ input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range])
 @media (prefers-reduced-transparency:reduce){
   html:root{--glass:var(--paper);--glass-strong:var(--paper);--glass-2:var(--paper);--glass-bar:var(--bg);--glass-in:var(--bg)}
   body::before{opacity:.35}}</style>
+<style>/* ---- 动效：参考苹果的弹簧动画。按下轻微缩小、松手回弹；切换页面、展开、弹出都用同一组弹簧曲线 ----
+   --spring        平滑弹簧（不过冲），用于位移、展开、页面切换
+   --spring-bounce 轻弹簧（少量过冲），用于按钮回弹、指示条滑动、弹出
+   系统打开「减少动态效果」时，最下面统一关掉 */
+:root{--ease-out:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.32,.72,0,1);--spring-bounce:cubic-bezier(.34,1.32,.64,1);
+  --dur-press:.12s;--dur-s:.28s;--dur-m:.45s;--dur-l:.6s}
+@supports (transition-timing-function:linear(0,1)){:root{
+  --spring:linear(0,.034 2%,.13 4.2%,.281 7%,.477 10.8%,.661 15%,.791 19.2%,.882 23.6%,.941 28.2%,.975 33.3%,.993 39.4%,1.001 47.6%,1);
+  --spring-bounce:linear(0,.14 4.2%,.5 12%,.82 22%,1.04 33%,1.075 40%,1.06 48%,1.012 62%,.996 75%,1)}}
+
+html{scroll-behavior:smooth}
+
+/* 按下缩小，松手弹回 */
+button,.tile,.chip,.ov-row,summary,[role=button],.cal-d,#plCal [data-k],.pl-ymd,.pl-chip,.pay-row,.td-keep{
+  transition:transform var(--dur-m) var(--spring-bounce),background-color var(--dur-s) var(--ease-out),color var(--dur-s) var(--ease-out),
+    border-color var(--dur-s) var(--ease-out),box-shadow var(--dur-s) var(--ease-out),opacity var(--dur-s) var(--ease-out)}
+:is(button,.chip,summary,[role=button],.pl-chip):active:not(:disabled){transform:scale(.95);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+:is(.tile,.ov-row,.cal-d,#plCal [data-k],.pl-ymd,.pay-row,.td-keep,.gtoggle):active{transform:scale(.975);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+.pl-hr:active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+
+/* 勾选：小小弹一下 */
+input[type=checkbox]{transition:transform var(--dur-m) var(--spring-bounce)}
+input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-press)}
+@keyframes mo-tick{0%{transform:scale(.7)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.mo-tick{animation:mo-tick var(--dur-m) var(--spring-bounce)}
+@keyframes mo-done{0%{background-color:color-mix(in srgb,var(--accent) 18%,transparent)}100%{background-color:transparent}}
+
+/* 标签栏：一块玻璃胶囊跟着滑到选中的那格 */
+.tabs{position:relative;isolation:isolate}
+.tab-ind{position:absolute;left:0;top:5px;bottom:5px;width:0;border-radius:999px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.25)),var(--glass-2,var(--paper));
+  box-shadow:inset 0 1px 0 var(--glass-hi,#fff),0 0 0 .5px var(--glass-edge,transparent),0 2px 8px -2px var(--sh,rgba(0,0,0,.2));
+  transition:transform var(--dur-l) var(--spring-bounce),width var(--dur-l) var(--spring-bounce)}
+.tab-ind.mo-stretch{transition-duration:var(--dur-l),var(--dur-m)}
+.tabs.has-ind button[aria-selected="true"]{background:transparent!important;box-shadow:none!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tab-ind{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2,var(--paper))}}
+:root[data-theme="dark"] .tab-ind{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2,var(--paper))}
+
+/* 切换页面：新页面从下方轻轻浮上来 */
+@keyframes mo-view{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.mo-view>*:not(:has(.pl-open)){animation:mo-view var(--dur-l) var(--spring) both}
+.mo-view>:nth-child(2){animation-delay:30ms}.mo-view>:nth-child(3){animation-delay:60ms}.mo-view>:nth-child(4){animation-delay:90ms}
+.mo-view>:nth-child(n+5){animation-delay:120ms}
+
+/* 展开一个区域：内容依次落下 */
+@keyframes mo-fold{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.fold.mo-open>:not(:first-child){animation:mo-fold var(--dur-m) var(--spring) both}
+.fold.mo-open>:nth-child(3){animation-delay:25ms}.fold.mo-open>:nth-child(4){animation-delay:50ms}.fold.mo-open>:nth-child(n+5){animation-delay:75ms}
+@keyframes mo-shut{to{opacity:0;transform:translateY(-8px)}}
+.fold.mo-shut>:not(:first-child){animation:mo-shut .16s var(--ease-out) forwards}
+
+/* 点开的小折叠（details）：高度跟着弹簧展开（浏览器支持时） */
+@supports (interpolate-size:allow-keywords){
+  :root{interpolate-size:allow-keywords}
+  details::details-content{height:0;overflow:clip;transition:height var(--dur-m) var(--spring),content-visibility var(--dur-m) allow-discrete}
+  details[open]::details-content{height:auto}}
+
+/* 新加的一行：从上方滑进来 */
+@keyframes mo-row{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+.mo-row{animation:mo-row var(--dur-m) var(--spring-bounce) both}
+
+/* 底部面板（手机上的当天面板）、遮罩、弹窗 */
+@media (max-width:900px){.pl-panel{transition:transform var(--dur-l) var(--spring)!important}}
+@keyframes mo-fade{from{opacity:0}}
+.pl-shade:not([hidden]),.sheet:not([hidden]){animation:mo-fade var(--dur-s) var(--ease-out)}
+@keyframes mo-sheet{from{opacity:.4;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+.sheet:not([hidden]) .sheet-box{animation:mo-sheet var(--dur-l) var(--spring-bounce)}
+
+/* 提示条从边缘弹出来 */
+@keyframes mo-toast{from{opacity:0;transform:translate(-50%,18px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes mo-toast-top{from{opacity:0;transform:translate(-50%,-18px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+.toast:not([hidden]){animation:mo-toast var(--dur-m) var(--spring-bounce)}
+.pl-toast:not([hidden]){animation:mo-toast-top var(--dur-m) var(--spring-bounce)}
+
+/* 浮动按钮出现时弹一下 */
+@keyframes mo-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.totop:not([hidden]),.todayfab:not([hidden]){animation:mo-pop var(--dur-m) var(--spring-bounce)}
+
+/* 进度条、圆环跟着弹簧走 */
+.bar i,#waterFill,.sav-bar i,.aes-bar i,.pe-bar i{transition:width var(--dur-l) var(--spring)!important}
+
+/* 数字变化时轻轻跳一下 */
+@keyframes mo-num{0%{transform:translateY(0)}35%{transform:translateY(-3px);opacity:.6}100%{transform:none;opacity:1}}
+.mo-num{display:inline-block;animation:mo-num var(--dur-m) var(--spring-bounce)}
+
+/* 系统「减少动态效果」：只保留瞬间切换 */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>(function(){
-  var VER="11/14-1500",log=[],busy=false;
+  var VER="11/17-2150",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
@@ -1126,7 +1215,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range])
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2115</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/17-2150</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1446,7 +1535,7 @@ input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range])
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/17-2115</div>
+  <div class="sync">页面版本 11/17-2150</div>
   </div>
 
   <div id="plan" hidden>
@@ -5129,5 +5218,72 @@ render();calc();
   ["tabToday","tabLedger","tabCut","tabPlan","tabCycle","tabSet"].forEach(function(id){$(id).addEventListener("click",function(){setTimeout(shadeUpd,0)})});
   applyTab(tabNow());shadeUpd();
   setTimeout(fab,800);
+})();</script>
+<script>/* 动效：标签栏滑动胶囊、切换页面、展开区域、新加的行、勾选弹一下、数字跳动。样式在 10-style9b.css */
+(function(){
+  var $=function(id){return document.getElementById(id)};
+  var reduce=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)");
+  function calm(){return reduce&&reduce.matches}
+  function replay(el,cls,ms){if(!el||calm())return;el.classList.remove(cls);void el.offsetWidth;el.classList.add(cls);
+    clearTimeout(el["_mo_"+cls]);el["_mo_"+cls]=setTimeout(function(){el.classList.remove(cls)},ms||700);}
+
+  // ---- 标签栏胶囊 ----
+  var tabs=document.querySelector(".tabs");
+  if(tabs){
+    var ind=document.createElement("span");ind.className="tab-ind";ind.setAttribute("aria-hidden","true");tabs.insertBefore(ind,tabs.firstChild);
+    var first=true,lastX=null;
+    var place=function(){var b=tabs.querySelector('button[aria-selected="true"]');if(!b){ind.style.opacity="0";return}
+      ind.style.opacity="";var x=b.offsetLeft,w=b.offsetWidth;
+      if(first){ind.style.transition="none";}
+      ind.style.width=w+"px";ind.style.transform="translateX("+x+"px)";
+      if(first){void ind.offsetWidth;ind.style.transition="";first=false;}
+      if(lastX!=null&&lastX!==x)tabs.classList.add("has-ind");lastX=x;
+      tabs.classList.add("has-ind");
+      // keep the chosen tab visible when the bar scrolls sideways
+      if(tabs.scrollWidth>tabs.clientWidth){var l=tabs.scrollLeft;if(x<l||x+w>l+tabs.clientWidth)tabs.scrollTo({left:x-(tabs.clientWidth-w)/2,behavior:calm()?"auto":"smooth"});}
+    };
+    new MutationObserver(place).observe(tabs,{subtree:true,attributes:true,attributeFilter:["aria-selected"]});
+    window.addEventListener("resize",place);
+    if(document.fonts&&document.fonts.ready)document.fonts.ready.then(place);
+    place();setTimeout(place,400);
+  }
+
+  // ---- 切换页面 ----
+  var VIEWS=["todayView","ledgerView","cut","plan","cycle","setView"];
+  var vis=function(){for(var i=0;i<VIEWS.length;i++){var e=$(VIEWS[i]);if(e&&!e.hidden)return e}return null};
+  var curV=vis();
+  VIEWS.forEach(function(id){var e=$(id);if(!e)return;new MutationObserver(function(){var v=vis();if(v&&v!==curV){curV=v;replay(v,"mo-view",900);}}).observe(e,{attributes:true,attributeFilter:["hidden"]});});
+
+  // ---- 展开 / 收起区域 ----
+  var opening=new WeakSet();
+  document.addEventListener("click",function(ev){
+    var t=ev.target;if(!t.closest||calm())return;
+    if(t.closest("input,select,textarea,label,a,button"))return;
+    var sec=t.closest(".fold");if(!sec)return;var h=sec.firstElementChild;if(!h||!h.contains(t))return;
+    if(sec.classList.contains("folded"))opening.add(sec);
+  },true);
+  new MutationObserver(function(list){list.forEach(function(m){var e=m.target;if(!e.classList||!e.classList.contains("fold"))return;
+    var was=(m.oldValue||"").split(/\s+/).indexOf("folded")>=0,now=e.classList.contains("folded");
+    if(was&&!now)replay(e,"mo-open",800);});}).observe(document.body,{subtree:true,attributes:true,attributeFilter:["class"],attributeOldValue:true});
+
+  // ---- 新加的一行（日常计划清单、备忘、便签、饮食、健身日历） ----
+  var ROWS=".pl-item,.pl-mi,.note-item,#foodBody tr,.cd-it,.exp-it,.sav-row";
+  var seen=new Set(),ready=false;
+  function keyOf(r){var c=r.querySelector("input[id],[data-id],[data-xdone],[data-del]");
+    if(c)return r.className.split(" ")[0]+":"+(c.id||c.dataset.id||c.dataset.xdone||c.dataset.del);
+    var tx=(r.textContent||"").replace(/\s+/g," ").trim().slice(0,60);return tx?r.className.split(" ")[0]+"~"+tx:null;}
+  function scan(root,anim){(root.matches&&root.matches(ROWS)?[root]:[]).concat([].slice.call(root.querySelectorAll?root.querySelectorAll(ROWS):[])).forEach(function(r){
+      var k=keyOf(r);if(!k)return;if(!seen.has(k)){seen.add(k);if(anim&&ready)replay(r,"mo-row",700);}});}
+  scan(document.body,false);setTimeout(function(){scan(document.body,false);ready=true;},2500);
+  new MutationObserver(function(list){list.forEach(function(m){m.addedNodes.forEach(function(n){if(n.nodeType===1)scan(n,true);});});}).observe(document.body,{childList:true,subtree:true});
+
+  // ---- 勾选弹一下（列表重画后找回同一个框） ----
+  document.addEventListener("change",function(ev){var t=ev.target;if(!t||t.type!=="checkbox"||!t.checked||calm())return;
+    var id=t.id;var pop=function(){var e=id?document.getElementById(id):t;if(e)replay(e,"mo-tick",500);};pop();setTimeout(pop,30);},true);
+
+  // ---- 金额 / 数字变化时跳一下 ----
+  var NUMS=["wNet","dNet","wCash","wFut","sKcal","sPro","sWater","sTrain","ovPlanV","ovCutV","ovLedV","ovSavV"];
+  NUMS.forEach(function(id){var e=$(id);if(!e)return;var last=e.textContent;
+    new MutationObserver(function(){var v=e.textContent;if(v!==last&&last!=="–"&&last!==""){replay(e,"mo-num",600);}last=v;}).observe(e,{childList:true,characterData:true,subtree:true});});
 })();</script>
 </body></html>

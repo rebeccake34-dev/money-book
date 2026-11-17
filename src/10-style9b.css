@@ -1,0 +1,89 @@
+/* ---- 动效：参考苹果的弹簧动画。按下轻微缩小、松手回弹；切换页面、展开、弹出都用同一组弹簧曲线 ----
+   --spring        平滑弹簧（不过冲），用于位移、展开、页面切换
+   --spring-bounce 轻弹簧（少量过冲），用于按钮回弹、指示条滑动、弹出
+   系统打开「减少动态效果」时，最下面统一关掉 */
+:root{--ease-out:cubic-bezier(.2,.8,.2,1);--spring:cubic-bezier(.32,.72,0,1);--spring-bounce:cubic-bezier(.34,1.32,.64,1);
+  --dur-press:.12s;--dur-s:.28s;--dur-m:.45s;--dur-l:.6s}
+@supports (transition-timing-function:linear(0,1)){:root{
+  --spring:linear(0,.034 2%,.13 4.2%,.281 7%,.477 10.8%,.661 15%,.791 19.2%,.882 23.6%,.941 28.2%,.975 33.3%,.993 39.4%,1.001 47.6%,1);
+  --spring-bounce:linear(0,.14 4.2%,.5 12%,.82 22%,1.04 33%,1.075 40%,1.06 48%,1.012 62%,.996 75%,1)}}
+
+html{scroll-behavior:smooth}
+
+/* 按下缩小，松手弹回 */
+button,.tile,.chip,.ov-row,summary,[role=button],.cal-d,#plCal [data-k],.pl-ymd,.pl-chip,.pay-row,.td-keep{
+  transition:transform var(--dur-m) var(--spring-bounce),background-color var(--dur-s) var(--ease-out),color var(--dur-s) var(--ease-out),
+    border-color var(--dur-s) var(--ease-out),box-shadow var(--dur-s) var(--ease-out),opacity var(--dur-s) var(--ease-out)}
+:is(button,.chip,summary,[role=button],.pl-chip):active:not(:disabled){transform:scale(.95);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+:is(.tile,.ov-row,.cal-d,#plCal [data-k],.pl-ymd,.pay-row,.td-keep,.gtoggle):active{transform:scale(.975);transition-duration:var(--dur-press);transition-timing-function:var(--ease-out)}
+.pl-hr:active{background:color-mix(in srgb,var(--accent) 8%,transparent)}
+
+/* 勾选：小小弹一下 */
+input[type=checkbox]{transition:transform var(--dur-m) var(--spring-bounce)}
+input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-press)}
+@keyframes mo-tick{0%{transform:scale(.7)}55%{transform:scale(1.18)}100%{transform:scale(1)}}
+.mo-tick{animation:mo-tick var(--dur-m) var(--spring-bounce)}
+@keyframes mo-done{0%{background-color:color-mix(in srgb,var(--accent) 18%,transparent)}100%{background-color:transparent}}
+
+/* 标签栏：一块玻璃胶囊跟着滑到选中的那格 */
+.tabs{position:relative;isolation:isolate}
+.tab-ind{position:absolute;left:0;top:5px;bottom:5px;width:0;border-radius:999px;z-index:-1;pointer-events:none;
+  background:linear-gradient(180deg,rgba(255,255,255,.7),rgba(255,255,255,.25)),var(--glass-2,var(--paper));
+  box-shadow:inset 0 1px 0 var(--glass-hi,#fff),0 0 0 .5px var(--glass-edge,transparent),0 2px 8px -2px var(--sh,rgba(0,0,0,.2));
+  transition:transform var(--dur-l) var(--spring-bounce),width var(--dur-l) var(--spring-bounce)}
+.tab-ind.mo-stretch{transition-duration:var(--dur-l),var(--dur-m)}
+.tabs.has-ind button[aria-selected="true"]{background:transparent!important;box-shadow:none!important}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tab-ind{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2,var(--paper))}}
+:root[data-theme="dark"] .tab-ind{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.05)),var(--glass-2,var(--paper))}
+
+/* 切换页面：新页面从下方轻轻浮上来 */
+@keyframes mo-view{from{opacity:0;transform:translateY(14px) scale(.985)}to{opacity:1;transform:none}}
+.mo-view>*:not(:has(.pl-open)){animation:mo-view var(--dur-l) var(--spring) both}
+.mo-view>:nth-child(2){animation-delay:30ms}.mo-view>:nth-child(3){animation-delay:60ms}.mo-view>:nth-child(4){animation-delay:90ms}
+.mo-view>:nth-child(n+5){animation-delay:120ms}
+
+/* 展开一个区域：内容依次落下 */
+@keyframes mo-fold{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+.fold.mo-open>:not(:first-child){animation:mo-fold var(--dur-m) var(--spring) both}
+.fold.mo-open>:nth-child(3){animation-delay:25ms}.fold.mo-open>:nth-child(4){animation-delay:50ms}.fold.mo-open>:nth-child(n+5){animation-delay:75ms}
+@keyframes mo-shut{to{opacity:0;transform:translateY(-8px)}}
+.fold.mo-shut>:not(:first-child){animation:mo-shut .16s var(--ease-out) forwards}
+
+/* 点开的小折叠（details）：高度跟着弹簧展开（浏览器支持时） */
+@supports (interpolate-size:allow-keywords){
+  :root{interpolate-size:allow-keywords}
+  details::details-content{height:0;overflow:clip;transition:height var(--dur-m) var(--spring),content-visibility var(--dur-m) allow-discrete}
+  details[open]::details-content{height:auto}}
+
+/* 新加的一行：从上方滑进来 */
+@keyframes mo-row{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
+.mo-row{animation:mo-row var(--dur-m) var(--spring-bounce) both}
+
+/* 底部面板（手机上的当天面板）、遮罩、弹窗 */
+@media (max-width:900px){.pl-panel{transition:transform var(--dur-l) var(--spring)!important}}
+@keyframes mo-fade{from{opacity:0}}
+.pl-shade:not([hidden]),.sheet:not([hidden]){animation:mo-fade var(--dur-s) var(--ease-out)}
+@keyframes mo-sheet{from{opacity:.4;transform:translateY(40px) scale(.96)}to{opacity:1;transform:none}}
+.sheet:not([hidden]) .sheet-box{animation:mo-sheet var(--dur-l) var(--spring-bounce)}
+
+/* 提示条从边缘弹出来 */
+@keyframes mo-toast{from{opacity:0;transform:translate(-50%,18px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes mo-toast-top{from{opacity:0;transform:translate(-50%,-18px) scale(.9)}to{opacity:1;transform:translate(-50%,0)}}
+.toast:not([hidden]){animation:mo-toast var(--dur-m) var(--spring-bounce)}
+.pl-toast:not([hidden]){animation:mo-toast-top var(--dur-m) var(--spring-bounce)}
+
+/* 浮动按钮出现时弹一下 */
+@keyframes mo-pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+.totop:not([hidden]),.todayfab:not([hidden]){animation:mo-pop var(--dur-m) var(--spring-bounce)}
+
+/* 进度条、圆环跟着弹簧走 */
+.bar i,#waterFill,.sav-bar i,.aes-bar i,.pe-bar i{transition:width var(--dur-l) var(--spring)!important}
+
+/* 数字变化时轻轻跳一下 */
+@keyframes mo-num{0%{transform:translateY(0)}35%{transform:translateY(-3px);opacity:.6}100%{transform:none;opacity:1}}
+.mo-num{display:inline-block;animation:mo-num var(--dur-m) var(--spring-bounce)}
+
+/* 系统「减少动态效果」：只保留瞬间切换 */
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-delay:0s!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
