@@ -1,5 +1,5 @@
 (function(){
-  var VER="11/18-0030",log=[],busy=false;
+  var VER="11/19-2045",log=[],busy=false;
   function push(kind,msg,stack){
     var e={kind:kind,msg:String(msg||"").slice(0,400),stack:String(stack||"").slice(0,1500),ua:navigator.userAgent.slice(0,200),ver:VER,t:new Date().toISOString(),tab:(function(){try{return localStorage.getItem("ledger-tab")}catch(x){return ""}})()};
     log.push(e);if(log.length>20)log.shift();
