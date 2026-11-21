@@ -64,7 +64,8 @@
   function autoLine(cat){var s=findShort(cat),l=lineList();for(var i=0;i<l.length;i++){if((l[i].cats||[]).indexOf(cat)>=0)return l[i].id;if(s&&s.name===l[i].name)return l[i].id;}return "";}
   function durMin(it){var a=toMin(it.start),b=toMin(it.end);return a!=null&&b!=null&&b>a?b-a:null;}
   function itemMin(it){return it.done&&it.line&&lineOf(it.line)?(it.min!=null?it.min:(durMin(it)||30)):0;}
-  function saveLines(){write("lines",{list:lineList(),cap:lineCap()});}
+  function lineFocus(){return (state.lines&&state.lines.focus)||{};}
+  function saveLines(){write("lines",{list:lineList(),cap:lineCap(),focus:lineFocus()});}
   var col=null,chains={};
 
   function shorts(){return state.shortcuts||DEFAULTS;}
@@ -724,14 +725,14 @@
   window.__lines={
     list:function(){return JSON.parse(JSON.stringify(lineList()));},
     cap:lineCap,
-    set:function(list,cap){state.lines={list:JSON.parse(JSON.stringify(list)),cap:cap||lineCap(),at:Date.now()};saveLines();renderPanel();linesChanged();},
+    set:function(list,cap){state.lines={list:JSON.parse(JSON.stringify(list)),cap:cap||lineCap(),focus:lineFocus(),at:Date.now()};saveLines();renderPanel();linesChanged();},
     weekStart:wkStart,addDays:addD,
     week:function(ws){return weekMins(ws||wkStart());},
     // 一周的计划对比实际：hrs 计划小时，act 实际小时，ratio，light（g/y/r），low 连续几周低于 60%（不含本周）
     status:function(ws){ws=ws||wkStart();var cur=ws===wkStart(),m=weekMins(ws);
       return lineList().filter(function(l){return l.hrs>0;}).map(function(l){var act=(m[l.id]||0)/60,r=act/l.hrs,low=0;
         var base=cur?addD(ws,-7):ws;for(var i=0;i<2;i++){var pk=addD(base,-7*i);if(addD(pk,6)<firstLine())break;var pm=weekMins(pk);if(((pm[l.id]||0)/60)/l.hrs<0.6)low++;else break;}
-        return {id:l.id,name:l.name,kind:l.kind,hrs:l.hrs,next:l.next||"",h:l.h,act:Math.round(act*10)/10,ratio:r,light:light(r),low:low,pre:addD(ws,6)<firstLine()};});},
+        return {id:l.id,name:l.name,kind:l.kind,hrs:l.hrs,next:l.next||"",goal:l.goal||"",why:l.why||"",due:l.due||"",h:l.h,act:Math.round(act*10)/10,ratio:r,light:light(r),low:low,pre:addD(ws,6)<firstLine()};});},
     // 今天：每条线今天记了多少分钟、最后一次快速记录（可撤销）、今天排了多少小时
     todayKey:function(){return todayKey;},dups:dupLines,merge:function(k,id){return dupFix(k,id,true);},keep:function(k,id){return dupFix(k,id,false);},
     today:function(){var items=state.days[todayKey]||[],by={},last={},todo={},planned=0;
@@ -741,6 +742,27 @@
       var wd=parse(todayKey).getDay(),c=lineCap();return {by:by,last:last,todo:todo,dups:dupLines(todayKey),planned:planned,cap:(wd===0||wd===6)?c.we:c.wd,weekend:wd===0||wd===6};},
     log:function(id,min){var l=lineOf(id);if(!l)return null;var it={id:uid(),cat:"line",sub:"",name:l.name,note:"",done:true,start:"",end:"",line:id,min:min,quick:1};
       (state.days[todayKey]||(state.days[todayKey]=[])).push(it);saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return it.id;},
+    // 连续几天没做：每条（非停放、有计划时间的）主线最后一次有用时的日子；超过门槛就提醒
+    idle:function(){var out=[],fl=firstLine(),tmr=addD(todayKey,1),fo=lineFocus()[wkStart()]||"";if(fl>todayKey)return out;
+      var keys=Object.keys(state.days).filter(function(k){return k<=todayKey;}).sort().reverse();
+      lineList().forEach(function(l){if(l.kind==="parked"||!(l.hrs>0))return;var last=null;
+        for(var i=0;i<keys.length&&!last;i++){if((state.days[keys[i]]||[]).some(function(it){return it.line===l.id&&itemMin(it)>0;}))last=keys[i];}
+        var from=last||fl,days=Math.round((parse(todayKey)-parse(from))/864e5)+(last?0:1);
+        var lim=l.id===fo?2:l.hrs>=2?3:7;if(days<lim)return;
+        var tm=(state.days[tmr]||[]).some(function(it){return it.line===l.id;}),td=(state.days[todayKey]||[]).some(function(it){return it.line===l.id&&!it.done;});
+        out.push({id:l.id,name:l.name,days:days,never:!last,focus:l.id===fo,tomorrow:tm,today:td});});
+      return out.sort(function(a,b){return (b.focus-a.focus)||(b.days-a.days);});},
+    // 把某条主线排进某一天（不定时），已经有就不重复加
+    plan:function(id,k){var l=lineOf(id);if(!l)return false;k=k||addD(todayKey,1);var arr=state.days[k]||(state.days[k]=[]);
+      if(arr.some(function(it){return it.line===id&&!it.done;}))return false;
+      var c=(l.cats||[])[0],sh=c&&findShort(c);arr.push({id:uid(),cat:sh?c:"other",sub:"",name:sh?"":l.name,note:l.next||"",done:false,start:"",end:"",line:id});
+      saveDay(k);renderCal();if(sel===k)renderPanel();linesChanged();return true;},
+    // 每周主攻：按周一的日期存一条主线
+    focus:function(ws){return lineFocus()[ws||wkStart()]||"";},
+    setFocus:function(id,ws){ws=ws||wkStart();if(!state.lines)state.lines={list:lineList(),cap:lineCap()};var f=JSON.parse(JSON.stringify(lineFocus()));
+      if(id)f[ws]=id;else delete f[ws];state.lines.focus=f;state.lines.at=Date.now();saveLines();linesChanged();},
+    // 某一周完成的健身次数（计划里打勾的健身项，按天算）
+    fitDays:function(ws){var n=0;for(var i=0;i<7;i++){var k=addD(ws,i);if(k>todayKey)break;if((state.days[k]||[]).some(function(it){return it.cat==="fit"&&it.done;}))n++;}return n;},
     unlog:function(itemId){var l=state.days[todayKey]||[],n=l.length;state.days[todayKey]=l.filter(function(i){return i.id!==itemId;});if(state.days[todayKey].length!==n){saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return true;}return false;}
   };
   // 成长等级用：某一天主线分钟、其他已完成事项数、是不是上班日

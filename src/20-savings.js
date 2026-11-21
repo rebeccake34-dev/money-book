@@ -43,7 +43,7 @@
     const w0=new Date(now);w0.setDate(now.getDate()-((now.getDay()+6)%7));const wsk=ymd(w0),weekIn=recs.filter(r=>r.date>=wsk).reduce((s,r)=>s+r.amt,0);
     return {recs,bal,goal,pct,now,tk,mk,ps,avgNet,wc,ve,vc,cap,monthIn,spanW,recent,pace,eta,etaSub,wks,weekIn};
   }
-  window.__savings={monthIn:mk=>records().filter(r=>r.date.slice(0,7)===mk).reduce((s,r)=>s+r.amt,0),stats:()=>{const c=calcS();return {bal:c.bal,goal:c.goal,pct:c.pct,pace:c.pace,eta:c.eta,etaSub:c.etaSub,wks:c.wks,weekIn:c.weekIn,started:S.start!=null||c.recs.length>0,money:money,money0:money0}}};
+  window.__savings={monthIn:mk=>records().filter(r=>r.date.slice(0,7)===mk).reduce((s,r)=>s+r.amt,0),rangeIn:(a,b)=>records().filter(r=>r.date>=a&&r.date<=b).reduce((s,r)=>s+r.amt,0),stats:()=>{const c=calcS();return {bal:c.bal,goal:c.goal,pct:c.pct,pace:c.pace,eta:c.eta,etaSub:c.etaSub,wks:c.wks,weekIn:c.weekIn,started:S.start!=null||c.recs.length>0,money:money,money0:money0}}};
   window.__bk=window.__bk||{};
   window.__bk.savings={dump:()=>JSON.parse(JSON.stringify(S)),
     merge:d=>{if(!d)return 0;let n=0;const ids=new Set(S.entries.map(e=>e.id)),pays=new Set(S.entries.filter(e=>e.pay).map(e=>e.pay));

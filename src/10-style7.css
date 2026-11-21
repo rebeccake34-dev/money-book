@@ -414,3 +414,17 @@
 .look-row button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
 .pl-ck .pl-cki{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;text-align:left;padding:0;border:0;background:none}
 .pl-ck .pl-cki input{margin:0}
+
+/* 主线目标、连续没做提醒、每周主攻卡、今天页「更多」 */
+#td-lines .ln-goal{font-size:.82rem;color:var(--muted)}
+.ln-idle{display:flex;flex-direction:column;gap:6px;color:var(--warn,var(--bad))}
+.ln-idle .td-btns{flex-wrap:wrap}
+.ln-tag.ln-fo{background:var(--accent-soft);color:var(--accent)}
+.ln-grow{grid-column:1/-1;display:grid;grid-template-columns:minmax(120px,1fr) minmax(160px,2fr) auto;gap:8px;align-items:center;padding-bottom:6px}
+.ln-grow input[type=text]{min-width:0}
+@media (max-width:640px){.ln-grow{grid-template-columns:1fr;order:6}}
+#td-focus .ln-fpick{flex-wrap:wrap}
+#td-focus .td-btn.on{border-color:var(--accent);background:var(--accent-soft);color:var(--accent);font-weight:600}
+.td-morebar{display:flex;justify-content:center}
+.td-morebar[hidden]{display:none}
+.ln-grow input[type=date]{min-width:9.5em}

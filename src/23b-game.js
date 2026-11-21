@@ -18,7 +18,7 @@
   /* ---------- 规则 ---------- */
   var LV=500,TGT={rest:100,work:40};
   var TITLE=["新手","学徒","熟手","达人","高手","大师","宗师","传奇"];
-  var WEEK={line:30,budget:50,save:50};
+  var WEEK={line:30,budget:50,save:50,focus:50};
   var DEF_SHOP=[
     {id:"r1",name:"无负罪追剧 1 小时",xp:100,cost:0,cat:"娱乐"},
     {id:"r2",name:"泡澡 / 面膜之夜",xp:150,cost:0,cat:"美容护肤"},
@@ -52,7 +52,7 @@
     return {k:k,xp:tot,parts:parts,work:P.work,target:P.work?TGT.work:TGT.rest}}
   // 一周结束后的结算：主线达标、预算没超、转入储蓄
   function weekBonus(ws){var out=[],A=window.__lines,E=window.__expenses,L=window.__ledger;
-    if(A){try{A.status(ws).forEach(function(s){if(!s.pre&&s.light==="g")out.push(["主线「"+s.name+"」达标",WEEK.line])})}catch(e){}}
+    if(A){try{var fo=A.focus?A.focus(ws):"";A.status(ws).forEach(function(s){if(!s.pre&&s.light==="g")out.push(["主线「"+s.name+"」达标",WEEK.line]);if(s.id===fo&&s.hrs>0&&s.act>=s.hrs)out.push(["本周主攻「"+s.name+"」做满",WEEK.focus])})}catch(e){}}
     if(E){var x=E.week(ws);if(x.totalBudget>0&&!x.over.length&&x.total>0)out.push(["开支没超预算",WEEK.budget])}
     if(L&&L.ready()){var tr=L.transfers()[ws];if(tr>0)out.push(["本周省下的钱转入储蓄",WEEK.save])}
     return out}
@@ -128,7 +128,7 @@
     var lw=G.weeks.filter(function(w){return w.ws===pw})[0];
     if(lw){if(lw.b.length)lw.b.forEach(function(x){u.appendChild(el("li","good","上周结算："+x[0]+" +"+x[1]))});else u.appendChild(el("li",null,"上周结算没有拿到奖励"))}
     box.appendChild(u);
-    box.appendChild(el("p","note","每周一结算上周：每条主线达标（绿灯）+"+WEEK.line+"，有预算的开支都没超 +"+WEEK.budget+"，本周省下的钱转入储蓄 +"+WEEK.save+"。"));
+    box.appendChild(el("p","note","每周一结算上周：每条主线达标（绿灯）+"+WEEK.line+"，本周主攻做满计划时间再 +"+WEEK.focus+"，有预算的开支都没超 +"+WEEK.budget+"，本周省下的钱转入储蓄 +"+WEEK.save+"。"));
   }
 
   /* ---------- 设置页：规则、奖励、Boss ---------- */
@@ -137,7 +137,7 @@
     ["主线用时：每分钟 1 XP（计划里归到主线并打勾，或今天页「+30分」；同一次活动只算一遍，两边都记了会提示合并）","其他计划打勾：每项 5 XP，每天最多 50","好习惯打卡：每次 10 XP，每天最多 60（坏习惯不扣经验，只在账本里扣钱）",
      "运动：力量动作全部完成 50，有氧 30，喝水达标 10，蛋白质达标 10","记账：当天记过开支 10；记下今天心情 5",
      "每日目标：上班日（计划里有带时间的上班）"+TGT.work+"，休息日 "+TGT.rest+"；达标连击 +1，没达标连击减半，不清零",
-     "每 "+LV+" XP 升一级；每周一结算上周的主线、预算和储蓄奖励（见「回顾」）"].forEach(function(t){rl.appendChild(el("li",null,t))});
+     "每 "+LV+" XP 升一级；每周一结算上周的主线、主攻、预算和储蓄奖励（见「回顾」）"].forEach(function(t){rl.appendChild(el("li",null,t))});
     box.appendChild(rl);
     box.appendChild(el("p","note","从 "+(parse(S.start).getMonth()+1)+"月"+parse(S.start).getDate()+"日 开始计分。经验值都从已有记录自动算，不用另外打卡。"));
     // 奖励

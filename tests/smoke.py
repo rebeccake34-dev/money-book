@@ -34,7 +34,7 @@ async def page(b, w, h, seed=True):
     pg = await ctx.new_page(); pg.errs = []
     pg.on("pageerror", lambda e: pg.errs.append(str(e)))
     if seed:
-        await pg.add_init_script('const S=%s;if(!localStorage.getItem("seeded")){for(const k in S)localStorage.setItem(k,JSON.stringify(S[k]));localStorage.setItem("seeded","1")}' % json.dumps(SEED))
+        await pg.add_init_script('const S=%s;if(!localStorage.getItem("seeded")){for(const k in S)localStorage.setItem(k,JSON.stringify(S[k]));localStorage.setItem("seeded","1");localStorage.setItem("td-more-open","1")}' % json.dumps(SEED))
     await pg.goto(URL); await pg.wait_for_timeout(1800)
     return pg
 
@@ -150,11 +150,24 @@ async def main():
             check("账本页目录里隐藏板块", not await pg.is_visible("#secAes"))
             await pg.click("#ordH-secAes"); await pg.wait_for_timeout(200); await pg.click("#ordBtn")
             await pg.click("#tabToday"); await pg.wait_for_timeout(300)
+            # 每周主攻、主线排进明天、今天页「更多」
+            await pg.click("#tdFo-ln1"); await pg.wait_for_timeout(400)
+            fo = await pg.evaluate('(()=>{const A=window.__lines,ws=A.weekStart();return [A.focus(ws),A.focus(A.addDays(ws,7))]})()')
+            check("选每周主攻", "ln1" in fo)
+            check("主攻卡显示", "学习" in await pg.inner_text("#td-focus"))
+            check("主线排进明天", await pg.evaluate('window.__lines.plan("ln3")') and not await pg.evaluate('window.__lines.plan("ln3")'))
+            await pg.click("#tdMoreBtn"); await pg.wait_for_timeout(200)
+            check("收起更多", not await pg.is_visible("#td-food") and await pg.is_visible("#td-plan"))
+            await pg.click("#tdMoreBtn"); await pg.wait_for_timeout(200)
+            check("展开更多", await pg.is_visible("#td-food"))
             # 备份 -> 另一个空白浏览器导入
             txt = await pg.evaluate('(()=>{const B=window.__bk,o={app:"money-book",v:1,at:Date.now(),data:{}};for(const k in B)o.data[k]=B[k].dump();return JSON.stringify(o)})()')
             pg2 = await page(b, w, h, seed=False)
             await pg2.click("#tabSet"); await pg2.wait_for_timeout(300)
             check("设置板块默认收起", "folded" in (await pg2.get_attribute("#secBackup", "class")))
+            await pg2.click("#tabToday"); await pg2.wait_for_timeout(300)
+            check("今天页默认只显示常用", await pg2.is_visible("#td-plan") and not await pg2.is_visible("#td-exp") and await pg2.is_visible("#tdMoreBtn"))
+            await pg2.click("#tabSet"); await pg2.wait_for_timeout(300)
             await pg2.click("#secBackup > h2"); await pg2.wait_for_timeout(200)
             check("设置板块可展开", await pg2.is_visible("#bkPaste"))
             await pg2.click("#bkPaste"); await pg2.fill("#bkPasteTa", txt); await pg2.click("#bkRead"); await pg2.click("#bkDo"); await pg2.wait_for_timeout(1000)

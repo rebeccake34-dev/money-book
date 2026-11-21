@@ -27,7 +27,7 @@
   Object.keys(ORD_DEF).forEach(applyOrd);
   // ---- 板块管理：不需要的板块或页面可以隐藏，在「设置 › 板块管理」找回（存在这台设备上） ----
   var BLK=[["tabs","页面",[["运动打卡","tabCut"],["日常计划","tabPlan"],["生理期","tabCycle"]]],
-    ["today","今天页",[["成长等级","td-game"],["生活主线","td-lines"],["今天心情","td-mood"],["习惯打卡","td-hab"],["运动","td-fit"],["饮食","td-food"],["开支","td-exp"],["今天的计划","td-plan"],["生理期","td-cyc"],["本周小结","td-week"],["储蓄","td-sav"]]],
+    ["today","今天页",[["本周主攻","td-focus"],["成长等级","td-game"],["生活主线","td-lines"],["今天心情","td-mood"],["习惯打卡","td-hab"],["运动","td-fit"],["饮食","td-food"],["开支","td-exp"],["今天的计划","td-plan"],["生理期","td-cyc"],["本周小结","td-week"],["储蓄","td-sav"]]],
     ["ledger","省钱账本",TOC.ledger.filter(function(x){return x[1]!=="secLedger"})],["cut","运动打卡",TOC.cut],["set","设置",TOC.set.filter(function(x){return x[1]!=="secBlocks"})]];
   var LINK={tabCut:["td-fit","td-food"],tabPlan:["td-plan"],tabCycle:["td-cyc"]},TABV={tabCut:"cut",tabPlan:"plan",tabCycle:"cycle"};
   var HID={};try{(JSON.parse(localStorage.getItem("hidden-blocks-v1")||"[]")||[]).forEach(function(id){HID[id]=1})}catch(e){}
@@ -45,7 +45,27 @@
     BLK.forEach(function(g){var f=e("fieldset","blk-g");f.appendChild(e("legend",null,g[1]));var w=e("div","blk-list");
       g[2].forEach(function(x){var l=e("label","blk-it"),c=e("input");c.type="checkbox";c.id="blk-"+x[1];c.checked=!HID[x[1]];c.onchange=function(){setHid(x[1],!c.checked)};
         l.appendChild(c);l.appendChild(e("span",null,x[0]));w.appendChild(l)});f.appendChild(w);box.appendChild(f)});
+    var mf=e("fieldset","blk-g");mf.appendChild(e("legend",null,"今天页常用（打勾的放在上面，其余收进「更多」）"));var mw=e("div","blk-list");
+    TD_ALL.forEach(function(id){var l=e("label","blk-it"),c=e("input");c.type="checkbox";c.id="blkMain-"+id;c.checked=MAIN.indexOf(id)>=0;c.onchange=function(){setMain(id,c.checked)};l.appendChild(c);l.appendChild(e("span",null,nameOf(id)));mw.appendChild(l)});
+    mf.appendChild(mw);var rb=e("button","btn ghost","恢复默认常用");rb.type="button";rb.id="blkMainReset";rb.onclick=function(){MAIN=MAIN_DEF.slice();try{localStorage.setItem("td-main-v1",JSON.stringify(MAIN))}catch(x){}applyMain();renderBlocks()};mf.appendChild(rb);box.appendChild(mf);
     if(n){var b=e("button","btn","全部显示");b.type="button";b.id="blkAll";b.onclick=function(){HID={};setHid("_",false)};box.appendChild(b)}}
+  // ---- 今天页精简：常用的几张卡放上面，其余收进「更多」（存在这台设备上，可在板块管理里改） ----
+  var MAIN_DEF=["td-focus","td-lines","td-plan","td-hab","td-fit"],TD_ALL=BLK.filter(function(g){return g[0]==="today"})[0][2].map(function(x){return x[1]});
+  var MAIN=null;try{MAIN=JSON.parse(localStorage.getItem("td-main-v1")||"null")}catch(e){}if(!Array.isArray(MAIN))MAIN=MAIN_DEF.slice();
+  var moreOpen=false;try{moreOpen=localStorage.getItem("td-more-open")==="1"}catch(e){}
+  var tst=document.createElement("style");tst.id="tdMainStyle";document.head.appendChild(tst);
+  var mbar=document.createElement("div");mbar.className="td-morebar";mbar.id="tdMoreBar";var mbtn=document.createElement("button");mbtn.type="button";mbtn.className="td-btn ghost td-keep";mbtn.id="tdMoreBtn";mbar.appendChild(mbtn);
+  mbtn.onclick=function(){moreOpen=!moreOpen;try{localStorage.setItem("td-more-open",moreOpen?"1":"0")}catch(e){}applyMain()};
+  function applyMain(){var tv=$("todayView");if(!tv)return;if(mbar.parentNode!==tv)tv.appendChild(mbar);
+    var main=TD_ALL.filter(function(id){return MAIN.indexOf(id)>=0}).sort(function(a,b){return MAIN.indexOf(a)-MAIN.indexOf(b)}),rest=TD_ALL.filter(function(id){return MAIN.indexOf(id)<0&&!isHid(id)});
+    var css="#todayView>*{order:60}#td-warn,#td-top{order:0}#tdMoreBar{order:50}#todayView>.td-foot{order:99}";
+    main.forEach(function(id,i){css+="#"+id+"{order:"+(i+1)+"}"});
+    if(rest.length&&!moreOpen)css+=rest.map(function(id){return "#"+id}).join(",")+"{display:none!important}";
+    tst.textContent=css;mbar.hidden=!rest.length;
+    mbtn.textContent=moreOpen?"收起更多 ▴":"更多（"+rest.length+"）▾";mbtn.title=rest.map(function(id){return nameOf(id)}).join("、");mbtn.setAttribute("aria-expanded",String(moreOpen))}
+  function setMain(id,v){MAIN=MAIN.filter(function(x){return x!==id});if(v)MAIN.push(id);try{localStorage.setItem("td-main-v1",JSON.stringify(MAIN))}catch(e){}applyMain();renderBlocks()}
+  applyMain();
+  {var ah=applyHid;applyHid=function(){ah.apply(this,arguments);try{applyMain()}catch(e){}}}
   window.__blocksShown=renderBlocks;
   {var fs=window.__setShown;window.__setShown=function(){var r;try{r=fs&&fs.apply(this,arguments)}finally{try{renderBlocks()}catch(x){}}return r}}
   {var tv=$("todayView");if(tv){var tf=document.createElement("div");tf.className="td-foot";var tb=document.createElement("button");tb.type="button";tb.className="td-more";tb.id="tdBlocks";tb.textContent="管理首页板块 ›";
