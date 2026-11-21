@@ -428,3 +428,16 @@
 .td-morebar{display:flex;justify-content:center}
 .td-morebar[hidden]{display:none}
 .ln-grow input[type=date]{min-width:9.5em}
+
+/* 日常计划：默认只看当天（时间轴 + 添加计划），月历和备忘录收在顶部按钮里 */
+#plan.pl-dayfirst .pl-calwrap,#plan.pl-dayfirst .pl-view{display:none}
+#plan.pl-memohide #plMemo{display:none}
+#plan.pl-dayfirst .pl-layout{grid-template-columns:minmax(0,1fr)}
+#plan.pl-dayfirst .pl-panel{position:static;max-height:none;overflow:visible;transform:none;z-index:auto;border-radius:16px;width:100%;max-width:860px;margin:0 auto;padding:16px}
+#plan.pl-dayfirst .pl-close,#plan.pl-dayfirst .pl-panel::before{display:none}
+#plCalBtn[aria-expanded=true],#plMemoBtn[aria-expanded=true]{border-color:var(--accent);color:var(--accent)}
+.pl-dnav{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pl-dnav h3{margin:0 2px}
+.pl-dnav .pl-btn{min-width:36px}
+.pl-dpick{font-size:.85rem;padding:4px 6px}
+#plan.pl-dayfirst .pl-range{display:none}

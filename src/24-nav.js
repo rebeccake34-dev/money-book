@@ -6,7 +6,7 @@
     today:[],
     set:[["生活主线","secLines"],["成长奖励","secGame"],["板块管理","secBlocks"],["添加习惯","secAdd"],["主题颜色","secTheme"],["数据备份","secBackup"],["整理习惯","secTidy"],["算法说明","secRules"]],
     cut:[["今日汇总","cutSum"],["今日训练","cutTrain"],["有氧与消耗","cutCardio"],["饮食","cutFood"],["喝水","cutWater"],["健身日历","cutCal"],["身体变化","cutBody"],["调整建议","cutAdvice"],["我的目标","goalBox"]],
-    plan:[["备忘录","plMemo"],["月历","plCalSec"],["年历 2027","@year"],["今天的安排","@today"]],
+    plan:[],
     cycle:[["今天","cyToday"],["每天记录","cyLog"],["建议与同步","cyAdvice"],["周期日历","cyCal"],["历史统计","cyHist"],["设置","cySet"]]
   };
   var FOLD={savSec:0,expSec:0,paySec:0,secWeek:1,secMs:1,secNotes:0,secAes:1,secAdd:1,secTheme:1,secLines:0,secGame:1,secBlocks:1,secBackup:1,secTidy:1,secRules:1,
@@ -26,7 +26,7 @@
   function saveOrd(t,o){ord[t]=o;try{localStorage.setItem("sec-order-v1",JSON.stringify(ord))}catch(e){}applyOrd(t)}
   Object.keys(ORD_DEF).forEach(applyOrd);
   // ---- 板块管理：不需要的板块或页面可以隐藏，在「设置 › 板块管理」找回（存在这台设备上） ----
-  var BLK=[["tabs","页面",[["运动打卡","tabCut"],["日常计划","tabPlan"],["生理期","tabCycle"]]],
+  var BLK=[["tabs","页面",[["日常计划","tabPlan"],["运动打卡","tabCut"],["生理期","tabCycle"]]],
     ["today","今天页",[["本周主攻","td-focus"],["成长等级","td-game"],["生活主线","td-lines"],["今天心情","td-mood"],["习惯打卡","td-hab"],["运动","td-fit"],["饮食","td-food"],["开支","td-exp"],["今天的计划","td-plan"],["生理期","td-cyc"],["本周小结","td-week"],["储蓄","td-sav"]]],
     ["ledger","省钱账本",TOC.ledger.filter(function(x){return x[1]!=="secLedger"})],["cut","运动打卡",TOC.cut],["set","设置",TOC.set.filter(function(x){return x[1]!=="secBlocks"})]];
   var LINK={tabCut:["td-fit","td-food"],tabPlan:["td-plan"],tabCycle:["td-cyc"]},TABV={tabCut:"cut",tabPlan:"plan",tabCycle:"cycle"};
@@ -116,9 +116,12 @@
   function scrollTo(e){if(e)e.scrollIntoView({behavior:rm?"auto":"smooth",block:"start"});}
   function todayKey(){var d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
   function go(id){
-    if(id==="@year"){$("plViewYear").click();setTimeout(function(){scrollTo($("plYear"))},60);return;}
+    if(id==="@month"){if(window.__planOpenCal)window.__planOpenCal(true);if($("plViewMonth").getAttribute("aria-pressed")!=="true")$("plViewMonth").click();return;}
+    if(id==="@memo"){if(window.__planOpenMemo)window.__planOpenMemo();return;}
+    if(id==="@year"){if(window.__planOpenCal)window.__planOpenCal(true,true);$("plViewYear").click();setTimeout(function(){scrollTo($("plYear"))},60);return;}
     if(id==="@today"){if(window.__planSelect)window.__planSelect(todayKey());setTimeout(function(){var p=$("plPanel");if(p&&matchMedia("(min-width:901px)").matches)scrollTo(p);},80);return;}
-    if(id==="plCalSec"&&$("plViewMonth").getAttribute("aria-pressed")!=="true")$("plViewMonth").click();
+    if(id==="plCalSec"){if(window.__planOpenCal)window.__planOpenCal(true);if($("plViewMonth").getAttribute("aria-pressed")!=="true")$("plViewMonth").click();}
+    if(id==="plMemo"&&window.__planOpenMemo)window.__planOpenMemo();
     var e=$(id);if(!e)return;
     if(id in FOLD&&e.classList.contains("folded"))setF(id,false);
     if(e.tagName==="DETAILS")e.open=true;
@@ -148,7 +151,7 @@
   // floating "回到今天" on the plan tab
   var fb=$("todayFab");
   function fab(){
-    if(cur!=="plan"){fb.hidden=true;return;}
+    if(cur!=="plan"||$("plan").classList.contains("pl-dayfirst")){fb.hidden=true;return;}
     var c=document.querySelector('#plCal [data-k="'+todayKey()+'"]');
     var yearMode=$("plViewYear").getAttribute("aria-pressed")==="true";
     var vis=false;if(c&&!yearMode){var r=c.getBoundingClientRect();vis=r.bottom>60&&r.top<innerHeight-60;}

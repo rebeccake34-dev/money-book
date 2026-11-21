@@ -1,14 +1,14 @@
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/21-1530</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/21-1615</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
   </header>
 
 
-  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabToday" aria-selected="false">今天</button><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">运动打卡</button><button type="button" role="tab" id="tabPlan" aria-selected="false">日常计划</button><button type="button" role="tab" id="tabCycle" aria-selected="false">生理期</button><button type="button" role="tab" id="tabSet" aria-selected="false">设置</button></div>
+  <div class="tabs" role="tablist" aria-label="切换页面"><button type="button" role="tab" id="tabToday" aria-selected="false">今天</button><button type="button" role="tab" id="tabPlan" aria-selected="false">日常计划</button><button type="button" role="tab" id="tabLedger" aria-selected="true">省钱账本</button><button type="button" role="tab" id="tabCut" aria-selected="false">运动打卡</button><button type="button" role="tab" id="tabCycle" aria-selected="false">生理期</button><button type="button" role="tab" id="tabSet" aria-selected="false">设置</button></div>
   <nav class="toc" id="toc" aria-label="本页目录"></nav>
 
   <div class="ov" aria-label="今天概览">
@@ -333,10 +333,10 @@
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/21-1530</div>
+  <div class="sync">页面版本 11/21-1615</div>
   </div>
 
-  <div id="plan" hidden>
+  <div id="plan" class="pl-dayfirst pl-memohide" hidden>
     <div class="pl-top">
       <div>
         <h2>日常计划</h2>
@@ -344,6 +344,8 @@
       </div>
       <div class="pl-nav">
         <button type="button" class="pl-btn" id="plGoToday">回到今天</button>
+        <button type="button" class="pl-btn" id="plCalBtn" aria-expanded="false" aria-controls="plCalSec">月历</button>
+        <button type="button" class="pl-btn" id="plMemoBtn" aria-expanded="false" aria-controls="plMemo">备忘录</button>
         <div class="pl-view" role="group" aria-label="切换视图"><button type="button" class="pl-btn" id="plViewMonth" aria-pressed="true">月视图</button><button type="button" class="pl-btn" id="plViewYear" aria-pressed="false">年历</button></div>
         <span class="pl-status" id="plStatus">正在载入…</span>
       </div>

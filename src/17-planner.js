@@ -193,7 +193,20 @@
   }
   cal.addEventListener("click",function(e){var c=e.target.closest(".pl-day[data-k]");if(c)select(c.dataset.k);});
   cal.addEventListener("keydown",function(e){if((e.key==="Enter"||e.key===" ")&&e.target.dataset&&e.target.dataset.k){e.preventDefault();select(e.target.dataset.k);}});
-  function select(k){if(k!==sel)paneMode=(state.days[k]||[]).length||memosOn(k).length?"view":"add";sel=k;var d=parse(k);viewY=d.getFullYear();viewM=d.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");}
+  function select(k){if(k!==sel)paneMode=(state.days[k]||[]).length||memosOn(k).length?"view":"add";sel=k;var d=parse(k);viewY=d.getFullYear();viewM=d.getMonth();renderCal();renderPanel();if(calOpen)panel.classList.add("pl-open");}
+  // ---- 打开日常计划默认只显示当天（时间轴 + 添加计划）；月历、备忘录收在顶部按钮里 ----
+  var calOpen=false,memoOpen=false;
+  function applyMode(){var p=$("plan");p.classList.toggle("pl-dayfirst",!calOpen);p.classList.toggle("pl-memohide",!memoOpen);
+    var cb=$("plCalBtn"),mb=$("plMemoBtn");if(cb){cb.textContent=calOpen?"收起月历":"月历";cb.setAttribute("aria-expanded",String(calOpen));}
+    if(mb)mb.setAttribute("aria-expanded",String(memoOpen));if(!calOpen)panel.classList.remove("pl-open");}
+  function memoBtnText(){var mb=$("plMemoBtn");if(!mb)return;var mc=memoCounts();mb.textContent=memoOpen?"收起备忘录":"备忘录"+(mc.over?"（过期 "+mc.over+"）":mc.today?"（今天 "+mc.today+"）":"");}
+  function openCal(v){calOpen=v;applyMode();renderCal();if(v)scrollToToday(true);else panelTop();}
+  function openMemo(v){memoOpen=v;applyMode();memoBtnText();if(v){var m=$("plMemo");if(m)setTimeout(function(){m.scrollIntoView({block:"start",behavior:"smooth"});},30);}}
+  function panelTop(){setTimeout(function(){var t=$("plan");if(t&&!t.hidden){var y=t.getBoundingClientRect().top+window.scrollY-12;if(window.scrollY>y)window.scrollTo({top:Math.max(0,y)});}},30);}
+  $("plCalBtn").onclick=function(){openCal(!calOpen);};
+  $("plMemoBtn").onclick=function(){openMemo(!memoOpen);};
+  window.__planOpenCal=function(v,year){if(year){viewMode="year";}else if(v)viewMode="month";openCal(v!==false);};
+  window.__planOpenMemo=function(){openMemo(true);};
 
   // ---- panel ----
   var panel=$("plPanel");
@@ -243,7 +256,13 @@
     panel.textContent="";
     var d=parse(sel),nItems=(state.days[sel]||[]).length;
     var ph=el("div","pl-ph");
-    ph.appendChild(el("h3",null,(d.getMonth()+1)+"月"+d.getDate()+"日 "+WD[d.getDay()]+(sel===todayKey?" · 今天":"")));
+    var dn=el("div","pl-dnav"),lo=ymd(new Date(today.getFullYear()-1,0,1)),hi=ymd(end);
+    var pv=btn("pl-btn","‹",function(){var k=addD(sel,-1);if(k>=lo)select(k);});pv.id="plDayPrev";pv.setAttribute("aria-label","前一天");pv.disabled=addD(sel,-1)<lo;
+    var nv=btn("pl-btn","›",function(){var k=addD(sel,1);if(k<=hi)select(k);});nv.id="plDayNext";nv.setAttribute("aria-label","后一天");nv.disabled=addD(sel,1)>hi;
+    dn.appendChild(pv);dn.appendChild(el("h3",null,(d.getMonth()+1)+"月"+d.getDate()+"日 "+WD[d.getDay()]+(sel===todayKey?" · 今天":"")));dn.appendChild(nv);
+    if(sel!==todayKey){var tb0=btn("pl-btn","今天",function(){select(todayKey);});tb0.id="plDayToday";dn.appendChild(tb0);}
+    var dpk=el("input","pl-dpick");dpk.type="date";dpk.id="plDayPick";dpk.value=sel;dpk.min=lo;dpk.max=hi;dpk.setAttribute("aria-label","跳到某一天");dpk.onchange=function(){if(dpk.value&&dpk.value>=lo&&dpk.value<=hi)select(dpk.value);};dn.appendChild(dpk);
+    ph.appendChild(dn);
     var pbx=el("div","pl-row");
     var pb=btn("pl-btn","打印这天",function(){printDay(sel);});
     pbx.appendChild(pb);pbx.appendChild(btn("pl-btn pl-close","收起",function(){panel.classList.remove("pl-open");}));
@@ -634,6 +653,7 @@
       dt.appendChild(btn("pl-link","清除已完成",function(){state.memos=state.memos.filter(function(m){return !m.done;});saveMemos();renderMemos();renderCal();toast("已清除已完成的备忘");}));
       box.appendChild(dt);}
     if(refocus){var nf=$("plMemoText");if(nf)nf.focus();}
+    memoBtnText();
     try{window.__overview&&window.__overview();}catch(e){}
   }
   function memoryBox(k){
@@ -780,7 +800,7 @@
   window.__onShifts=function(list){applyShifts(list);try{ensurePrep();}catch(e){}};
   function planReady(){plReady=true;var p=shPend||(window.__shifts&&window.__shifts());shPend=null;if(p)applyShifts(p);try{ensurePrep();}catch(e){}}
   window.__workOn=function(k){return (state.days[k]||[]).filter(function(i){return i.cat==="work"&&i.start;}).map(function(i){return {start:i.start,end:i.end};});};
-  window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");
+  window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();if(calOpen)panel.classList.add("pl-open");
     setTimeout(function(){var c=cal.querySelector('[data-k="'+k+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"});},60);};
   window.__onLedgerBad=function(h,k){
     if(!h.kind||h.kind.indexOf("bad-cash")!==0)return;
@@ -893,7 +913,7 @@
     if(data)deliver(data,name+".pdf");else cv.toBlob(function(b){deliver(b,name+".png");},"image/png");
   }
 
-  $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();scrollToToday(true);};
+  $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();if(calOpen)scrollToToday(true);else panelTop();};
 
   tidyShorts();
   renderCal();renderPanel();renderMemos();
@@ -905,9 +925,10 @@
     requestAnimationFrame(function(){requestAnimationFrame(go);});setTimeout(go,250);
   }
   window.__planShown=function(){var t=panel.querySelector(".pl-tl");if(t)t.remove();
+    calOpen=false;memoOpen=false;applyMode();memoBtnText();
     viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();
     if(window.matchMedia&&matchMedia("(max-width:900px)").matches)panel.classList.remove("pl-open");
-    scrollToToday(true);};
+    window.scrollTo({top:0});};
   if(!$("plan").hidden)window.__planShown();
   var reAimed=false,userMoved=false;["wheel","touchmove","keydown"].forEach(function(ev){window.addEventListener(ev,function(){userMoved=true;},{passive:true,once:true});});
 
@@ -1059,7 +1080,7 @@
         var days={},sc=null,scv=0,mm=[],ln=null,sp=null;
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
           if(d.id==="shortcuts"){sc=b.list||null;scv=b.v||0;}else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(d.id==="sop")sp=b.prep?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.shortV=scv;state.memos=mm;state.lines=ln;state.sop=sp||{prep:{}};if(!snap.metadata.fromCache)tidyShorts();cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+        state.days=days;state.shortcuts=sc;state.shortV=scv;state.memos=mm;state.lines=ln;state.sop=sp||{prep:{}};if(!snap.metadata.fromCache)tidyShorts();cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(calOpen&&!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;planReady();});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");planReady();});
