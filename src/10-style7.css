@@ -376,3 +376,13 @@
 .md-nt small{color:var(--muted);font-size:.72rem}
 .md-nt .note-text{font-size:.88rem;overflow-wrap:anywhere}
 .md-hnav .td-more{margin:0;padding:4px 14px;font-size:1.1rem}
+
+/* 快捷键分组 + 重复记录提示 */
+.pl-sgroups{display:flex;flex-direction:column;gap:8px}
+.pl-sgrp{display:flex;align-items:flex-start;gap:8px}
+.pl-sgl{flex:0 0 4.2em;font-size:.75rem;font-weight:600;color:var(--muted,#888);padding-top:8px}
+.pl-sgrp .pl-shorts{flex:1;min-width:0}
+.pl-dups{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.pl-dup{flex-wrap:wrap;gap:6px}
+.pl-dupb{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ln-dup{display:flex;flex-direction:column;gap:6px}

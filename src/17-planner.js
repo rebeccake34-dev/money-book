@@ -1,21 +1,25 @@
 (function(){
   var DEFAULTS=[
-    {id:"fit",name:"健身",h:0,subs:["胸","背","腿","肩","手臂","有氧","拉伸"]},
-    {id:"study",name:"学习",h:215,subs:["阅读","网课","练习","复盘"]},
-    {id:"work",name:"工作",h:262,subs:["上班","兼职","会议","求职"]},
-    {id:"diet",name:"饮食",h:30,subs:["早餐","午餐","晚餐","加餐"]},
-    {id:"water",name:"喝水",h:190,subs:["500ml","1L","1.5L","2L"]},
-    {id:"cook",name:"做饭",h:15,subs:["备餐","早餐","午餐","晚餐"]},
-    {id:"grocery",name:"采购",h:95,subs:["超市","菜市场","生活用品"]},
-    {id:"shop",name:"购物",h:320,subs:["衣服","日用品","网购","礼物"]},
-    {id:"save",name:"存钱",h:145,subs:["存入","记一笔支出","今日零花"]},
-    {id:"stash",name:"攒钱",h:165,subs:["转入储蓄","查看目标进度","自动转账"]},
-    {id:"review",name:"一月一复盘消费",h:45,subs:["本月总支出","超支项","下月预算"]},
-    {id:"revise",name:"复习",h:235,subs:["今日内容","错题","单词"]},
-    {id:"read",name:"读书",h:280,subs:["30分钟","1小时","读书笔记"]},
-    {id:"tv",name:"看电视",h:340,subs:["剧集","电影","综艺"]},
-    {id:"need",name:"需求复盘",h:55,subs:["想要还是需要","待买清单","冲动消费"]}
+    {id:"fit",name:"健身",h:0,grp:"health",subs:["胸","背","腿","肩","手臂","有氧","拉伸"]},
+    {id:"diet",name:"饮食",h:30,grp:"health",subs:["早餐","午餐","晚餐","加餐"]},
+    {id:"cook",name:"做饭",h:15,grp:"health",subs:["备餐"]},
+    {id:"water",name:"喝水",h:190,grp:"health",subs:["500ml","1L","1.5L","2L"]},
+    {id:"study",name:"学习",h:215,grp:"study",subs:["阅读","网课","练习","复盘","错题","单词"]},
+    {id:"work",name:"工作",h:262,grp:"study",subs:["上班","兼职","会议","求职"]},
+    {id:"save",name:"存钱",h:145,grp:"money",subs:["转入储蓄","查看目标进度","记一笔支出"]},
+    {id:"grocery",name:"采购",h:95,grp:"money",subs:["超市","菜市场","生活用品"]},
+    {id:"shop",name:"购物",h:320,grp:"money",subs:["衣服","日用品","网购","礼物"]},
+    {id:"review",name:"消费复盘",h:45,grp:"money",subs:["本月总支出","超支项","下月预算","想要还是需要","待买清单"]},
+    {id:"need",name:"需求复盘",h:55,grp:"money",hide:true,subs:["想要还是需要","待买清单","冲动消费"]},
+    {id:"read",name:"读书",h:280,grp:"fun",subs:["30分钟","1小时","读书笔记"]},
+    {id:"tv",name:"看电视",h:340,grp:"fun",subs:["剧集","电影","综艺"]}
   ];
+  // 快捷键分组；旧版里重复的快捷键在读取后自动合并一次（tidyShorts）
+  var GRP=[["health","健康"],["study","学习工作"],["money","钱"],["home","家里"],["fun","休闲"],["other","其他"]];
+  var GOF={fit:"health",diet:"health",cook:"health",water:"health",care:"health",study:"study",revise:"study",work:"study",save:"money",stash:"money",grocery:"money",shop:"money",review:"money",need:"money",chore:"home",tidy:"home",read:"fun",tv:"fun"};
+  var MERGE_ID={stash:"save",revise:"study"};
+  var SYN={"攒钱":"save","复习":"study","整理囤货":"tidy","囤货":"tidy","收纳":"tidy","优化程序":"work","家务":"chore","护肤":"care"};
+  var SHORT_V=2;
   var WD=["周日","周一","周二","周三","周四","周五","周六"];
   var WH=[340,20,73,127,180,233,287];
   var LKEY="year-end-planner-v1";
@@ -43,8 +47,8 @@
   function setRange(){var f=firstDay(),n=Math.round((end-f)/864e5)+1;
     $("plRange").textContent="从 "+f.getFullYear()+"年"+(f.getMonth()+1)+"月"+f.getDate()+"日 起 · 可以安排到 2027 年 12 月 31 日 · 过去的记录都会保留";}
 
-  var state={shortcuts:null,days:{},memos:[],lines:null};
-  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.lines=c.lines||null;}}catch(e){}
+  var state={shortcuts:null,shortV:0,days:{},memos:[],lines:null};
+  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.lines=c.lines||null;state.shortV=c.shortV||0;}}catch(e){}
   var sel=todayKey,openCat=null,editMode=false,addingShortcut=false;
   var pendStart="",pendEnd="",paneMode="view",editId=null,pendLine=null;
   // ---- 主线：每条线每周计划几小时；计划项可以归到某条主线，完成时记实际用时 ----
@@ -79,8 +83,36 @@
       .catch(function(e){setStatus(e&&e.code==="quota_exceeded"?"存储已满，请删除一些旧内容":"保存失败，稍后再试");});
   }
   function saveDay(k){var it=state.days[k]||[];if(!it.length)delete state.days[k];write("day-"+k,it.length?{date:k,items:it}:null);}
-  function saveShorts(){write("shortcuts",{list:state.shortcuts});}
-  function ensureCustom(){if(!state.shortcuts)state.shortcuts=JSON.parse(JSON.stringify(DEFAULTS));}
+  function saveShorts(){write("shortcuts",{list:state.shortcuts,v:state.shortV||0});}
+  function grpOf(s){return s.grp||GOF[s.id]||"other";}
+  // 合并重复的快捷键：同名的、旧的「攒钱/复习」并进「存钱/学习」、和备忘录重复的提醒类快捷键；已有计划项改到合并后的快捷键
+  function tidyShorts(){
+    if(!state.shortcuts||state.shortV>=SHORT_V)return 0;
+    var list=JSON.parse(JSON.stringify(state.shortcuts)),byId={},map={},subName={},n=0;
+    list.forEach(function(x){byId[x.id]=x;x.name=String(x.name||"").trim();x.subs=x.subs||[];});
+    function find(id){return byId[id]&&!byId[id].gone?byId[id]:null;}
+    function into(x,t,asSub){if(asSub&&x.name!==t.name&&t.subs.indexOf(x.name)<0)t.subs.push(x.name);
+      x.subs.forEach(function(v){if(t.subs.indexOf(v)<0)t.subs.push(v);});
+      x.gone=true;map[x.id]=t.id;if(x.name!==t.name)subName[x.id]=x.name;n++;}
+    list.forEach(function(x){if(x.gone)return;var t=null;
+      if(MERGE_ID[x.id])t=find(MERGE_ID[x.id]);
+      if(!t&&x.custom&&SYN[x.name]&&SYN[x.name]!==x.id)t=find(SYN[x.name]);
+      if(!t){var same=list.filter(function(y){return !y.gone&&y!==x&&y.name===x.name;});if(same.length){var pick=same.filter(function(y){return !y.custom;})[0],ix=list.indexOf(x);
+        t=pick?((x.custom||list.indexOf(pick)<ix)?pick:null):((x.custom&&list.indexOf(same[0])<ix)?same[0]:null);}}
+      if(t&&t!==x)into(x,t,!!x.custom);});
+    function norm(v){return String(v||"").replace(/每两周|每周|每天|每月|每年|\s/g,"");}
+    var mt={};state.memos.forEach(function(m){mt[norm(m.text)]=1;});
+    list.forEach(function(x){if(x.gone||!x.custom||x.subs.length||!mt[norm(x.name)])return;x.gone=true;map[x.id]="other";subName[x.id]=x.name;n++;});
+    var need=find("need"),rv=find("review");
+    if(need&&rv&&!need.hide){need.hide=true;need.subs.forEach(function(v){if(v!=="冲动消费"&&rv.subs.indexOf(v)<0)rv.subs.push(v);});if(rv.name==="一月一复盘消费")rv.name="消费复盘";n++;}
+    var ck=find("cook"),dt=find("diet");if(ck&&dt){var b=ck.subs.length;ck.subs=ck.subs.filter(function(v){return dt.subs.indexOf(v)<0;});if(ck.subs.length!==b)n++;}
+    list=list.filter(function(x){return !x.gone;});
+    var o=GRP.map(function(g){return g[0];});list.forEach(function(x,i){x.grp=grpOf(x);x._i=i;});
+    list.sort(function(a,b){return o.indexOf(a.grp)-o.indexOf(b.grp)||a._i-b._i;});list.forEach(function(x){delete x._i;delete x.gone;});
+    Object.keys(state.days).forEach(function(k){var ch=false;(state.days[k]||[]).forEach(function(it){var t=map[it.cat];if(!t)return;
+      if(t==="other"){it.name=it.name||subName[it.cat];it.cat="other";}else{if(!it.sub&&subName[it.cat])it.sub=subName[it.cat];it.cat=t;}ch=true;});if(ch)saveDay(k);});
+    state.shortcuts=list;state.shortV=SHORT_V;saveShorts();return n;}
+  function ensureCustom(){if(!state.shortcuts){state.shortcuts=JSON.parse(JSON.stringify(DEFAULTS));state.shortV=SHORT_V;}}
 
   // ---- calendar ----
   var cal=$("plCal");
@@ -229,6 +261,7 @@
       tip.appendChild(btn("pl-link","添加",function(){addItem("review","本月总支出");}));panel.appendChild(tip);
     }
 
+    var dtp=dupTip(sel);if(dtp)panel.appendChild(dtp);
     if(sel<=todayKey)panel.appendChild(memoryBox(sel));
     var dm=memosOn(sel).map(function(m){return [m,m.rep?sel:null];});
     if(sel===todayKey)state.memos.forEach(function(m){if(m.done)return;
@@ -295,7 +328,7 @@
       note.onkeydown=function(e){if(e.key==="Enter")note.blur();};
       mid.appendChild(note);
       if(it.sync&&it.sync.msg)mid.appendChild(el("div","pl-sync","已同步："+it.sync.msg));
-      if(it.cat==="review")mid.appendChild(summaryBox(sel));
+      if(isMonthReview(it))mid.appendChild(summaryBox(sel));
       var x=btn("pl-del","✕",function(){if(it.done&&it.sync)syncOff(it,sel);state.days[sel]=(state.days[sel]||[]).filter(function(y){return y.id!==it.id;});saveDay(sel);renderCal();renderPanel();});
       x.setAttribute("aria-label","删除 "+label(it));
       row.appendChild(cb);row.appendChild(mid);row.appendChild(x);list.appendChild(row);
@@ -321,19 +354,23 @@
 
     // shortcuts
     var sec=el("div");sec.appendChild(el("p","pl-lbl","点快捷键添加 · 点开可选细项"));
-    var g=el("div","pl-shorts");
-    shorts().forEach(function(s){
-      var b=btn("pl-sbtn",null,function(){openCat=openCat===s.id?null:s.id;editMode=false;renderPanel();});
-      b.style.setProperty("--h",s.h);b.setAttribute("aria-expanded",openCat===s.id?"true":"false");
-      b.appendChild(el("i","pl-dot"));b.appendChild(el("span",null,s.name));b.appendChild(el("span","pl-arr",openCat===s.id?"▲":"▼"));
-      g.appendChild(b);
-    });
-    g.appendChild(btn("pl-btn","＋ 新快捷键",function(){addingShortcut=!addingShortcut;renderPanel();}));
-    sec.appendChild(g);panel.appendChild(sec);
+    var gw=el("div","pl-sgroups");
+    GRP.forEach(function(gp){var ss=shorts().filter(function(s){return !s.hide&&grpOf(s)===gp[0];});if(!ss.length)return;
+      var gr=el("div","pl-sgrp");gr.appendChild(el("span","pl-sgl",gp[1]));var g=el("div","pl-shorts");
+      ss.forEach(function(s){
+        var b=btn("pl-sbtn",null,function(){openCat=openCat===s.id?null:s.id;editMode=false;renderPanel();});
+        b.style.setProperty("--h",s.h);b.setAttribute("aria-expanded",openCat===s.id?"true":"false");
+        b.appendChild(el("i","pl-dot"));b.appendChild(el("span",null,s.name));b.appendChild(el("span","pl-arr",openCat===s.id?"▲":"▼"));
+        g.appendChild(b);
+      });
+      gr.appendChild(g);gw.appendChild(gr);});
+    var ar=el("div","pl-shorts");ar.appendChild(btn("pl-btn","＋ 新快捷键",function(){addingShortcut=!addingShortcut;renderPanel();}));gw.appendChild(ar);
+    sec.appendChild(gw);panel.appendChild(sec);
 
     if(addingShortcut){
       var r=el("div","pl-row");var inp=el("input");inp.type="text";inp.id="plNewShort";inp.placeholder="比如：冥想、遛弯、护肤";
       var go=function(){var v=inp.value.trim();if(!v){toast("先输入快捷键名称");return;}ensureCustom();
+        var dup=state.shortcuts.filter(function(x){return x.name===v;})[0];if(dup){addingShortcut=false;openCat=dup.id;if(dup.hide)delete dup.hide;saveShorts();renderPanel();toast("已经有「"+v+"」了，直接用它");return;}
         var s={id:"c"+uid(),name:v,h:(state.shortcuts.length*47+12)%360,subs:[],custom:true};
         state.shortcuts.push(s);saveShorts();addingShortcut=false;openCat=s.id;renderPanel();toast("已创建快捷键："+v);};
       inp.onkeydown=function(e){if(e.key==="Enter")go();};
@@ -361,6 +398,9 @@
       si.onkeydown=function(e){if(e.key==="Enter")addSub();};
       r2.appendChild(si);r2.appendChild(btn("pl-btn","加入",addSub));ex.appendChild(r2);
       extraFor(s,ex);
+      if(editMode){var gr2=el("div","pl-row");gr2.appendChild(el("span","note","放在哪一组"));var gs=el("select","pl-lsel");gs.id="plGrp-"+s.id;gs.setAttribute("aria-label","快捷键分组");
+        GRP.forEach(function(gp){var o=el("option",null,gp[1]);o.value=gp[0];gs.appendChild(o);});gs.value=grpOf(s);
+        gs.onchange=function(){ensureCustom();var t=findShort(s.id);if(t){t.grp=gs.value;saveShorts();renderPanel();}};gr2.appendChild(gs);ex.appendChild(gr2);}
       if(editMode&&s.custom)ex.appendChild(btn("pl-link","删除这个快捷键",function(){ensureCustom();
         state.shortcuts=state.shortcuts.filter(function(x){return x.id!==s.id;});openCat=null;saveShorts();renderPanel();}));
       panel.appendChild(ex);
@@ -404,7 +444,7 @@
       if(E&&amt&&k<=todayKey){sy.exp=E.add(amt,cat==="grocery"?"买菜":"购物",(it.sub?it.sub+" ":"")+(it.note||"").replace(/[$¥]?\s*\d+(\.\d+)?/,"").trim(),k,"plan");msg.push("日常开支 +$"+amt.toFixed(2));}}
     else if(cat==="diet"){var n=it.note||"",kc=n.match(/(\d+)\s*(kcal|千卡|大卡|卡)/i),pr=n.match(/(\d+(?:\.\d+)?)\s*(g|克)(?![a-z])/i);
       if(isT&&C&&kc){sy.food=C.addFood(label(it),+kc[1],pr?Math.round(+pr[1]):0);msg.push("饮食 +"+kc[1]+" kcal"+(pr?" / 蛋白质 "+Math.round(+pr[1])+" g":""));}}
-    else if((cat==="save"&&/存入/.test(sub))||(cat==="stash"&&/转入/.test(sub))){
+    else if((cat==="save"||cat==="stash")&&/存入|转入/.test(sub)){
       if(L&&L.ready()){var a=parseAmt(it.note);if(a==null){var w=L.week(k);a=w.transferred==null?Math.round(w.cash*100)/100:0;}
         if(a>0){L.addTransfer(a,k);sy.tr=a;msg.push("账本转入储蓄 +"+L.money(a));}}}
     if(msg.length)sy.msg=msg.join("，");
@@ -422,7 +462,8 @@
     var msg="";it.done=v;
     if(v&&it.line&&lineOf(it.line)){if(it.min==null)it.min=durMin(it)||30;msg="主线「"+lineOf(it.line).name+"」记 "+it.min+" 分钟，可在清单里改";}
     if(it.memo){var mo=state.memos.filter(function(m){return m.id===it.memo;})[0];if(mo){if(mo.rep){var a=(mo.doneDates||[]).filter(function(x){return x!==sel;});if(v)a.push(sel);mo.doneDates=a;}else{mo.done=v;mo.doneAt=v?Date.now():null;}saveMemos();renderMemos();}}
-    if(v){var r=syncOn(it,sel);if(r.sy)it.sync=r.sy;msg=[r.msg,msg].filter(Boolean).join(" · ");}
+    if(v){var r=syncOn(it,sel);if(r.sy)it.sync=r.sy;msg=[r.msg,msg].filter(Boolean).join(" · ");
+      if(it.line&&dupLines(sel).some(function(d){return d.id===it.line;}))msg+=" · 这天还用「+30分」记过，可以在当天页面上合并";}
     else if(it.sync){syncOff(it,sel);msg="已撤销同步的打卡";}
     saveDay(sel);renderCal();renderPanel();
     toast(v?("完成「"+label(it)+"」"+(msg?" · "+msg:"")):(msg||"已取消完成"));
@@ -604,6 +645,7 @@
     if(!any)b.appendChild(el("p","pl-hint",k===todayKey?"今天还没有记录。":"这天没有留下记录。"));
     return b;
   }
+  function isMonthReview(i){return i.cat==="review"&&!/想要|待买|冲动/.test(i.sub||"");}
   function summaryBox(k){var b=el("div","pl-sum");b.appendChild(el("b",null,(parse(k).getMonth()+1)+"月消费复盘（自动汇总）"));
     monthSummary(k).forEach(function(t){b.appendChild(el("span",null,t));});return b;}
   function extraFor(s,ex){
@@ -647,7 +689,7 @@
         if(ch){state.days[k]=a;saveDay(k);n++;}});
       var mid={},mc=false;state.memos.forEach(function(m){mid[m.id]=1;});
       (d.memos||[]).forEach(function(m){if(m&&m.id&&!mid[m.id]){state.memos.push(m);mid[m.id]=1;mc=true;n++;}});if(mc)saveMemos();
-      if(!state.shortcuts&&d.shortcuts){state.shortcuts=d.shortcuts;saveShorts();}
+      if(!state.shortcuts&&d.shortcuts){state.shortcuts=d.shortcuts;state.shortV=d.shortV||0;if(!tidyShorts())saveShorts();}
       if(!state.lines&&d.lines&&d.lines.list){state.lines=d.lines;saveLines();n++;}
       renderCal();renderPanel();renderMemos();linesChanged();return n;}
   };
@@ -657,6 +699,21 @@
   function addD(k,n){var d=parse(k);d.setDate(d.getDate()+n);return ymd(d);}
   function weekMins(ws){var o={};for(var i=0;i<7;i++){(state.days[addD(ws,i)]||[]).forEach(function(it){var m=itemMin(it);if(m)o[it.line]=(o[it.line]||0)+m;});}return o;}
   function light(r){return r>=0.9?"g":r>=0.6?"y":"r";}
+  // 同一天、同一条主线：计划里打勾的事项已经记了时间，今天页「+30分」又记了一遍 → 很可能是同一次，提示合并
+  function dupLines(k){var by={};(state.days[k]||[]).forEach(function(i){var m=itemMin(i);if(!m)return;
+      var o=by[i.line]||(by[i.line]={id:i.line,plan:0,quick:0,qids:[],names:[]});
+      if(i.cat==="line"){if(!i.sep){o.quick+=m;o.qids.push(i.id);}}else{o.plan+=m;o.names.push(i.sub||label(i));}});
+    return Object.keys(by).map(function(id){return by[id];}).filter(function(o){return o.plan&&o.quick;}).map(function(o){var l=lineOf(o.id);o.name=l?l.name:"";return o;});}
+  function dupFix(k,lineId,merge){var d=dupLines(k).filter(function(o){return o.id===lineId;})[0];if(!d)return 0;
+    if(merge)state.days[k]=(state.days[k]||[]).filter(function(i){return d.qids.indexOf(i.id)<0;});
+    else (state.days[k]||[]).forEach(function(i){if(d.qids.indexOf(i.id)>=0)i.sep=1;});
+    saveDay(k);renderCal();renderPanel();linesChanged();
+    toast(merge?"已合并：「"+d.name+"」这天按计划里的 "+d.plan+" 分钟算":"好的，两边分开算，「"+d.name+"」这天共 "+(d.plan+d.quick)+" 分钟");return d.qids.length;}
+  function dupTip(k){var ds=dupLines(k);if(!ds.length)return null;var w=el("div","pl-dups");
+    ds.forEach(function(d){var t=el("div","pl-tip pl-dup");
+      t.appendChild(el("span",null,"「"+d.name+"」计划里已记 "+d.plan+" 分（"+d.names.join("、")+"），「+30分」又记了 "+d.quick+" 分。是同一次吗？"));
+      var r=el("span","pl-dupb");r.appendChild(btn("pl-btn","是，合并",function(){dupFix(k,d.id,true);}));r.appendChild(btn("pl-link","不是，分开算",function(){dupFix(k,d.id,false);}));
+      t.appendChild(r);w.appendChild(t);});return w;}
   function firstLine(){var f="9999";Object.keys(state.days).forEach(function(k){if(k<f&&(state.days[k]||[]).some(function(i){return i.line;}))f=k;});return f;}
   window.__lines={
     list:function(){return JSON.parse(JSON.stringify(lineList()));},
@@ -670,10 +727,12 @@
         var base=cur?addD(ws,-7):ws;for(var i=0;i<2;i++){var pk=addD(base,-7*i);if(addD(pk,6)<firstLine())break;var pm=weekMins(pk);if(((pm[l.id]||0)/60)/l.hrs<0.6)low++;else break;}
         return {id:l.id,name:l.name,kind:l.kind,hrs:l.hrs,next:l.next||"",h:l.h,act:Math.round(act*10)/10,ratio:r,light:light(r),low:low,pre:addD(ws,6)<firstLine()};});},
     // 今天：每条线今天记了多少分钟、最后一次快速记录（可撤销）、今天排了多少小时
-    today:function(){var items=state.days[todayKey]||[],by={},last={},planned=0;
+    todayKey:function(){return todayKey;},dups:dupLines,merge:function(k,id){return dupFix(k,id,true);},keep:function(k,id){return dupFix(k,id,false);},
+    today:function(){var items=state.days[todayKey]||[],by={},last={},todo={},planned=0;
       items.forEach(function(it){var m=itemMin(it);if(m)by[it.line]=(by[it.line]||0)+m;if(it.cat==="line"&&it.quick)last[it.line]=it.id;
+        if(!it.done&&it.line&&it.cat!=="line"&&it.cat!=="work"&&lineOf(it.line))(todo[it.line]||(todo[it.line]=[])).push({id:it.id,label:it.sub||label(it),start:it.start||""});
         if(it.cat!=="work"&&it.cat!=="line"){var d=durMin(it);if(d)planned+=d;}});
-      var wd=parse(todayKey).getDay(),c=lineCap();return {by:by,last:last,planned:planned,cap:(wd===0||wd===6)?c.we:c.wd,weekend:wd===0||wd===6};},
+      var wd=parse(todayKey).getDay(),c=lineCap();return {by:by,last:last,todo:todo,dups:dupLines(todayKey),planned:planned,cap:(wd===0||wd===6)?c.we:c.wd,weekend:wd===0||wd===6};},
     log:function(id,min){var l=lineOf(id);if(!l)return null;var it={id:uid(),cat:"line",sub:"",name:l.name,note:"",done:true,start:"",end:"",line:id,min:min,quick:1};
       (state.days[todayKey]||(state.days[todayKey]=[])).push(it);saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return it.id;},
     unlog:function(itemId){var l=state.days[todayKey]||[],n=l.length;state.days[todayKey]=l.filter(function(i){return i.id!==itemId;});if(state.days[todayKey].length!==n){saveDay(todayKey);renderCal();if(sel===todayKey)renderPanel();linesChanged();return true;}return false;}
@@ -745,7 +804,7 @@
       stats.forEach(function(st,i){var sx=M+i*(cw+12);x.fillStyle="#f3f1f6";x.fillRect(sx,y,cw,84);
         x.fillStyle=MUT;x.font="20px "+F;x.fillText(st[0],sx+14,y+30);x.fillStyle=INK;x.font="700 25px "+F;x.fillText(fit(x,st[1],cw-28),sx+14,y+66);});
       y+=112;}
-    var review=items.some(function(i){return i.cat==="review";}),rlines=review?monthSummary(k):[];
+    var review=items.some(isMonthReview),rlines=review?monthSummary(k):[];
     var bottom=(untimed.length?70+untRows*46:0)+190+(review?60+rlines.length*36:0);
     var nLines=hours.reduce(function(s,h){return s+Math.max(1,(byH[h]||[]).length);},0);
     var lh=Math.max(22,Math.min(54,Math.floor((H-M-y-60-bottom)/nLines))),fs=Math.max(13,Math.round(lh*0.5));
@@ -808,6 +867,7 @@
 
   $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();scrollToToday(true);};
 
+  tidyShorts();
   renderCal();renderPanel();renderMemos();
   try{window.__cut&&window.__cut.rerender()}catch(e){}
   function scrollToToday(smooth){
@@ -838,10 +898,10 @@
           Object.keys(state.days).forEach(function(k){if(state.days[k].length)write("day-"+k,{date:k,items:state.days[k]});});
           if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();if(state.lines)saveLines();planReady();return;}
         if(!snap.metadata.fromCache)first=false;
-        var days={},sc=null,mm=[],ln=null;
+        var days={},sc=null,scv=0,mm=[],ln=null;
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
-          if(d.id==="shortcuts")sc=b.list||null;else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.memos=mm;state.lines=ln;cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+          if(d.id==="shortcuts"){sc=b.list||null;scv=b.v||0;}else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
+        state.days=days;state.shortcuts=sc;state.shortV=scv;state.memos=mm;state.lines=ln;if(!snap.metadata.fromCache)tidyShorts();cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;planReady();});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");planReady();});

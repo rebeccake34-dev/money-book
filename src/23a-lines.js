@@ -20,9 +20,15 @@
     h.appendChild(btn("td-more","设置 ›",function(){go("set","secLines")}));card.appendChild(h);
     if(T.planned>T.cap*60){var a=el("p","td-alert");a.textContent="今天排了 "+hrs(T.planned/60)+" 小时，超过"+(T.weekend?"周末":"工作日")+"上限 "+hrs(T.cap)+" 小时，挪一项到别的天";card.appendChild(a)}
     if(!st.length){card.appendChild(el("p","td-note","还没有主线。到「设置 › 生活主线」加上每条线每周打算花几小时。"));return}
+    (T.dups||[]).forEach(function(d){var a=el("div","td-alert ln-dup");
+      a.appendChild(el("span",null,"「"+d.name+"」计划里已记 "+d.plan+" 分（"+d.names.join("、")+"），「+30分」又记了 "+d.quick+" 分。是同一次吗？"));
+      var r=el("span","td-btns");r.appendChild(btn("td-btn td-keep","是，合并",function(){A.merge(A.todayKey(),d.id)},"tdLnM-"+d.id));r.appendChild(btn("td-btn ghost td-keep","不是，分开算",function(){A.keep(A.todayKey(),d.id)},"tdLnK-"+d.id));
+      a.appendChild(r);card.appendChild(a)});
     var di=dayIdx();
-    function addBtns(row,s,one){var b=el("div","td-btns");
-      (one?[30]:[30,60]).forEach(function(m){b.appendChild(btn("td-btn td-keep","+"+m+"分",function(){A.log(s.id,m);toast("「"+s.name+"」记了 "+m+" 分钟")},"tdLn-"+s.id+"-"+m))});
+    function addBtns(row,s,one){var b=el("div","td-btns"),todo=(T.todo||{})[s.id]||[];
+      // 今天计划里已经排了这条线的事项：直接完成那一项，不另记一笔，避免同一次算两遍
+      if(todo.length)todo.slice(0,2).forEach(function(t){b.appendChild(btn("td-btn td-keep","完成「"+t.label+"」",function(){if(window.__planToggle)window.__planToggle(t.id,true);try{window.__todayRender&&window.__todayRender()}catch(e){}},"tdLnD-"+t.id))});
+      else (one?[30]:[30,60]).forEach(function(m){b.appendChild(btn("td-btn td-keep","+"+m+"分",function(){A.log(s.id,m);toast("「"+s.name+"」记了 "+m+" 分钟")},"tdLn-"+s.id+"-"+m))});
       var last=T.last[s.id];if(last)b.appendChild(btn("td-btn ghost td-keep","撤销",function(){A.unlog(last)},"tdLnU-"+s.id));row.appendChild(b)}
     function bar(s){var b=el("div","td-bar"),i=el("i");i.style.width=Math.min(100,s.hrs?s.act/s.hrs*100:0)+"%";b.appendChild(i);return b}
     function behind(s){return di>=3&&s.act<s.hrs*di/7*0.6}
@@ -50,7 +56,7 @@
     var fr=el("tr","ln-sum");["合计",hrs(tp),hrs(ta),hrs(tq),""].forEach(function(x,i){fr.appendChild(el("td",i?"n":null,x))});tb.appendChild(fr);t.appendChild(tb);tw.appendChild(t);box.appendChild(tw);
     var tips=[];cur.forEach(function(s){if(s.low>=2)tips.push({t:"「"+s.name+"」连续 2 周低于计划的 60%：换方法、减量或停放",k:"bad"})});
     var np=cur.filter(function(s){return s.kind==="project"}).length;if(np>3)tips.push({t:"进行中的主线有 "+np+" 条，超过 3 条，建议停放几条",k:"bad"});
-    box.appendChild(el("p","note","绿 ≥ 90%，黄 60–90%，红 < 60%；开始记录前的周显示「—」。实际用时来自日常计划里归到主线、已打勾的事项，和今天页的「+30分」。"));
+    box.appendChild(el("p","note","绿 ≥ 90%，黄 60–90%，红 < 60%；开始记录前的周显示「—」。实际用时来自日常计划里归到主线、已打勾的事项，和今天页的「+30分」。同一天同一条线两边都记了，会提示合并，避免重复计算。"));
     if(tips.length){var u=el("ul","td-list");tips.forEach(function(x){u.appendChild(el("li",x.k,x.t))});box.appendChild(u)}
   }
 
