@@ -1,23 +1,59 @@
-/* ---- 毛玻璃（glassmorphism）外观：设置 › 主题颜色 › 界面风格 切换，存在这台设备上。
-   打开时 <html data-look="frost">：12px 高斯模糊 + 15% 透明白 + 1px 半透明白边模拟玻璃边缘反光；背景是跟主题色走的渐变。
-   颜色变量在 18-theme.js 里生成；这里只改玻璃面的画法。关掉就回到原来的液态玻璃。 */
-html[data-look="frost"]{--gblur:blur(12px);--gblur-s:blur(12px);
-  background:linear-gradient(155deg,var(--fz1) 0%,var(--fz2) 52%,var(--fz3) 100%) fixed;background-color:var(--fz1)}
-html[data-look="frost"] body::before{opacity:1}
-html[data-look="frost"] .card,html[data-look="frost"] .td-card,html[data-look="frost"] #cut .panel,html[data-look="frost"] .pl-memo,html[data-look="frost"] .pl-panel,
-html[data-look="frost"] .ov-row,html[data-look="frost"] .tabs,html[data-look="frost"] .sheet-box,html[data-look="frost"] .pl-ym,
-html[data-look="frost"] .ledger,html[data-look="frost"] .td-hero,html[data-look="frost"] .toc,html[data-look="frost"] .pl-mnav{
-  background:rgba(255,255,255,.15)!important;border:1px solid rgba(255,255,255,.32)!important;
-  -webkit-backdrop-filter:blur(12px)!important;backdrop-filter:blur(12px)!important;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 8px 32px -8px rgba(15,25,60,.25)!important}
-html[data-look="frost"] .pl-panel,html[data-look="frost"] .sheet-box{background:rgba(255,255,255,.2)!important}
-html[data-look="frost"] .ledger .save-row{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.3);box-shadow:none}
-html[data-look="frost"] .btn.primary,html[data-look="frost"] #cut button.primary,html[data-look="frost"] .pl-tc.pl-on,html[data-look="frost"] .look-row button[aria-pressed="true"]{
-  background:rgba(255,255,255,.34);color:#fff;border:1px solid rgba(255,255,255,.55);box-shadow:inset 0 1px 0 rgba(255,255,255,.5)}
-html[data-look="frost"] .tabs button[aria-selected="true"],html[data-look="frost"] .pl-pbtn[aria-selected=true]{background:rgba(255,255,255,.3)!important;color:#fff;box-shadow:inset 0 1px 0 rgba(255,255,255,.5)!important}
-html[data-look="frost"] .pl-tplw{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22)}
-html[data-look="frost"] .toast,html[data-look="frost"] .pl-toast{background:rgba(15,22,50,.42);color:#fff;border:1px solid rgba(255,255,255,.32);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
-html[data-look="frost"] input[type=checkbox]{accent-color:hsl(var(--th) 80% 62%)}
-html[data-look="frost"] ::placeholder{color:rgba(255,255,255,.6)}
-@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
-  html[data-look="frost"] .card,html[data-look="frost"] .td-card,html[data-look="frost"] .pl-panel{background:rgba(255,255,255,.24)!important}}
+/* ---- 新拟物（neumorphism）· 诧寂配色：设置 › 主题颜色 › 界面风格 切换，存在这台设备上。
+   打开时 <html data-look="neu" data-theme="light">：卡片、按键和背景是同一个米灰色平面，
+   按键靠一亮一暗两道柔和阴影从背景里轻轻鼓起来，没有边框；选中/按下是凹进去。
+   字是深灰和墨蓝，不用纯黑纯白。颜色变量在 18-theme.js 里生成（墨蓝跟主题色走，饱和度压低）。 */
+html[data-look="neu"]{--gblur:none;--gblur-s:none;--display:var(--body);
+  --nu-out:7px 7px 16px var(--nu-d),-7px -7px 16px var(--nu-l);
+  --nu-sm:3px 3px 7px var(--nu-d),-3px -3px 7px var(--nu-l);
+  --nu-in:inset 3px 3px 7px var(--nu-d),inset -3px -3px 7px var(--nu-l);
+  --nu-in-s:inset 2px 2px 5px var(--nu-d),inset -2px -2px 5px var(--nu-l);
+  background:var(--bg)}
+html[data-look="neu"] body{background:var(--bg);color:var(--ink);letter-spacing:.01em;-webkit-font-smoothing:antialiased}
+html[data-look="neu"] body::before{display:none}
+html[data-look="neu"] h1,html[data-look="neu"] h2,html[data-look="neu"] h3,html[data-look="neu"] h4,html[data-look="neu"] b,html[data-look="neu"] strong{font-weight:600;color:var(--ink)}
+html[data-look="neu"] h1{font-weight:600;letter-spacing:.04em}
+html[data-look="neu"] .num,html[data-look="neu"] .tile .val{font-weight:500}
+
+/* 大面：卡片、面板、标签栏 —— 和背景同色，轻轻鼓起 */
+html[data-look="neu"] .card,html[data-look="neu"] .td-card,html[data-look="neu"] #cut .panel,html[data-look="neu"] .pl-memo,html[data-look="neu"] .pl-panel,
+html[data-look="neu"] .ov-row,html[data-look="neu"] .tabs,html[data-look="neu"] .sheet-box,html[data-look="neu"] .pl-ym,
+html[data-look="neu"] .ledger,html[data-look="neu"] .td-hero,html[data-look="neu"] .toc,html[data-look="neu"] .pl-mnav{
+  background:var(--bg)!important;border:0!important;color:var(--ink);
+  -webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-shadow:var(--nu-out)!important}
+html[data-look="neu"] .ledger::before,html[data-look="neu"] .ledger::after,html[data-look="neu"] .td-hero::before,html[data-look="neu"] .td-hero::after{display:none}
+html[data-look="neu"] .ledger *,html[data-look="neu"] .td-hero *{color:inherit;border-color:var(--line)}
+html[data-look="neu"] .ledger small,html[data-look="neu"] .td-hero small,html[data-look="neu"] .ledger .sub{color:var(--muted)}
+html[data-look="neu"] .ledger b,html[data-look="neu"] .td-hero b{color:var(--accent)}
+html[data-look="neu"] .ledger .save-row{background:var(--bg);border:0;box-shadow:var(--nu-in)}
+
+/* 小块和按键：鼓起，没有边框 */
+html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.cy-nb,.pl-day,.pay-row,.pl-info,.pl-sum,.pl-cd,.md-tag,.ord-btn,.look-row button,.exp-cat,.pl-sbtn,.pl-subs button,.pl-pbtn,.tabs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,#cut button:not(.x):not(.pl-link):not(.primary)){
+  background:var(--bg)!important;border:0!important;box-shadow:var(--nu-sm)!important;color:var(--ink)}
+html[data-look="neu"] .td-chipw .td-chip{background:transparent!important;box-shadow:none!important}
+html[data-look="neu"] :is(.seg,.cy-seg,.wdseg,.goalseg,.pl-pane){background:var(--bg)!important;border:0!important;box-shadow:var(--nu-in-s)!important}
+html[data-look="neu"] :is(.seg,.cy-seg,.wdseg,.goalseg,.pl-pane) button:not([aria-pressed="true"]):not([aria-selected="true"]),html[data-look="neu"] .tabs button:not([aria-selected="true"]){box-shadow:none!important}
+/* 选中、按下：凹进去，字变墨蓝 */
+html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.md-tag,.look-row button,.pl-sbtn,.pl-subs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,.tabs button,.pl-pbtn,.exp-cat):is([aria-pressed="true"],[aria-selected="true"],[aria-expanded="true"],.pl-on,.on,:active){
+  box-shadow:var(--nu-in)!important;color:var(--accent)!important;background:var(--bg)!important}
+html[data-look="neu"] .td-chipw.bad.on{color:var(--bad)!important}
+html[data-look="neu"] :is(.btn.primary,#cut button.primary,.ord-btn.primary,.save-row .btn,.cy-btn,.todayfab,.totop){
+  background:var(--bg)!important;color:var(--accent)!important;border:0!important;box-shadow:var(--nu-sm)!important;font-weight:600}
+html[data-look="neu"] .sw{border:0!important;box-shadow:var(--nu-sm),inset 0 0 0 4px var(--bg)!important}
+html[data-look="neu"] .sw[aria-pressed="true"]{box-shadow:var(--nu-in),inset 0 0 0 4px var(--bg)!important}
+html[data-look="neu"] .fold>:first-child::after,html[data-look="neu"] .fold.folded>:first-child::after{border:0;background:var(--bg);box-shadow:var(--nu-sm);padding:2px 10px}
+html[data-look="neu"] .tabs{padding:6px}
+html[data-look="neu"] .pl-link,html[data-look="neu"] a{color:var(--accent)}
+
+/* 输入框、进度条：凹槽 */
+html[data-look="neu"] :is(input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea){
+  background:var(--bg)!important;border:0!important;box-shadow:var(--nu-in-s)!important;color:var(--ink)}
+html[data-look="neu"] ::placeholder{color:var(--muted);opacity:.8}
+html[data-look="neu"] :is(.td-bar,.bar,.exp-bbar,.gm-bar){background:var(--bg)!important;box-shadow:var(--nu-in-s)!important;border:0!important}
+html[data-look="neu"] input[type=checkbox],html[data-look="neu"] input[type=radio]{accent-color:var(--accent)}
+
+/* 提示条：浅色鼓起的小块 */
+html[data-look="neu"] .toast,html[data-look="neu"] .pl-toast{background:var(--bg)!important;color:var(--ink)!important;border:0!important;box-shadow:var(--nu-out)!important;-webkit-backdrop-filter:none;backdrop-filter:none}
+html[data-look="neu"] .pl-tplw{background:var(--bg);box-shadow:var(--nu-in-s)}
+html[data-look="neu"] .pl-goalr span{border:0;box-shadow:var(--nu-sm)}
+html[data-look="neu"] .pl-goalr span.on{box-shadow:var(--nu-in-s);color:var(--accent)}
+html[data-look="neu"] .exp-out{background:var(--bg);box-shadow:var(--nu-in-s)}
