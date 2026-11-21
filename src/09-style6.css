@@ -7,7 +7,7 @@
 .sav-big b{font-family:var(--mono);font-size:2rem;font-variant-numeric:tabular-nums;line-height:1.1;color:var(--accent)}
 .sav-big span{font-size:.85rem;color:var(--muted)}
 .sav-bar{position:relative;height:14px;border-radius:7px;background:var(--line);overflow:visible}
-.sav-bar i{position:absolute;inset:0 auto 0 0;border-radius:7px;background:var(--accent);transition:width .4s}
+.sav-bar i{position:absolute;inset:0 auto 0 0;border-radius:7px;background:var(--accent)}
 .sav-bar u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--paper);text-decoration:none}
 .sav-ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.68rem;color:var(--muted);margin-top:4px}
 .sav-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}

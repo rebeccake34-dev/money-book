@@ -96,7 +96,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
 .ms-row{display:flex;flex-direction:column;gap:4px}
 .ms-top{display:flex;justify-content:space-between;gap:10px;font-size:.9rem}
 .bar{height:8px;background:var(--line);border-radius:4px;overflow:hidden}
-.bar span{display:block;height:100%;background:var(--gold);transition:width .3s}
+.bar span{display:block;height:100%;background:var(--gold)}
 .done{color:var(--gold);font-weight:700}
 
 /* forms */
@@ -133,7 +133,7 @@ input[type=number]{font-family:var(--mono)}
 .btn{padding:9px 16px;border-radius:8px;border:1px solid var(--line);background:var(--paper);cursor:pointer;font-weight:500}
 .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
 .btn.danger{color:var(--bad);border-color:var(--bad);background:transparent;padding:4px 10px;font-size:.8rem}
-.btn:disabled{opacity:.5;cursor:default}
+.btn:disabled{background:var(--trough,var(--line));color:var(--muted);border-color:transparent;box-shadow:none;cursor:not-allowed}
 .formmsg{font-size:.82rem;color:var(--bad);min-height:1.2em}
 table{width:100%;border-collapse:collapse;font-size:.84rem}
 th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:top}
@@ -211,7 +211,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 #cut .stat b{font-family:var(--f-display);font-size:1.7rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
 #cut .stat span{font-size:.75rem;color:var(--muted);letter-spacing:.04em}
 #cut .bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
-#cut .bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .3s}
+#cut .bar i{display:block;height:100%;background:var(--accent);width:0}
 #cut .bar.water i{background:var(--water)}
 #cut .bar.over i{background:var(--bad)}
 #cut ul.ex{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}

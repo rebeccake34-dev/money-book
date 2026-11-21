@@ -64,4 +64,13 @@
   var NUMS=["wNet","dNet","wCash","wFut","sKcal","sPro","sWater","sTrain","ovPlanV","ovCutV","ovLedV","ovSavV"];
   NUMS.forEach(function(id){var e=$(id);if(!e)return;var last=e.textContent;
     new MutationObserver(function(){var v=e.textContent;if(v!==last&&last!=="–"&&last!==""){replay(e,"mo-num",600);}last=v;}).observe(e,{childList:true,characterData:true,subtree:true});});
+
+  // ---- 进度条：宽度直接变到新值，再用 transform 从旧长度弹到新长度（不给 width 做动画，手机上更顺） ----
+  var BAR=".bar i,.bar span,#waterFill,.sav-bar i,.aes-bar i,.pe-bar i",barW=new WeakMap();
+  function barGrow(el){if(!el.matches||!el.matches(BAR))return;var w=el.offsetWidth,old=barW.get(el);barW.set(el,w);
+    if(old==null||old===w||!w||calm()||!el.animate||!el.offsetParent)return;
+    el.animate([{transform:"scaleX("+Math.max(old/w,.001)+")"},{transform:"scaleX(1)"}],{duration:520,easing:"cubic-bezier(.32,.72,0,1)"});}
+  new MutationObserver(function(ms){ms.forEach(function(m){if(m.type==="attributes")barGrow(m.target);
+    else m.addedNodes.forEach(function(n){if(n.nodeType!==1)return;barGrow(n);if(n.querySelectorAll)n.querySelectorAll(BAR).forEach(barGrow)})})})
+    .observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["style"]});
 })();
