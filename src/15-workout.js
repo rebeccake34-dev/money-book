@@ -656,7 +656,7 @@ window.__cut={
   checkAllEx:()=>{const idx=[];curPlan().ex.forEach((_,i)=>{if(!day.ex[i]){day.ex[i]=true;idx.push(i)}});if(idx.length)save();return idx},
   uncheckEx:idx=>{(idx||[]).forEach(i=>{day.ex[i]=false});save()},
   record:k=>{const r=k===todayKey?day:allDays[k];if(!r)return null;const t=totals(r),d=new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10),12),p=planOf(r,d);
-    return {plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>r.ex&&r.ex[i]).length,exTotal:p.ex.length,cardio:!!r.cardio,water:t.water,kcal:t.kcal,pro:t.pro,food:(r.food||[]).map(f=>f.name),weight:r.weight||null}},
+    return {plan:p.name,type:p.type,exDone:p.ex.filter((_,i)=>r.ex&&r.ex[i]).length,exTotal:p.ex.length,cardio:!!r.cardio,water:t.water,kcal:t.kcal,pro:t.pro,food:(r.food||[]).map(f=>f.name),meals:[...new Set((r.food||[]).map(f=>f.meal||autoMeal(f.t)))],weight:r.weight||null}},
   cardio:()=>!!day.cardio,
   setCardio:v=>{day.cardio=!!v;save()},
   addWater:ml=>{const t=Date.now();day.water.push({ml,t});save();return t},

@@ -386,3 +386,31 @@
 .pl-dup{flex-wrap:wrap;gap:6px}
 .pl-dupb{display:inline-flex;gap:8px;align-items:center;flex-wrap:wrap}
 .ln-dup{display:flex;flex-direction:column;gap:6px}
+
+/* ---- 休息日模板（SOP）：选择条、步骤清单、在家达标 ---- */
+.pl-tplw{display:flex;flex-direction:column;gap:8px;padding:10px 12px;border-radius:16px;background:var(--accent-soft);margin:2px 0 6px}
+.pl-tplw .pl-lbl{margin:0}
+.pl-tplw .pl-tchips{display:flex;flex-wrap:wrap;gap:6px}
+.pl-tplb{font-size:.86rem;padding:7px 14px;min-height:36px}
+.pl-tpldep{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pl-tpldep input{width:auto;padding:4px 8px;font-size:.85rem}
+.pl-tplnow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.86rem;font-weight:600}
+.pl-tplnow span{margin-right:auto}
+.pl-goal{display:flex;flex-direction:column;gap:6px;font-size:.84rem}
+.pl-goal.pl-ok b{color:var(--accent)}
+.pl-goalr{display:flex;flex-wrap:wrap;gap:6px}
+.pl-goalr span{padding:3px 10px;border-radius:999px;border:1px solid var(--line);color:var(--muted);font-size:.78rem}
+.pl-goalr span.on{color:var(--accent);border-color:var(--accent);font-weight:600}
+.pl-ckw{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+.pl-ckb{align-self:flex-start;font-weight:600}
+.pl-ck{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:2px 10px;padding:4px 2px 6px}
+.pl-cki{display:flex;align-items:center;gap:8px;font-size:.86rem;font-weight:400;color:var(--ink);min-height:32px;cursor:pointer}
+.pl-cki input{width:20px;height:20px;flex:none}
+.pl-cki.pl-done span{color:var(--muted);text-decoration:line-through}
+.td-plist .pl-ckw{padding:0 0 6px 32px}
+.exp-out{margin-left:8px;padding:1px 8px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:.72rem;font-weight:600}
+.look-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0 4px}
+.look-row button{border:1px solid var(--line);background:var(--paper);color:var(--ink);border-radius:999px;padding:7px 14px;font-size:.86rem;cursor:pointer}
+.look-row button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent);color:#fff}
+.pl-ck .pl-cki{display:flex!important;flex-direction:row!important;align-items:center;justify-content:flex-start;text-align:left;padding:0;border:0;background:none}
+.pl-ck .pl-cki input{margin:0}

@@ -47,8 +47,8 @@
   function setRange(){var f=firstDay(),n=Math.round((end-f)/864e5)+1;
     $("plRange").textContent="从 "+f.getFullYear()+"年"+(f.getMonth()+1)+"月"+f.getDate()+"日 起 · 可以安排到 2027 年 12 月 31 日 · 过去的记录都会保留";}
 
-  var state={shortcuts:null,shortV:0,days:{},memos:[],lines:null};
-  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.lines=c.lines||null;state.shortV=c.shortV||0;}}catch(e){}
+  var state={shortcuts:null,shortV:0,days:{},memos:[],lines:null,sop:{prep:{}}};
+  try{var c=JSON.parse(localStorage.getItem(LKEY)||"null");if(c&&c.days){state.days=c.days;state.shortcuts=c.shortcuts||null;state.memos=c.memos||[];state.lines=c.lines||null;state.shortV=c.shortV||0;state.sop=c.sop&&c.sop.prep?c.sop:{prep:{}};}}catch(e){}
   var sel=todayKey,openCat=null,editMode=false,addingShortcut=false;
   var pendStart="",pendEnd="",paneMode="view",editId=null,pendLine=null;
   // ---- 主线：每条线每周计划几小时；计划项可以归到某条主线，完成时记实际用时 ----
@@ -261,6 +261,7 @@
       tip.appendChild(btn("pl-link","添加",function(){addItem("review","本月总支出");}));panel.appendChild(tip);
     }
 
+    if(sel>=todayKey||dayType(sel))panel.appendChild(chooser(sel,renderPanel));
     var dtp=dupTip(sel);if(dtp)panel.appendChild(dtp);
     if(sel<=todayKey)panel.appendChild(memoryBox(sel));
     var dm=memosOn(sel).map(function(m){return [m,m.rep?sel:null];});
@@ -327,6 +328,9 @@
       note.onchange=function(){it.note=note.value;saveDay(sel);};
       note.onkeydown=function(e){if(e.key==="Enter")note.blur();};
       mid.appendChild(note);
+      if(it.check)mid.appendChild(ckToggle(sel,it,renderPanel,!it.done));
+      if(it.tkey==="chore"&&!it.done){var cw=el("div","pl-lrow");cw.appendChild(btn("pl-link","换一个家务",function(){swapChore(sel,it);}));
+        var cc=choreCands(sel).filter(function(x){return x.chore===it.chore;})[0];if(cc)cw.appendChild(el("span","note",cc.why));mid.appendChild(cw);}
       if(it.sync&&it.sync.msg)mid.appendChild(el("div","pl-sync","已同步："+it.sync.msg));
       if(isMonthReview(it))mid.appendChild(summaryBox(sel));
       var x=btn("pl-del","✕",function(){if(it.done&&it.sync)syncOff(it,sel);state.days[sel]=(state.days[sel]||[]).filter(function(y){return y.id!==it.id;});saveDay(sel);renderCal();renderPanel();});
@@ -336,6 +340,7 @@
     ls.appendChild(list);panel.appendChild(ls);
     } else {
     // ---- 添加计划 (compact) ----
+    panel.appendChild(chooser(sel,renderPanel));
     var tq=el("div","pl-tq");tq.appendChild(el("span","pl-lbl","时间"));
     var tchips=el("div","pl-tchips");
     [["不定时","",""]].concat(PRESETS).forEach(function(p){var on=pendStart===p[1]&&pendEnd===p[2];
@@ -459,7 +464,7 @@
     delete it.sync;
   }
   function toggleDone(it,v){
-    var msg="";it.done=v;
+    var msg="";it.done=v;if(v&&it.check)it.check.forEach(function(c){c.d=true;});
     if(v&&it.line&&lineOf(it.line)){if(it.min==null)it.min=durMin(it)||30;msg="主线「"+lineOf(it.line).name+"」记 "+it.min+" 分钟，可在清单里改";}
     if(it.memo){var mo=state.memos.filter(function(m){return m.id===it.memo;})[0];if(mo){if(mo.rep){var a=(mo.doneDates||[]).filter(function(x){return x!==sel;});if(v)a.push(sel);mo.doneDates=a;}else{mo.done=v;mo.doneAt=v?Date.now():null;}saveMemos();renderMemos();}}
     if(v){var r=syncOn(it,sel);if(r.sy)it.sync=r.sy;msg=[r.msg,msg].filter(Boolean).join(" · ");
@@ -675,7 +680,7 @@
     prune:function(k,keep){var l=state.days[k];if(!l)return;var n=l.length;state.days[k]=l.filter(function(i){return !(i.cutRef&&i.cutRef!=="plan"&&keep.indexOf(i.cutRef)<0);});if(state.days[k].length!==n){saveDay(k);renderCal();renderPanel();}}
   };
   window.__planRefresh=function(){try{renderCal();renderPanel();}catch(e){}};
-  window.__planToday=function(){return sorted(state.days[todayKey]||[]).map(function(i){return {id:i.id,label:label(i),start:i.start||"",end:i.end||"",done:!!i.done,note:i.note||""};});};
+  window.__planToday=function(){return sorted(state.days[todayKey]||[]).map(function(i){return {id:i.id,label:label(i),start:i.start||"",end:i.end||"",done:!!i.done,note:i.note||"",check:i.check?{d:ckDone(i),n:i.check.length}:null,tpl:i.tpl||""};});};
   window.__planToggle=function(id,v){var it=(state.days[todayKey]||[]).filter(function(i){return i.id===id;})[0];if(!it)return;sel=todayKey;toggleDone(it,!!v);};
   window.__planMemo=function(){return memoCounts();};
   window.__bk=window.__bk||{};
@@ -691,6 +696,7 @@
       (d.memos||[]).forEach(function(m){if(m&&m.id&&!mid[m.id]){state.memos.push(m);mid[m.id]=1;mc=true;n++;}});if(mc)saveMemos();
       if(!state.shortcuts&&d.shortcuts){state.shortcuts=d.shortcuts;state.shortV=d.shortV||0;if(!tidyShorts())saveShorts();}
       if(!state.lines&&d.lines&&d.lines.list){state.lines=d.lines;saveLines();n++;}
+      if(d.sop&&d.sop.prep){var pc=false;Object.keys(d.sop.prep).forEach(function(k){if(!state.sop.prep[k]){state.sop.prep[k]=1;pc=true;}});if(pc)saveSop();}
       renderCal();renderPanel();renderMemos();linesChanged();return n;}
   };
   // ---- 主线接口：今天页、每周回顾、设置页都从这里取数 ----
@@ -749,8 +755,8 @@
       if(!it){l.push({id:"roster"+k.replace(/-/g,""),cat:"work",sub:sub,name:"",note:note,done:k<todayKey,start:sh.start,end:sh.end||"",roster:true});saveDay(k);n++;return;}
       if(it.start!==sh.start||it.end!==(sh.end||"")){it.start=sh.start;it.end=sh.end||"";if(!it.note||/排班/.test(it.note))it.note=note;saveDay(k);n++;}});
     if(n){renderCal();renderPanel();try{window.__todayRender&&window.__todayRender();}catch(e){}}return n;}
-  window.__onShifts=function(list){applyShifts(list);};
-  function planReady(){plReady=true;var p=shPend||(window.__shifts&&window.__shifts());shPend=null;if(p)applyShifts(p);}
+  window.__onShifts=function(list){applyShifts(list);try{ensurePrep();}catch(e){}};
+  function planReady(){plReady=true;var p=shPend||(window.__shifts&&window.__shifts());shPend=null;if(p)applyShifts(p);try{ensurePrep();}catch(e){}}
   window.__workOn=function(k){return (state.days[k]||[]).filter(function(i){return i.cat==="work"&&i.start;}).map(function(i){return {start:i.start,end:i.end};});};
   window.__planSelect=function(k){if(typeof showTab==="function")showTab("plan");sel=k;viewMode="month";var d0=parse(k);viewY=d0.getFullYear();viewM=d0.getMonth();renderCal();renderPanel();panel.classList.add("pl-open");
     setTimeout(function(){var c=cal.querySelector('[data-k="'+k+'"]');if(c)c.scrollIntoView({block:"center",behavior:"smooth"});},60);};
@@ -883,6 +889,136 @@
   if(!$("plan").hidden)window.__planShown();
   var reAimed=false,userMoved=false;["wheel","touchmove","keydown"].forEach(function(ev){window.addEventListener(ev,function(){userMoved=true;},{passive:true,once:true});});
 
+  // ---- 休息日模板（SOP）：出门·不化妆 / 出门·化妆 / 在家。套用后按时段排进当天；长清单收在一项里；家务轮换、备餐、在家达标 ----
+  var TPLN={out:"出门·不化妆",glam:"出门·化妆",home:"在家"};
+  var WASH=["内衣","毛巾睡衣","运动服","工作服袜子"],CLEAN=["吸地拖地","浴室","厨房"];
+  var ckOpen={};
+  function saveSop(){write("sop",state.sop);}
+  function dayType(k){var l=state.days[k]||[];for(var i=0;i<l.length;i++)if(l[i].tpl)return l[i].tpl;return null;}
+  function catFor(id,name){var s=findShort(id);if(s&&!s.hide)return {cat:id,name:""};
+    var l=shorts();for(var i=0;i<l.length;i++)if(l[i].name===name&&!l[i].hide)return {cat:l[i].id,name:""};return {cat:"other",name:name};}
+  function lineByKw(re){var l=lineList();for(var i=0;i<l.length;i++)if(l[i].kind!=="parked"&&re.test(l[i].name))return l[i];return null;}
+  function dDiff(a,b){return Math.round((parse(b)-parse(a))/864e5);}
+  function choreToks(i){if(i.chore)return i.chore.split(",");var s=label(i)+" "+(i.note||""),o=[];
+    WASH.forEach(function(g){if(s.indexOf(g)>=0)o.push("wash:"+g);});
+    if(!o.length){if(/毛巾|睡衣/.test(s))o.push("wash:毛巾睡衣");if(/工作服|袜子/.test(s))o.push("wash:工作服袜子");if(/运动服/.test(s))o.push("wash:运动服");}
+    CLEAN.forEach(function(a){if(s.indexOf(a)>=0)o.push("clean:"+a);});if(/拖地|吸地/.test(s)&&o.indexOf("clean:吸地拖地")<0)o.push("clean:吸地拖地");
+    if(/盘点|囤货/.test(s))o.push("stock");if(/床单|被套/.test(s))o.push("sheets");return o;}
+  function choreHist(before){var last={};Object.keys(state.days).forEach(function(k){if(before&&k>before)return;(state.days[k]||[]).forEach(function(i){if(!i.done)return;
+    choreToks(i).forEach(function(t){if(!last[t]||last[t]<k)last[t]=k;});});});return last;}
+  // 家务候选，按优先顺序：到期的盘点（≥14 天）、到期的换床单（≥10 天），然后洗衣和打扫里更久没做的那个
+  function choreCands(k){var H=choreHist(k),age=function(t){return H[t]?dDiff(H[t],k):999;},c=[];
+    var hj=lineByKw(/家务/),stl=lineByKw(/囤货|盘点/)||hj,cf=catFor("chore","家务"),tf=catFor("tidy","收纳");
+    function mk(sub,tok,ln,cc){return {sub:sub,chore:tok,line:ln?ln.id:"",cat:(cc||cf).cat,name:(cc||cf).name};}
+    var w=WASH.slice().sort(function(a,b){return age("wash:"+b)-age("wash:"+a);}).slice(0,2);
+    var cl=CLEAN.slice().sort(function(a,b){return age("clean:"+b)-age("clean:"+a);})[0];
+    var wash=mk("洗衣服："+w.join("、"),w.map(function(g){return "wash:"+g;}).join(","),hj),clean=mk("打扫："+cl,"clean:"+cl,hj);
+    var stock=mk("囤货盘点","stock",stl,tf),sheets=mk("换床单被套","sheets",hj);
+    if(age("stock")>=14)c.push(stock);if(age("sheets")>=10)c.push(sheets);
+    var wa=Math.max(age("wash:"+w[0]),age("wash:"+w[1])),ca=age("clean:"+cl);
+    if(wa>=ca){c.push(wash,clean);}else{c.push(clean,wash);}
+    if(c.indexOf(stock)<0)c.push(stock);if(c.indexOf(sheets)<0)c.push(sheets);
+    c.forEach(function(x){var a=Math.min.apply(null,x.chore.split(",").map(age));x.why=a>=999?"还没有记录":"上次是 "+a+" 天前";});
+    return c;}
+  function studyPick(k){var ws=wkStart(k),wm=weekMins(ws),best=null,br=9;
+    lineList().forEach(function(l){if(l.kind==="parked"||!/学|PTE|读|数|英|物理|化学|阅读/.test(l.name))return;var r=(wm[l.id]||0)/Math.max(1,(l.hrs||1)*60);if(r<br){br=r;best=l;}});
+    if(!best)return {cat:"study",sub:"",line:""};
+    var cid=(best.cats||[]).filter(function(c){return findShort(c);})[0]||"study",s=findShort(cid);
+    return {cat:cid,sub:s&&s.name===best.name?"":best.name,line:best.id};}
+  function hasShift(k){return (state.days[k]||[]).some(function(i){return i.cat==="work"&&i.start;});}
+  function tplSpecs(k,type,dep){var d=toMin(dep)||(type==="glam"?660:600),o=[],dc=catFor("diet","饮食");
+    function S(tkey,name,a,b,check,extra){var x={tkey:tkey,cat:"other",name:name,sub:"",start:a!=null?m2t(a):"",end:b!=null?m2t(b):""};if(check)x.check=check;if(extra)for(var q in extra)x[q]=extra[q];o.push(x);}
+    if(type==="out"){
+      S("ready","出门准备",d-40,d-5,["吃早饭","刷牙","换衣服","擦防晒（脸、脖子、手背）","带充电宝","带钥匙","带耳机","选带：购物袋、水"]);
+      S("door","出门检查",d-5,d,["钥匙","耳机","充电宝"]);
+      S("back","回家收尾",null,null,["包里东西归位，充电宝拿出来充电","衣服放进对应洗衣篮","鞋子放回鞋柜"]);
+    }else if(type==="glam"){
+      S("wake","起床 · 面膜 · 吃饭",d-125,d-100,["起床","敷面膜","吃饭"]);
+      S("makeup","化妆",d-100,d-35,["防晒霜","遮瑕","底妆","修容（膏状）","腮红膏","定妆","散粉","画眉","染眉膏","粉状修容","粉状腮红","眼影","眼线","睫毛膏","假睫毛","唇线","口红"]);
+      S("outfit","选衣服 · 香水 · 鞋",d-35,d-10,["选衣服","选香水","选鞋子","穿高跟鞋 → 包里放一双平底鞋"]);
+      S("door","出门检查",d-10,d,["钥匙","耳机","充电宝","补妆散粉","口红","（穿高跟鞋）平底鞋"]);
+      S("back","回家：卸妆 + 收尾",null,null,["卸妆","洗脸、基础护肤","包里东西归位，充电宝拿出来充电","补妆品放回原位","衣服放进对应洗衣篮","鞋子放回鞋柜"]);
+    }else{
+      o.push({tkey:"bf",cat:dc.cat,name:dc.name,sub:"早餐",start:"09:00",end:"09:30"});
+      S("air","开窗通风 · 整理床铺",570,585);
+      var ch=choreCands(k)[0];o.push({tkey:"chore",cat:ch.cat,name:ch.name,sub:ch.sub,chore:ch.chore,line:ch.line,start:"10:00",end:"12:00"});
+      o.push({tkey:"lunch",cat:dc.cat,name:dc.name,sub:"午餐",start:"12:00",end:"12:45"});
+      S("nap","午休",780,810);
+      var sp=studyPick(k);o.push({tkey:"grow",cat:sp.cat,name:"",sub:sp.sub,line:sp.line,start:"14:00",end:"15:30"});
+      S("book","更新省钱账本",930,940);
+      var fc=catFor("fit","健身");o.push({tkey:"gym",cat:fc.cat,name:fc.name,sub:"",start:"17:30",end:"19:00"});
+      o.push({tkey:"dinner",cat:dc.cat,name:dc.name,sub:"晚餐",start:"19:30",end:"20:15"});
+      S("tmr","准备明天的衣服和包",1260,1275);
+    }
+    return o;}
+  function applyTpl(k,type,dep){
+    var l=(state.days[k]||[]).filter(function(i){return !i.tpl||i.done;}),have={};
+    l.forEach(function(i){if(i.tpl)have[i.tkey]=1;});
+    tplSpecs(k,type,dep).forEach(function(s){if(have[s.tkey])return;
+      var it={id:uid(),cat:s.cat,sub:s.sub||"",name:s.name||"",note:s.note||"",done:false,start:s.start||"",end:s.end||"",tpl:type,tkey:s.tkey};
+      if(s.check)it.check=s.check.map(function(t){return {t:t,d:false};});
+      var ln=s.line!=null?s.line:autoLine(s.cat);if(ln&&lineOf(ln))it.line=ln;
+      if(s.chore)it.chore=s.chore;l.push(it);});
+    l.forEach(function(i){if(i.tpl)i.tpl=type;});
+    state.days[k]=l;saveDay(k);ensurePrep();renderCal();renderPanel();sopChanged();
+    toast("已按「"+TPLN[type]+"」排好 "+(parse(k).getMonth()+1)+"月"+parse(k).getDate()+"日"+(type!=="home"?"，按 "+m2t(toMin(dep)||(type==="glam"?660:600))+" 出门排的":"")+"，时间都可以再调");}
+  function clearTpl(k){var l=state.days[k]||[],n=0;state.days[k]=l.filter(function(i){if(i.tpl&&!i.done){n++;return false;}return true;});
+    (state.days[k]||[]).forEach(function(i){delete i.tpl;});saveDay(k);renderCal();renderPanel();sopChanged();toast(n?"已撤掉模板里还没做的 "+n+" 项":"已取消模板");}
+  function swapChore(k,it){var c=choreCands(k),i0=-1;c.forEach(function(x,i){if(x.chore===it.chore)i0=i;});var n=c[(i0+1)%c.length];
+    it.cat=n.cat;it.name=n.name;it.sub=n.sub;it.chore=n.chore;if(n.line&&lineOf(n.line))it.line=n.line;saveDay(k);renderCal();renderPanel();sopChanged();toast("换成「"+label(it)+"」");}
+  // 第二天有班 → 前一晚加「备餐」（每天只加一次，删掉就不再加）
+  function ensurePrep(){if(!plReady||!state.sop)return 0;var ch=0;
+    for(var n=0;n<14;n++){var k=addD(todayKey,n);if(parse(k)>end)break;if(state.sop.prep[k]||!hasShift(addD(k,1)))continue;
+      var l=state.days[k]||[];state.sop.prep[k]=1;ch++;
+      if(l.some(function(i){return i.auto==="prep"||/备餐/.test((i.sub||"")+(i.name||""));}))continue;
+      var wk=l.filter(function(i){return i.cat==="work"&&i.end;})[0],st=1200;if(wk)st=Math.max(st,toMin(wk.end)+60);if(st>1290)st=1290;
+      var c=catFor("cook","做饭"),it={id:"prep"+k.replace(/-/g,""),cat:c.cat,sub:"备餐",name:c.name,note:"明天上班，带饭（蛋白质够）",done:false,start:m2t(st),end:m2t(st+45),auto:"prep"};
+      var ln=autoLine(c.cat);if(ln)it.line=ln;l.push(it);state.days[k]=l;saveDay(k);}
+    var cut=addD(todayKey,-60);Object.keys(state.sop.prep).forEach(function(k){if(k<cut){delete state.sop.prep[k];ch++;}});
+    if(ch){saveSop();renderCal();renderPanel();}return ch;}
+  // 在家日达标：吃好三餐 · 1 件家务 · 健身 · 准备好明天
+  function homeGoal(k){if(dayType(k)!=="home")return null;var l=state.days[k]||[],C=window.__cut,r=null;try{r=C&&C.record(k);}catch(e){}
+    var ml={};((r&&r.meals)||[]).forEach(function(m){ml[m]=1;});
+    l.forEach(function(i){if(i.cat===catFor("diet","饮食").cat&&i.done)["早餐","午餐","晚餐"].forEach(function(m){if(((i.sub||"")+(i.name||"")).indexOf(m)>=0)ml[m]=1;});});
+    var parts=[["吃好三餐",!!(ml["早餐"]&&ml["午餐"]&&ml["晚餐"])],
+      ["1 件家务",l.some(function(i){return i.done&&(i.tkey==="chore"||choreToks(i).length>0);})],
+      ["健身",l.some(function(i){return i.done&&i.cat==="fit";})||!!(r&&((r.exTotal&&r.exDone>=r.exTotal)||r.cardio))],
+      ["准备好明天",l.some(function(i){return i.done&&(i.tkey==="tmr"||i.auto==="prep");})]];
+    var n=parts.filter(function(p){return p[1];}).length;return {parts:parts,n:n,ok:n===parts.length};}
+  function sopChanged(){try{window.__todayRender&&window.__todayRender();}catch(e){}try{window.__gameRender&&window.__gameRender();}catch(e){}try{window.__expensesRender&&window.__expensesRender();}catch(e){}}
+  function ckDone(it){return (it.check||[]).filter(function(c){return c.d;}).length;}
+  function setStep(k,it,idx,v){var c=it.check[idx];if(!c)return;c.d=v;var all=ckDone(it)===it.check.length,s0=sel;sel=k;
+    if(all&&!it.done)toggleDone(it,true);else if(!v&&it.done)toggleDone(it,false);else{saveDay(k);renderCal();renderPanel();}sel=s0;sopChanged();}
+  function checkEl(k,it){var w=el("div","pl-ck");
+    it.check.forEach(function(c,idx){var lb=el("label","pl-cki"+(c.d?" pl-done":"")),cb=el("input");cb.type="checkbox";cb.checked=!!c.d;cb.id="plck-"+it.id+"-"+idx;
+      cb.onchange=function(){setStep(k,it,idx,cb.checked);};lb.appendChild(cb);lb.appendChild(el("span",null,c.t));w.appendChild(lb);});return w;}
+  function ckToggle(k,it,host,startOpen){var open=ckOpen[it.id]!=null?ckOpen[it.id]:startOpen;
+    var b=btn("pl-link pl-ckb","步骤 "+ckDone(it)+"/"+it.check.length+(open?" ▲":" ▼"),function(){ckOpen[it.id]=!open;if(host)host();});
+    b.setAttribute("aria-expanded",String(open));var w=el("div","pl-ckw");w.appendChild(b);if(open)w.appendChild(checkEl(k,it));return w;}
+  function goalEl(k){var g=homeGoal(k);if(!g)return null;var w=el("div","pl-goal"+(g.ok?" pl-ok":""));
+    w.appendChild(el("b",null,"在家达标 "+g.n+"/4"+(g.ok?" · +20 XP":"")));
+    var r=el("div","pl-goalr");g.parts.forEach(function(p){r.appendChild(el("span",p[1]?"on":null,(p[1]?"✓ ":"○ ")+p[0]));});w.appendChild(r);return w;}
+  function chooser(k,host){var w=el("div","pl-tplw"),t=dayType(k);
+    if(t){var r=el("div","pl-tplnow");r.appendChild(el("span",null,"这天按「"+TPLN[t]+"」安排"));
+      r.appendChild(btn("pl-link","换一种",function(){ckOpen["tpl:"+k]=true;if(host)host();else renderPanel();}));
+      r.appendChild(btn("pl-link","撤掉模板",function(){clearTpl(k);}));w.appendChild(r);
+      if(!ckOpen["tpl:"+k]){var g=goalEl(k);if(g)w.appendChild(g);return w;}}
+    else w.appendChild(el("p","pl-lbl",k===todayKey?"今天怎么过？选一个，自动排好":"这天怎么过？选一个，自动排好"));
+    var dep=el("input");dep.type="time";dep.id="plDep-"+k;dep.value=state.sop&&state.sop.dep||"10:00";dep.setAttribute("aria-label","出门时间");
+    dep.onchange=function(){if(state.sop){state.sop.dep=dep.value;saveSop();}};
+    var bs=el("div","pl-tchips");
+    [["out","出门 · 不化妆"],["glam","出门 · 化妆"],["home","在家"]].forEach(function(p){bs.appendChild(btn("pl-tc pl-tplb"+(t===p[0]?" pl-on":""),p[1],function(){delete ckOpen["tpl:"+k];applyTpl(k,p[0],dep.value);}));});
+    w.appendChild(bs);var dr=el("div","pl-tpldep");dr.appendChild(el("span","note","出门时间（出门才用）"));dr.appendChild(dep);w.appendChild(dr);
+    return w;}
+  function outStats(a,b){var E=window.__expenses,n=0,tot=0;for(var k=a;k<=b;k=addD(k,1)){var t=dayType(k);if(t==="out"||t==="glam"){n++;if(E)tot+=E.day(k);}}
+    return {n:n,total:tot,avg:n?tot/n:0};}
+  window.__dayType=dayType;
+  window.__sop={type:dayType,apply:function(k,t,d){applyTpl(k,t,d);},clear:clearTpl,homeGoal:homeGoal,outStats:outStats,
+    chooser:function(k,host){return chooser(k,host);},goal:goalEl,
+    checks:function(k,id,host){var it=(state.days[k]||[]).filter(function(i){return i.id===id;})[0];return it&&it.check?ckToggle(k,it,host,false):null;},
+    cands:choreCands,prep:ensurePrep,state:function(){return state.sop;}};
+
+  ensurePrep();
   // ---- storage: claude.ai account when opened as an artifact, otherwise this browser ----
   if(!(window.claude&&window.claude.use)){setStatus("内容保存在这个浏览器里");return;}
   Promise.all([window.claude.use("db"),window.claude.use("user")]).then(function(r){
@@ -898,10 +1034,10 @@
           Object.keys(state.days).forEach(function(k){if(state.days[k].length)write("day-"+k,{date:k,items:state.days[k]});});
           if(state.shortcuts)saveShorts();if(state.memos.length)saveMemos();if(state.lines)saveLines();planReady();return;}
         if(!snap.metadata.fromCache)first=false;
-        var days={},sc=null,scv=0,mm=[],ln=null;
+        var days={},sc=null,scv=0,mm=[],ln=null,sp=null;
         snap.docs.forEach(function(d){var b=d.data();if(!b)return;b=JSON.parse(JSON.stringify(b));
-          if(d.id==="shortcuts"){sc=b.list||null;scv=b.v||0;}else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
-        state.days=days;state.shortcuts=sc;state.shortV=scv;state.memos=mm;state.lines=ln;if(!snap.metadata.fromCache)tidyShorts();cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
+          if(d.id==="shortcuts"){sc=b.list||null;scv=b.v||0;}else if(d.id==="memos")mm=b.list||[];else if(d.id==="lines")ln=b.list?b:null;else if(d.id==="sop")sp=b.prep?b:null;else if(b.date&&b.items)days[b.date]=b.items;});
+        state.days=days;state.shortcuts=sc;state.shortV=scv;state.memos=mm;state.lines=ln;state.sop=sp||{prep:{}};if(!snap.metadata.fromCache)tidyShorts();cacheLocal();renderCal();renderPanel();renderMemos();linesChanged();if(!snap.metadata.fromCache&&!plReady)planReady();if(!snap.metadata.fromCache&&!reAimed){reAimed=true;if(!userMoved&&!$("plan").hidden)scrollToToday(false);}
       },function(){clearTimeout(timer);setStatus("同步中断，内容先保存在这个浏览器里");col=null;planReady();});
     });
   }).catch(function(){setStatus("内容保存在这个浏览器里");planReady();});

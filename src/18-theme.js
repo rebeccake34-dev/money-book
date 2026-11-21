@@ -18,8 +18,12 @@
     const dark=`--accent:${c(h,Math.min(sa,75),66)};--accent-soft:${c(h,35,18)};--bg:${c(h,22,7.5)};--paper:${c(h,18,12.5)};--ink:${c(h,20,92)};--muted:${c(h,10,66)};--line:${c(h,15,21)};--accent-deep:${c(h,Math.min(sa,55),17)};--sh:rgba(0,0,0,.55);--hi:hsl(${h} 40% 90% / .06);--trough:${c(h,22,5.5)};--th:${h};--gold:hsl(38 62% 64%);--gold-soft:hsl(38 40% 16%);--bad:hsl(8 68% 70%);--bad-soft:hsl(8 34% 17%);--calm:${c(h+38,50,76)};--calm-soft:${c(h+38,28,19)};--cy-p:hsl(346 62% 72%);--cy-ps:hsl(346 32% 19%);--cy-f:${c(h+32,50,76)};--cy-fs:${c(h+32,28,20)};--cy-o:${c(h+58,50,74)};--cy-g:${c(h-36,42,66)};--cy-gs:${c(h-36,26,17)};--cy-l:hsl(38 58% 64%);--cy-ls:hsl(38 38% 16%);--bgbase:${c(h,24,7)};--glass:hsl(${h} 22% 16% / .52);--glass-strong:hsl(${h} 22% 13% / .82);--glass-2:hsl(${h} 25% 26% / .38);--glass-in:hsl(${h} 25% 8% / .45);--glass-bar:hsl(${h} 22% 9% / .6);--glass-bd:rgba(255,255,255,.12);--glass-edge:rgba(0,0,0,.35);--glass-hi:rgba(255,255,255,.16);--glass-sheen:rgba(255,255,255,.07);--orb1:hsl(${h} 70% 42% / .45);--orb2:hsl(${h+45} 60% 38% / .36);--orb3:hsl(${h-55} 55% 36% / .3);`;
     let st=document.getElementById("themeStyle");
     if(!st){st=document.createElement("style");st.id="themeStyle";document.body.appendChild(st)}
-    st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`;
-    const m=document.getElementById("metaTheme");if(m)m.content=c(h,Math.min(s,45),95);
+    // 毛玻璃：文字全白，玻璃是 15% 透明白；背景渐变跟系统深浅走
+    const fz=`--ink:#fff;--muted:rgba(255,255,255,.8);--line:rgba(255,255,255,.26);--paper:rgba(255,255,255,.15);--bg:rgba(255,255,255,.08);--trough:rgba(255,255,255,.2);--accent:${c(h,100,86)};--accent-soft:rgba(255,255,255,.18);--accent-deep:${c(h,60,26)};--sh:rgba(15,25,60,.18);--hi:rgba(255,255,255,.3);--glass:rgba(255,255,255,.15);--glass-strong:rgba(255,255,255,.2);--glass-2:rgba(255,255,255,.12);--glass-in:rgba(255,255,255,.16);--glass-bar:rgba(255,255,255,.15);--glass-bd:rgba(255,255,255,.32);--glass-edge:transparent;--glass-hi:rgba(255,255,255,.35);--glass-sheen:rgba(255,255,255,0);`;
+    const fzL=`--fz1:${c(h,72,46)};--fz2:${c(h+40,62,50)};--fz3:${c(h-50,66,52)};--bgbase:${c(h,72,46)};--orb1:hsl(${h+25} 95% 70% / .6);--orb2:hsl(${h-60} 90% 72% / .5);--orb3:hsl(${h+70} 85% 68% / .45);`;
+    const fzD=`--fz1:${c(h,55,18)};--fz2:${c(h+40,45,22)};--fz3:${c(h-50,50,20)};--bgbase:${c(h,55,18)};--orb1:hsl(${h+25} 80% 45% / .55);--orb2:hsl(${h-60} 75% 45% / .45);--orb3:hsl(${h+70} 70% 42% / .4);`;
+    st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}:root[data-look="frost"]{${dark}${fz}${fzL}}@media (prefers-color-scheme:dark){:root[data-look="frost"]{${fzD}}}`;
+    const m=document.getElementById("metaTheme");if(m)m.content=document.documentElement.dataset.look==="frost"?c(h,72,46):c(h,Math.min(s,45),95);
     document.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.c.toLowerCase()===hex.toLowerCase())));
     const ci=document.getElementById("customColor");if(ci)ci.value=hex;
   }
@@ -28,5 +32,13 @@
   if(box)PRESETS.forEach(([name,hex])=>{const b=document.createElement("button");b.type="button";b.className="sw";b.dataset.c=hex;b.style.background=hex;b.title=name;b.setAttribute("aria-label",name);b.onclick=()=>choose(hex);box.appendChild(b)});
   const ci=document.getElementById("customColor");
   if(ci)ci.addEventListener("input",e=>choose(e.target.value));
-  apply(get());
+  // 界面风格：液态玻璃（原来的）/ 毛玻璃，存在这台设备上
+  const LK="ui-look";
+  function look(){try{return localStorage.getItem(LK)==="frost"?"frost":"liquid"}catch(e){return "liquid"}}
+  function setLook(v){const r=document.documentElement;
+    if(v==="frost"){r.dataset.look="frost";r.dataset.theme="dark"}else{delete r.dataset.look;r.removeAttribute("data-theme")}
+    document.querySelectorAll("#lookRow button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.look===v)));apply(get())}
+  document.querySelectorAll("#lookRow button").forEach(b=>b.onclick=()=>{try{localStorage.setItem(LK,b.dataset.look)}catch(e){}setLook(b.dataset.look)});
+  window.__look={get:look,set:v=>{try{localStorage.setItem(LK,v)}catch(e){}setLook(v)}};
+  setLook(look());
 })();

@@ -47,6 +47,7 @@
       if(r.exTotal&&r.exDone>=r.exTotal)f+=50;if(r.cardio)f+=30;if(tg.water&&r.water>=tg.water)f+=10;if(tg.pro&&r.pro>=tg.pro)f+=10;add("运动",f)}}catch(e){}}
     if(E&&E.day(k)>0)add("记账",10);
     if(window.__mood&&window.__mood.get(k))add("心情",5);
+    try{var HG=window.__sop&&window.__sop.homeGoal(k);if(HG&&HG.ok)add("在家达标",20)}catch(e){}
     var tot=parts.reduce(function(s,p){return s+p[1]},0);
     return {k:k,xp:tot,parts:parts,work:P.work,target:P.work?TGT.work:TGT.rest}}
   // 一周结束后的结算：主线达标、预算没超、转入储蓄

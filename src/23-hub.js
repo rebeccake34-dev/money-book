@@ -62,7 +62,9 @@
     if(E){var x=E.week(ws);
       if(x.over.length)out.push({t:"开支超预算："+x.over.map(function(o){return "「"+o[0]+"」超 "+E.money(o[1])}).join("、"),k:"bad"});
       else if(x.totalBudget&&x.total>0)out.push({t:"有预算的几类都没超：花了 "+E.money(x.used)+"，预算 "+E.money(x.totalBudget),k:"good"});
-      if(x.total>0&&x.top)out.push({t:"开支共 "+E.money(x.total)+"，最多的是「"+x.top[0]+"」"+E.money(x.top[1]),k:""});}
+      if(x.total>0&&x.top)out.push({t:"开支共 "+E.money(x.total)+"，最多的是「"+x.top[0]+"」"+E.money(x.top[1]),k:""});
+      if(window.__sop){var we=L.addDays(ws,6),tk0=tkey();if(we>tk0)we=tk0;var os=window.__sop.outStats(ws,we);if(os.n)out.push({t:"出门玩 "+os.n+" 次，共花 "+E.money(os.total)+"，平均每次 "+E.money(os.avg),k:""});
+        if(cur){var ms=window.__sop.outStats(tk0.slice(0,8)+"01",tk0);if(ms.n)out.push({t:"本月出门玩 "+ms.n+" 次，平均每次花 "+E.money(ms.avg),k:""})}}}
     if(cur&&window.__savings){var s=window.__savings.stats();
       if(s.started&&s.goal&&s.bal<s.goal){
         if(s.weekIn>0)out.push({t:"本周已存 "+s.money(s.weekIn)+(s.wks?"，按现在的速度 "+s.eta+" 存够":""),k:"good"});
@@ -81,6 +83,7 @@
     if(E){var x=E.month(y,m),pd=new Date(y,m-1,1),px=E.month(pd.getFullYear(),pd.getMonth());
       var pt=cur?E.range(pk+"-01",pk+"-"+pad(Math.min(dd,pdays))):px.total;if(x.total>0){var d=x.total-pt;
         out.push({t:"开支 "+E.money(x.total)+(x.byCat[0]?"，最多的是「"+x.byCat[0][0]+"」"+E.money(x.byCat[0][1]):"")+(pt>0?"，比"+cmp+(d>=0?"多花 ":"少花 ")+E.money(Math.abs(d)):""),k:pt>0?(d>0?"bad":"good"):""});
+        if(window.__sop){var mb=y+"-"+pad(m+1),me=mb+"-"+pad(new Date(y,m+1,0).getDate()),tk1=tkey();var os2=window.__sop.outStats(mb+"-01",me<tk1?me:tk1);if(os2.n)out.push({t:"出门玩 "+os2.n+" 次，共花 "+E.money(os2.total)+"，平均每次 "+E.money(os2.avg),k:""})}
         if(x.budget>0)out.push(x.total>x.budget?{t:"超出每月预算 "+E.money(x.total-x.budget),k:"bad"}:{t:"在每月预算内，"+(cur?"还剩 ":"剩下 ")+E.money(x.budget-x.total),k:"good"})}}
     if(window.__savings){var mi=window.__savings.monthIn(y+"-"+pad(m+1));var pmi=window.__savings.monthIn(pk),mny=window.__savings.stats().money;
       if(mi||pmi)out.push({t:(mi>=0?"存入储蓄 ":"储蓄净取出 ")+mny(Math.abs(mi))+(pmi?"（"+(cur?"上月全月 ":"前一个月 ")+mny(pmi)+"）":""),k:mi>0?"good":mi<0?"bad":""})}
@@ -152,9 +155,12 @@
       head(box,"今天的计划",items.length?pd+"/"+items.length+" 项完成":"还没有安排",function(){window.__planSelect&&window.__planSelect(t)},items.length?"安排 ›":"去安排 ›");
       if(mc.over||mc.today){var ma=el("div","td-row");ma.appendChild(el("span","td-v td-alert",(mc.over?"过期备忘 "+mc.over+" 项":"")+(mc.over&&mc.today?" · ":"")+(mc.today?"今天到期 "+mc.today+" 项":"")));
         ma.appendChild(btn("td-btn","看备忘",function(){go("plan","plMemo")},"tdMemo"));box.appendChild(ma)}
+      if(window.__sop){var dty=window.__sop.type(t),wkd=window.__workOn&&window.__workOn(t).length;
+        if(!dty&&!wkd)box.appendChild(window.__sop.chooser(t,render));else if(dty){box.appendChild(window.__sop.chooser(t,render))}}
       if(items.length){var pl=el("div","td-plist"),show=planAll?items:items.slice(0,8);
         show.forEach(function(i){var l=el("label","td-plan"+(i.done?" done":"")),c=el("input");c.type="checkbox";c.id="tdP-"+i.id;c.className="td-keep";c.checked=i.done;
-          c.onchange=function(){window.__planToggle(i.id,c.checked)};l.appendChild(c);l.appendChild(el("span","t",i.start||"—"));l.appendChild(el("span","n",i.label));pl.appendChild(l)});
+          c.onchange=function(){window.__planToggle(i.id,c.checked)};l.appendChild(c);l.appendChild(el("span","t",i.start||"—"));l.appendChild(el("span","n",i.label));pl.appendChild(l);
+          if(i.check&&window.__sop){var ckw=window.__sop.checks(t,i.id,render);if(ckw)pl.appendChild(ckw)}});
         box.appendChild(pl);
         if(items.length>8)box.appendChild(btn("td-btn ghost",planAll?"收起":"还有 "+(items.length-8)+" 项",function(){planAll=!planAll;render()},"tdPlanMore"))}}
     // 生理期

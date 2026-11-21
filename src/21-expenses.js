@@ -120,7 +120,7 @@
     const keys=Object.keys(days).sort().reverse(),shown=showAll?keys:keys.slice(0,7);
     const dv=el("div","exp-days");
     if(!keys.length)dv.appendChild(el("p","note","还没有记录。选一个分类，填金额，点「记一笔」。在计划里给「购物 / 采购」写上金额并打勾，也会自动记进来。"));
-    shown.forEach(k=>{const d=parse(k),g=el("div","exp-day"),h4=el("h4");h4.appendChild(el("span",null,(d.getMonth()+1)+"月"+d.getDate()+"日 "+WD[d.getDay()]+(k===tk?" · 今天":"")));
+    shown.forEach(k=>{const d=parse(k),g=el("div","exp-day"),h4=el("h4");const hs=el("span",null,(d.getMonth()+1)+"月"+d.getDate()+"日 "+WD[d.getDay()]+(k===tk?" · 今天":""));const dty=window.__dayType&&window.__dayType(k);if(dty==="out"||dty==="glam")hs.appendChild(el("span","exp-out","出门玩"));h4.appendChild(hs);
       h4.appendChild(el("b",null,money(days[k].reduce((s,x)=>s+x.amt,0))));g.appendChild(h4);
       days[k].forEach(x=>{const r=el("div","exp-it");const c=el("span","c",x.cat);c.style.setProperty("--h",hueOf(x.cat));r.appendChild(c);
         const n=el("span","n",x.note||"—");if(x.src)n.appendChild(el("span","src"," · 来自计划"));r.appendChild(n);

@@ -39,14 +39,15 @@
   function pick(k){sel=k;noteOpen=!!S.days[k];clearArm=false;render();var c=$("td-mood");if(c&&c.scrollIntoView)c.scrollIntoView({block:"nearest",behavior:"smooth"})}
   function avg(a){return a.length?a.reduce(function(s,x){return s+x},0)/a.length:null}
   // 记满 5 天后：运动日 vs 不运动日、上班日 vs 休息日（差 0.5 以上才说）
-  function insights(){var out=[],t=tkey(),C=window.__cut,fit=[],nofit=[],wk=[],off=[];
+  function insights(){var out=[],t=tkey(),C=window.__cut,fit=[],nofit=[],wk=[],off=[],go=[],home=[];
     for(var i=0;i<30;i++){var k=addD(t,-i),d=S.days[k];if(!d)continue;
       var r=null;try{r=C&&C.record(k)}catch(e){}var tr=!!(r&&((r.exTotal&&r.exDone>=r.exTotal)||r.cardio));(tr?fit:nofit).push(d.v);
-      var P=window.__planXp?window.__planXp(k):null;if(P)(P.work?wk:off).push(d.v)}
+      var P=window.__planXp?window.__planXp(k):null;if(P)(P.work?wk:off).push(d.v);var dt=window.__dayType&&window.__dayType(k);if(dt==="home")home.push(d.v);else if(dt)go.push(d.v)}
     if(fit.length+nofit.length<5)return out;
     function f(n){return n.toFixed(1)}
     if(fit.length>=2&&nofit.length>=2){var a=avg(fit),b=avg(nofit);if(Math.abs(a-b)>=0.5)out.push((a>b?"运动的日子心情更好":"运动的日子心情反而低一些")+"：平均 "+f(a)+" 对 "+f(b))}
     if(wk.length>=2&&off.length>=2){var x=avg(wk),y=avg(off);if(Math.abs(x-y)>=0.5)out.push((x<y?"上班日心情低一些":"上班日心情更好")+"：平均 "+f(x)+" 对 "+f(y))}
+    if(go.length>=2&&home.length>=2){var o1=avg(go),h1=avg(home);if(Math.abs(o1-h1)>=0.5)out.push((o1>h1?"出门玩的日子心情更好":"在家的日子心情更好")+"：平均 "+f(Math.max(o1,h1))+" 对 "+f(Math.min(o1,h1)))}
     var tc={};Object.keys(S.days).forEach(function(k){if(k<addD(t,-29))return;var d=S.days[k];(d.tags||[]).forEach(function(g){var o=tc[g]||(tc[g]={n:0,s:0});o.n++;o.s+=d.v})});
     var low=Object.keys(tc).filter(function(g){return tc[g].n>=3&&tc[g].s/tc[g].n<=2.5}).sort(function(a,b){return tc[a].s/tc[a].n-tc[b].s/tc[b].n})[0];
     if(low)out.push("「"+low+"」常跟低落的日子一起出现（"+tc[low].n+" 次）");
