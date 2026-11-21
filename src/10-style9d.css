@@ -1,0 +1,26 @@
+/* ---- 毛玻璃（glassmorphism，第二版）：设置 › 主题颜色 › 界面风格。<html data-look="frost">
+   第一版白字 + 深色彩色渐变对比太强。现在：浅色是淡雾色底 + 柔和光斑，字是深石板色；深色是低饱和暗灰蓝底，字是浅灰。
+   玻璃面：12px 高斯模糊 + 15% 透明白 + 1px 半透明白边（边缘反光）。颜色变量在 18-theme.js 的 fz / fzD。 */
+html[data-look="frost"]{--gblur:blur(12px);--gblur-s:blur(12px);
+  background:linear-gradient(160deg,var(--fz1) 0%,var(--fz2) 55%,var(--fz3) 100%) fixed;background-color:var(--fz1)}
+html[data-look="frost"] body{background:transparent;color:var(--ink)}
+html[data-look="frost"] body::before{opacity:1}
+html[data-look="frost"] :is(.card,.td-card,#cut .panel,.pl-memo,.pl-panel,.ov-row,.tabs,.sheet-box,.pl-ym,.ledger,.td-hero,.toc,.pl-mnav){
+  background:var(--glass)!important;border:1px solid var(--glass-bd)!important;color:var(--ink);
+  -webkit-backdrop-filter:blur(12px)!important;backdrop-filter:blur(12px)!important;
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 8px 28px -12px var(--sh)!important}
+html[data-look="frost"] :is(.pl-panel,.sheet-box){background:color-mix(in srgb,var(--bg) 70%,transparent)!important}
+html[data-look="frost"] :is(.ledger,.td-hero)::before,html[data-look="frost"] :is(.ledger,.td-hero)::after{display:none}
+html[data-look="frost"] :is(.ledger,.td-hero) *{color:inherit}
+html[data-look="frost"] :is(.ledger,.td-hero) small{color:var(--muted)}
+html[data-look="frost"] :is(.ledger,.td-hero) b{color:var(--accent)}
+html[data-look="frost"] .ledger .save-row{background:var(--glass-2);border:1px solid var(--glass-bd);box-shadow:none}
+/* 选中、主按钮：不再用实心主题色 + 白字，改成更亮一层的玻璃 + 主题色字 */
+html[data-look="frost"] :is(.btn.primary,#cut button.primary,.ord-btn.primary,.save-row .btn,.pl-tc.pl-on,.chip[aria-pressed="true"],.seg button[aria-pressed="true"],#cut .chip[aria-pressed="true"],#cut .wdseg button[aria-pressed="true"],.md-tag.on,.look-row button[aria-pressed="true"],.pl-view .pl-btn[aria-pressed=true],.tabs button[aria-selected="true"],.pl-pbtn[aria-selected=true]){
+  background:rgba(255,255,255,.5)!important;color:var(--accent)!important;border:1px solid var(--glass-bd)!important;font-weight:600;
+  box-shadow:inset 0 1px 0 var(--glass-hi),0 2px 8px -4px var(--sh)!important}
+@media (prefers-color-scheme:dark){html[data-look="frost"] :is(.btn.primary,#cut button.primary,.ord-btn.primary,.save-row .btn,.pl-tc.pl-on,.chip[aria-pressed="true"],.seg button[aria-pressed="true"],#cut .chip[aria-pressed="true"],#cut .wdseg button[aria-pressed="true"],.md-tag.on,.look-row button[aria-pressed="true"],.pl-view .pl-btn[aria-pressed=true],.tabs button[aria-selected="true"],.pl-pbtn[aria-selected=true]){background:rgba(255,255,255,.12)!important}}
+html[data-look="frost"] :is(.toast,.pl-toast){background:color-mix(in srgb,var(--bg) 75%,transparent)!important;color:var(--ink)!important;border:1px solid var(--glass-bd);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+html[data-look="frost"] input[type=checkbox],html[data-look="frost"] input[type=radio]{accent-color:var(--accent)}
+html[data-look="frost"] .pl-tplw{background:var(--glass-2);border:1px solid var(--glass-bd)}
+html[data-look="frost"] ::placeholder{color:var(--muted)}

@@ -20,8 +20,16 @@
     if(!st){st=document.createElement("style");st.id="themeStyle";document.body.appendChild(st)}
     // 新拟物 · 诧寂：米灰平面 + 一亮一暗两道柔和阴影；字是深灰和墨蓝（墨蓝跟主题色走，饱和度压低）
     const nu=`--bg:hsl(36 22% 89%);--paper:hsl(36 22% 89%);--bgbase:hsl(36 22% 89%);--ink:hsl(215 14% 30%);--muted:hsl(30 8% 50%);--line:hsl(32 16% 80%);--accent:${c(h,30,36)};--accent-soft:hsl(36 22% 86%);--accent-deep:${c(h,28,28)};--trough:hsl(36 18% 85%);--sh:hsl(30 20% 60% / .35);--hi:hsl(40 40% 98%);--gold:hsl(36 38% 40%);--gold-soft:hsl(38 32% 86%);--bad:hsl(14 38% 46%);--bad-soft:hsl(14 32% 87%);--calm:hsl(95 16% 38%);--calm-soft:hsl(95 16% 85%);--cy-p:hsl(350 28% 52%);--cy-ps:hsl(350 26% 87%);--cy-f:hsl(160 16% 40%);--cy-fs:hsl(160 14% 85%);--cy-o:hsl(40 30% 42%);--cy-g:hsl(200 18% 42%);--cy-gs:hsl(200 16% 86%);--cy-l:hsl(30 28% 44%);--cy-ls:hsl(30 26% 86%);--nu-d:hsl(32 18% 70% / .75);--nu-l:hsl(40 45% 98% / .95);--glass:var(--bg);--glass-strong:var(--bg);--glass-2:var(--bg);--glass-in:var(--bg);--glass-bar:var(--bg);--glass-bd:transparent;--glass-edge:transparent;--glass-hi:transparent;--glass-sheen:transparent;`;
-    st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}:root[data-look="neu"]{${light}${nu}}`;
-    const m=document.getElementById("metaTheme");if(m)m.content=document.documentElement.dataset.look==="neu"?"hsl(36 22% 89%)":c(h,Math.min(s,45),95);
+    // 新拟物深色：石墨灰平面，字是浅灰和雾蓝，不用纯白
+    const nuD=`--bg:hsl(220 6% 23%);--paper:hsl(220 6% 23%);--bgbase:hsl(220 6% 23%);--ink:hsl(210 12% 84%);--muted:hsl(215 7% 62%);--line:hsl(220 6% 30%);--accent:${c(h,32,72)};--accent-soft:hsl(220 6% 26%);--accent-deep:${c(h,25,40)};--trough:hsl(220 6% 20%);--sh:rgba(0,0,0,.35);--hi:hsl(220 8% 32%);--gold:hsl(38 34% 66%);--gold-soft:hsl(38 14% 27%);--bad:hsl(12 40% 68%);--bad-soft:hsl(12 16% 27%);--calm:hsl(95 18% 66%);--calm-soft:hsl(95 10% 27%);--cy-p:hsl(350 32% 70%);--cy-ps:hsl(350 14% 28%);--cy-f:hsl(160 18% 64%);--cy-fs:hsl(160 10% 27%);--cy-o:hsl(40 30% 66%);--cy-g:hsl(200 20% 66%);--cy-gs:hsl(200 10% 27%);--cy-l:hsl(30 28% 66%);--cy-ls:hsl(30 12% 27%);--nu-d:hsl(220 10% 13% / .85);--nu-l:hsl(220 6% 32% / .7);--glass:var(--bg);--glass-strong:var(--bg);--glass-2:var(--bg);--glass-in:var(--bg);--glass-bar:var(--bg);--glass-bd:transparent;--glass-edge:transparent;--glass-hi:transparent;--glass-sheen:transparent;`;
+    // 毛玻璃（第二版，降低对比）：浅色是淡淡的主题色雾面底 + 柔和光斑，玻璃 15% 透明白 + 12px 模糊 + 1px 半透明白边，字是深石板色；
+    // 深色是低饱和的暗灰蓝底，字是浅灰，不用纯白纯黑
+    const fz=`--glass:rgba(255,255,255,.15);--glass-strong:rgba(255,255,255,.15);--glass-2:rgba(255,255,255,.18);--glass-in:rgba(255,255,255,.22);--glass-bar:rgba(255,255,255,.15);--glass-bd:rgba(255,255,255,.5);--glass-edge:transparent;--glass-hi:rgba(255,255,255,.45);--glass-sheen:rgba(255,255,255,0);--paper:rgba(255,255,255,.3);--trough:rgba(255,255,255,.3);--line:hsl(${h} 18% 78% / .7);--ink:${c(h,22,24)};--muted:${c(h,10,44)};--accent:${c(h,32,40)};--accent-soft:rgba(255,255,255,.35);--accent-deep:${c(h,30,32)};--sh:hsl(${h} 30% 40% / .12);--bg:${c(h,26,90)};--bgbase:${c(h,26,90)};--fz1:${c(h,32,92)};--fz2:${c(h+35,26,90)};--fz3:${c(h-40,28,91)};--orb1:hsl(${h} 55% 78% / .55);--orb2:hsl(${h+50} 45% 82% / .5);--orb3:hsl(${h-50} 45% 82% / .45);`;
+    const fzD=`--glass:rgba(255,255,255,.07);--glass-strong:rgba(255,255,255,.07);--glass-2:rgba(255,255,255,.08);--glass-in:rgba(255,255,255,.08);--glass-bar:rgba(255,255,255,.07);--glass-bd:rgba(255,255,255,.14);--glass-edge:transparent;--glass-hi:rgba(255,255,255,.1);--glass-sheen:rgba(255,255,255,0);--paper:rgba(255,255,255,.07);--trough:rgba(255,255,255,.08);--line:rgba(255,255,255,.1);--ink:hsl(${h} 12% 84%);--muted:hsl(${h} 8% 62%);--accent:${c(h,34,72)};--accent-soft:rgba(255,255,255,.08);--accent-deep:${c(h,25,32)};--sh:rgba(0,0,0,.25);--bg:${c(h,14,17)};--bgbase:${c(h,14,17)};--fz1:${c(h,16,17)};--fz2:${c(h+35,12,19)};--fz3:${c(h-40,14,18)};--orb1:hsl(${h} 30% 34% / .45);--orb2:hsl(${h+50} 24% 32% / .4);--orb3:hsl(${h-50} 24% 30% / .35);`;
+    st.textContent=`:root{${light}}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){${dark}}}:root[data-theme="dark"]{${dark}}`
+      +`:root[data-look="neu"]{${light}${nu}}@media (prefers-color-scheme:dark){:root[data-look="neu"]{${dark}${nuD}}}`
+      +`:root[data-look="frost"]{${light}${fz}}@media (prefers-color-scheme:dark){:root[data-look="frost"]{${dark}${fzD}}}`;
+    const m=document.getElementById("metaTheme");if(m){const lk=document.documentElement.dataset.look,dk=matchMedia("(prefers-color-scheme:dark)").matches;m.content=lk==="neu"?(dk?"hsl(220 6% 23%)":"hsl(36 22% 89%)"):lk==="frost"?(dk?c(h,14,17):c(h,32,92)):c(h,Math.min(s,45),95)}
     document.querySelectorAll(".sw").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.c.toLowerCase()===hex.toLowerCase())));
     const ci=document.getElementById("customColor");if(ci)ci.value=hex;
   }
@@ -30,13 +38,14 @@
   if(box)PRESETS.forEach(([name,hex])=>{const b=document.createElement("button");b.type="button";b.className="sw";b.dataset.c=hex;b.style.background=hex;b.title=name;b.setAttribute("aria-label",name);b.onclick=()=>choose(hex);box.appendChild(b)});
   const ci=document.getElementById("customColor");
   if(ci)ci.addEventListener("input",e=>choose(e.target.value));
-  // 界面风格：液态玻璃（原来的）/ 新拟物，存在这台设备上（以前选过的「毛玻璃」自动换成新拟物）
+  // 界面风格：液态玻璃（原来的）/ 毛玻璃 / 新拟物，存在这台设备上；三种都跟系统深浅色走
   const LK="ui-look";
-  function look(){try{const v=localStorage.getItem(LK);if(v==="frost"){localStorage.setItem(LK,"neu");return "neu"}return v==="neu"?"neu":"liquid"}catch(e){return "liquid"}}
+  function look(){try{const v=localStorage.getItem(LK);return v==="neu"||v==="frost"?v:"liquid"}catch(e){return "liquid"}}
   function setLook(v){const r=document.documentElement;
-    if(v==="neu"){r.dataset.look="neu";r.dataset.theme="light"}else{delete r.dataset.look;r.removeAttribute("data-theme")}
+    if(v==="neu"||v==="frost")r.dataset.look=v;else delete r.dataset.look;r.removeAttribute("data-theme");
     document.querySelectorAll("#lookRow button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.look===v)));apply(get())}
   document.querySelectorAll("#lookRow button").forEach(b=>b.onclick=()=>{try{localStorage.setItem(LK,b.dataset.look)}catch(e){}setLook(b.dataset.look)});
   window.__look={get:look,set:v=>{try{localStorage.setItem(LK,v)}catch(e){}setLook(v)}};
   setLook(look());
+  try{matchMedia("(prefers-color-scheme:dark)").addEventListener("change",()=>apply(get()))}catch(e){}
 })();

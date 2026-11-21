@@ -27,7 +27,7 @@ html[data-look="neu"] .ledger b,html[data-look="neu"] .td-hero b{color:var(--acc
 html[data-look="neu"] .ledger .save-row{background:var(--bg);border:0;box-shadow:var(--nu-in)}
 
 /* 小块和按键：鼓起，没有边框 */
-html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.cy-nb,.pl-day,.pay-row,.pl-info,.pl-sum,.pl-cd,.md-tag,.ord-btn,.look-row button,.exp-cat,.pl-sbtn,.pl-subs button,.pl-pbtn,.tabs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,#cut button:not(.x):not(.pl-link):not(.primary)){
+html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.cy-nb,.pl-day,.pay-row,.pl-info,.pl-sum,.pl-cd,.md-tag,.ord-btn,.look-row button,.exp-cat,.pl-sbtn,.pl-subs button,.pl-pbtn,.tabs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,:where(#cut button:not(.x):not(.pl-link):not(.primary))){
   background:var(--bg)!important;border:0!important;box-shadow:var(--nu-sm)!important;color:var(--ink)}
 html[data-look="neu"] .td-chipw .td-chip{background:transparent!important;box-shadow:none!important}
 html[data-look="neu"] :is(.seg,.cy-seg,.wdseg,.goalseg,.pl-pane){background:var(--bg)!important;border:0!important;box-shadow:var(--nu-in-s)!important}
@@ -36,7 +36,7 @@ html[data-look="neu"] :is(.seg,.cy-seg,.wdseg,.goalseg,.pl-pane) button:not([ari
 html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.md-tag,.look-row button,.pl-sbtn,.pl-subs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,.tabs button,.pl-pbtn,.exp-cat):is([aria-pressed="true"],[aria-selected="true"],[aria-expanded="true"],.pl-on,.on,:active){
   box-shadow:var(--nu-in)!important;color:var(--accent)!important;background:var(--bg)!important}
 html[data-look="neu"] .td-chipw.bad.on{color:var(--bad)!important}
-html[data-look="neu"] :is(.btn.primary,#cut button.primary,.ord-btn.primary,.save-row .btn,.cy-btn,.todayfab,.totop){
+html[data-look="neu"] :is(.btn.primary,:where(#cut button.primary),.ord-btn.primary,.save-row .btn,.cy-btn,.todayfab,.totop){
   background:var(--bg)!important;color:var(--accent)!important;border:0!important;box-shadow:var(--nu-sm)!important;font-weight:600}
 html[data-look="neu"] .sw{border:0!important;box-shadow:var(--nu-sm),inset 0 0 0 4px var(--bg)!important}
 html[data-look="neu"] .sw[aria-pressed="true"]{box-shadow:var(--nu-in),inset 0 0 0 4px var(--bg)!important}
@@ -57,3 +57,13 @@ html[data-look="neu"] .pl-tplw{background:var(--bg);box-shadow:var(--nu-in-s)}
 html[data-look="neu"] .pl-goalr span{border:0;box-shadow:var(--nu-sm)}
 html[data-look="neu"] .pl-goalr span.on{box-shadow:var(--nu-in-s);color:var(--accent)}
 html[data-look="neu"] .exp-out{background:var(--bg);box-shadow:var(--nu-in-s)}
+
+/* 按下反馈：按键先轻轻沉下去（凹陷），松手再慢慢鼓回来 */
+html[data-look="neu"] :is(.tile,.gtoggle,.td-chipw,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.cy-nb,.pl-day,.pay-row,.md-tag,.ord-btn,.look-row button,.exp-cat,.pl-sbtn,.pl-subs button,.pl-pbtn,.tabs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,:where(#cut button),.btn.primary,.cy-btn,.todayfab,.totop,.sw,.ov-row){
+  transition:box-shadow .32s cubic-bezier(.2,.8,.2,1),transform .32s cubic-bezier(.2,.8,.2,1),color .2s ease!important}
+html[data-look="neu"] :is(.tile,.gtoggle,.td-fitem,.chip,.cy-chip,.pl-tc,.btn,.td-btn,.pl-btn,.toc button,.cy-nb,.pl-day,.pay-row,.md-tag,.ord-btn,.look-row button,.exp-cat,.pl-sbtn,.pl-subs button,.pl-pbtn,.tabs button,.seg button,.cy-seg button,.wdseg button,.goalseg button,:where(#cut button),.btn.primary,.cy-btn,.todayfab,.totop,.sw,.ov-row):active:not(:disabled),
+html[data-look="neu"] .td-chipw:has(.td-chip:active){
+  transform:scale(.985)!important;box-shadow:inset 4px 4px 9px var(--nu-d),inset -4px -4px 9px var(--nu-l)!important;transition-duration:.1s!important}
+html[data-look="neu"] .td-chipw .td-chip:active{transform:none!important}
+html[data-look="neu"] .sw:active{box-shadow:inset 4px 4px 9px var(--nu-d),inset -4px -4px 9px var(--nu-l),inset 0 0 0 4px var(--bg)!important}
+@media (prefers-reduced-motion:reduce){html[data-look="neu"] *{transition-duration:0s!important}}
