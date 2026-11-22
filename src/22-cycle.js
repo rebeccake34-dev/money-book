@@ -287,7 +287,7 @@
     var f=el("form","cy-form");f.noValidate=true;
     var l1=el("label",null,"开始");var i1=el("input");i1.type="date";i1.max=MD.t;l1.appendChild(i1);
     var l2=el("label",null,"结束");var i2=el("input");i2.type="date";i2.max=MD.t;l2.appendChild(i2);
-    var sb=el("button","cy-btn","补记");sb.type="submit";f.appendChild(l1);f.appendChild(l2);f.appendChild(sb);
+    var sb=el("button","cy-btn ghost","补记");sb.type="submit";f.appendChild(l1);f.appendChild(l2);f.appendChild(sb);
     f.onsubmit=function(ev){ev.preventDefault();var s=i1.value,e=i2.value||i1.value;
       if(!s){toast("先选开始日期");return;}if(e<s){toast("结束日期不能早于开始");return;}if(e>MD.t){toast("不能记以后的日子");return;}if(diff(e,s)>11){toast("经期最多记 12 天");return;}
       var set=daySet(),open=hadOpen();for(var k=s;k<=e;k=add(k,1))set[k]=1;fromSet(set,open);changed();toast("已补记 "+fmtD(s)+" 开始的经期");};

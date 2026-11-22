@@ -35,3 +35,13 @@ html,body{overflow-x:clip}
 .money2>div{background:none;border:0;border-top:1px solid rgba(255,255,255,.28);border-radius:0;padding:10px 0 0}
 .sav-stat,.exp-s,.sav-fast{background:none;box-shadow:none;border-radius:0;border-top:1px solid var(--line);padding:10px 0 0}
 html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow:none}
+/* 输入框：边框用灰字色调，跟底色拉开到看得清（拟物外观靠内阴影，不改） */
+html:not([data-look="neu"]) :is(input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea){border:1px solid color-mix(in srgb,var(--muted) 88%,transparent)}
+html :is(input,select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* 生理期统计、开支记账区：不再是灰底小卡片 */
+.cy-stat{background:none;border-radius:0;border-top:1px solid var(--line);padding:8px 0 0}
+.exp-form{background:none;border-radius:0;border-top:1px solid var(--line);padding:12px 0 0}
+html[data-look="neu"] :is(.cy-stat,.exp-form){box-shadow:none}
+/* 所有金额和统计数字用同一种数字字体；时间、日期、时间轴仍用等宽字 */
+:is(.num,.tile .val,.tile .cnt,.money2 .sub,.sav-big b,.sav-stat b,.sav-row .a,.sav-ticks,.exp-s b,.exp-it .a,.exp-legend b,.exp-day h4 b,.exp-wkv,.cy-stat b,.pay-stat b,.pay-row .net,.pay-row .gr,.pay-detail td.n,.aes-y,.aes-sumbar b,.split b,.gm-streak b,.td-chip b,.td-fitem b,.pl-cd b,#cut .stat b,#cut .burn-list b,#cut ul.burn-tbl b){
+  font-family:var(--numf);font-variant-numeric:tabular-nums lining-nums}

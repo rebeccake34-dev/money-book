@@ -10,7 +10,7 @@
 .fold,#secLedger,#groups,#secRules,#goalBox,#cutSum,#plCalSec,#plYear{scroll-margin-top:calc(60px + env(safe-area-inset-top,0px))}
 .fold>:first-child{cursor:pointer;user-select:none}
 .fold>:first-child::after{content:"收起 ▴";margin-left:auto;font-size:.72rem;font-weight:500;letter-spacing:0;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
-.fold.folded>:first-child::after{content:"展开 ▾";color:var(--accent);border-color:var(--accent)}
+.fold.folded>:first-child::after{content:"展开 ▾"}
 .fold>h2:first-child{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .fold.folded>:first-child{margin-bottom:0!important}
 .fold.folded>:not(:first-child){display:none!important}

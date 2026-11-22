@@ -50,10 +50,9 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
 .fold.mo-shut>:not(:first-child){animation:mo-shut .16s var(--ease-out) forwards}
 
 /* 点开的小折叠（details）：高度跟着弹簧展开（浏览器支持时） */
-@supports (interpolate-size:allow-keywords){
-  :root{interpolate-size:allow-keywords}
-  details::details-content{height:0;overflow:clip;transition:height var(--dur-m) var(--spring),content-visibility var(--dur-m) allow-discrete}
-  details[open]::details-content{height:auto}}
+@keyframes mo-dfade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+details[open]>:not(summary){animation:mo-dfade var(--dur-m) var(--spring)}
+@media (prefers-reduced-motion:reduce){details[open]>:not(summary){animation:none}}
 
 /* 新加的一行：从上方滑进来 */
 @keyframes mo-row{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}

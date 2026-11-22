@@ -544,7 +544,7 @@ function renderCalDay(){
     if(tt)h+=`<p class="cd-line note">有氧 ${recCardio(rec)?"✓":"–"} · 喝水 ${tt.water} ml · 蛋白质 ${tt.pro} g${rec.weight?" · 体重 "+rec.weight+" kg":""}</p>`;
     if(!sc&&!ex.length)h+=`<p class="note">这天没有记录。</p>`;
   }else{
-    h+=`<div class="cd-row"><label for="cdPlan">训练</label><select id="cdPlan">`+[1,2,3,4,5,6,0].map(w=>`<option value="${w}" ${(idx??d.getDay())===w?"selected":""}>${esc(plans()[w].name)}${w===d.getDay()?"（${wkName}默认）":""}</option>`).join("")+`</select>
+    h+=`<div class="cd-row"><label for="cdPlan">训练</label><select id="cdPlan">`+[1,2,3,4,5,6,0].map(w=>`<option value="${w}" ${(idx??d.getDay())===w?"selected":""}>${esc(plans()[w].name)}${w===d.getDay()?`（${wkName}默认）`:""}</option>`).join("")+`</select>
       <input type="time" id="cdTime" value="${esc((rec&&rec.trainAt)||"")}" aria-label="训练时间"><span class="note">时间可不填</span></div>`;
     if(idx!=null&&idx!==d.getDay())h+=`<p class="cd-chg">${k===todayKey?"今天":"这天"}改成了「${esc(p.name)}」，原计划是「${esc((plans()[d.getDay()]||{}).name||"")}」</p>`;
     if(p.ex.length)h+=`<p class="note cd-exs">${p.ex.map((x,j)=>(k===todayKey&&rec&&rec.ex&&rec.ex[j]?"✓ ":"")+esc(x[0])).join(" · ")}</p>`;

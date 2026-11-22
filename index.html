@@ -1,7 +1,7 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
+<!doctype html><html lang="zh-CN"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 </head><body>
-<title>好习惯省钱账本</title>
+<title>好习惯省钱账本</title><meta name="description" content="每天记下省下的钱、花掉的钱和好习惯打卡的个人账本。">
 <meta name="theme-color" content="#1f84cc" id="metaTheme">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -225,7 +225,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 #cut .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
 #cut .stat{display:flex;flex-direction:column;gap:2px;min-width:0}
 #cut .stat b{font-family:var(--f-display);font-size:1.7rem;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
-#cut .stat span{font-size:.75rem;color:var(--muted);letter-spacing:.04em}
+#cut .stat span{font-size:.75rem;color:var(--muted)}
 #cut .bar{height:8px;border-radius:4px;background:var(--line);overflow:hidden}
 #cut .bar i{display:block;height:100%;background:var(--accent);width:0}
 #cut .bar.water i{background:var(--water)}
@@ -378,7 +378,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .fold,#secLedger,#groups,#secRules,#goalBox,#cutSum,#plCalSec,#plYear{scroll-margin-top:calc(60px + env(safe-area-inset-top,0px))}
 .fold>:first-child{cursor:pointer;user-select:none}
 .fold>:first-child::after{content:"收起 ▴";margin-left:auto;font-size:.72rem;font-weight:500;letter-spacing:0;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:1px 8px;white-space:nowrap}
-.fold.folded>:first-child::after{content:"展开 ▾";color:var(--accent);border-color:var(--accent)}
+.fold.folded>:first-child::after{content:"展开 ▾"}
 .fold>h2:first-child{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .fold.folded>:first-child{margin-bottom:0!important}
 .fold.folded>:not(:first-child){display:none!important}
@@ -673,7 +673,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .exp-sum{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .exp-s{background:var(--bg);border-radius:10px;padding:10px 12px;min-width:0}
 .exp-s small{display:block;font-size:.72rem;color:var(--muted)}
-.exp-s b{font-family:var(--mono);font-size:1.1rem;font-variant-numeric:tabular-nums;color:var(--bad)}
+.exp-s b{font-family:var(--mono);font-size:1.1rem;font-variant-numeric:tabular-nums;color:var(--ink)}
 .exp-s span{display:block;font-size:.72rem;color:var(--muted)}
 .exp-budget{display:flex;flex-direction:column;gap:4px;font-size:.8rem;color:var(--muted)}
 .exp-bbar{height:10px;border-radius:5px;background:var(--line);overflow:hidden}
@@ -695,7 +695,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .exp-legend{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:.78rem}
 .exp-legend span{display:inline-flex;align-items:center;gap:5px}
 .exp-legend i{width:9px;height:9px;border-radius:2px;background:hsl(var(--hh) 46% 58%)}
-.exp-legend b{font-family:var(--mono);font-weight:600}
+.exp-legend b{font-family:var(--numf);font-weight:600}
 .exp-days{display:flex;flex-direction:column;gap:10px}
 .exp-day h4{margin:0 0 4px;font-size:.78rem;color:var(--muted);display:flex;justify-content:space-between;font-weight:600}
 .exp-day h4 b{font-family:var(--mono)}
@@ -822,7 +822,7 @@ textarea{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radi
 .td-chipw.on.bad{border-color:var(--bad);background:var(--bad-soft)}
 .td-chip{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:6px;border:0;background:transparent;color:var(--ink);padding:8px 10px;text-align:left;cursor:pointer;font-size:.86rem;line-height:1.3;min-height:46px}
 .td-chip span{min-width:0;overflow-wrap:anywhere}
-.td-chip b{flex:none;font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.td-chip b{flex:none;font-family:var(--numf);font-size:.8rem;color:var(--muted)}
 .td-chipw.on .td-chip b{color:var(--accent)}
 .td-chipw.on.bad .td-chip b{color:var(--bad)}
 .td-undo{flex:none;border:0;border-left:1px solid var(--line);background:transparent;color:var(--muted);font-size:.74rem;padding:0 9px;cursor:pointer}
@@ -1346,10 +1346,9 @@ input[type=checkbox]:active{transform:scale(.85);transition-duration:var(--dur-p
 .fold.mo-shut>:not(:first-child){animation:mo-shut .16s var(--ease-out) forwards}
 
 /* 点开的小折叠（details）：高度跟着弹簧展开（浏览器支持时） */
-@supports (interpolate-size:allow-keywords){
-  :root{interpolate-size:allow-keywords}
-  details::details-content{height:0;overflow:clip;transition:height var(--dur-m) var(--spring),content-visibility var(--dur-m) allow-discrete}
-  details[open]::details-content{height:auto}}
+@keyframes mo-dfade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+details[open]>:not(summary){animation:mo-dfade var(--dur-m) var(--spring)}
+@media (prefers-reduced-motion:reduce){details[open]>:not(summary){animation:none}}
 
 /* 新加的一行：从上方滑进来 */
 @keyframes mo-row{from{opacity:0;transform:translateY(-8px) scale(.98)}to{opacity:1;transform:none}}
@@ -1505,7 +1504,17 @@ html,body{overflow-x:clip}
 /* 卡片里不再套小卡片：小格子改成细线分隔 */
 .money2>div{background:none;border:0;border-top:1px solid rgba(255,255,255,.28);border-radius:0;padding:10px 0 0}
 .sav-stat,.exp-s,.sav-fast{background:none;box-shadow:none;border-radius:0;border-top:1px solid var(--line);padding:10px 0 0}
-html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow:none}</style>
+html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow:none}
+/* 输入框：边框用灰字色调，跟底色拉开到看得清（拟物外观靠内阴影，不改） */
+html:not([data-look="neu"]) :is(input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),select,textarea){border:1px solid color-mix(in srgb,var(--muted) 88%,transparent)}
+html :is(input,select,textarea):focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+/* 生理期统计、开支记账区：不再是灰底小卡片 */
+.cy-stat{background:none;border-radius:0;border-top:1px solid var(--line);padding:8px 0 0}
+.exp-form{background:none;border-radius:0;border-top:1px solid var(--line);padding:12px 0 0}
+html[data-look="neu"] :is(.cy-stat,.exp-form){box-shadow:none}
+/* 所有金额和统计数字用同一种数字字体；时间、日期、时间轴仍用等宽字 */
+:is(.num,.tile .val,.tile .cnt,.money2 .sub,.sav-big b,.sav-stat b,.sav-row .a,.sav-ticks,.exp-s b,.exp-it .a,.exp-legend b,.exp-day h4 b,.exp-wkv,.cy-stat b,.pay-stat b,.pay-row .net,.pay-row .gr,.pay-detail td.n,.aes-y,.aes-sumbar b,.split b,.gm-streak b,.td-chip b,.td-fitem b,.pl-cd b,#cut .stat b,#cut .burn-list b,#cut ul.burn-tbl b){
+  font-family:var(--numf);font-variant-numeric:tabular-nums lining-nums}</style>
 <div id="errBar" role="alert" hidden style="position:fixed;left:8px;right:8px;top:calc(8px + env(safe-area-inset-top,0px));z-index:60;background:#b8483c;color:#fff;border-radius:10px;padding:10px 12px;font-size:.8rem;line-height:1.4;box-shadow:0 6px 20px rgba(0,0,0,.25)"></div>
 <script>(function(){
   var VER="11/19-2045",log=[],busy=false;
@@ -1527,7 +1536,7 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
 <div class="wrap">
   <header>
     <h1>好习惯省钱账本</h1>
-    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/22-1008</p>
+    <p class="ver" style="margin:2px 0 0;font-size:.72rem;color:var(--muted)">版本 11/22-1120</p>
     <p class="hsub" id="hSub" hidden></p>
     <p id="hIntro">做了好习惯就点一下，坏习惯也老实记一下。金额按常见价格估算，可以在下面改成你自己的，单位 <span class="cur-label">AUD</span>。</p>
     <div class="cur-row" id="hCur"><div class="seg" role="group" aria-label="货币"><button type="button" id="curAUD">澳元 AUD</button><button type="button" id="curCNY">人民币 ¥</button></div><span class="rate">只改变记录单位，数字不换算。用人民币的话，记得把各习惯的金额改成人民币价格。</span></div>
@@ -1692,7 +1701,7 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
       <button class="primary" type="submit">添加</button>
     </form>
     <div class="row"><button type="button" id="copyYday">复制昨天的饮食</button><span class="note" id="copyNote"></span></div>
-    <details class="sub" id="calcBox"><summary>按克数算热量（蛋白质 4 · 碳水 4 · 脂肪 9 kcal/g）</summary>
+    <details class="sub" id="calcBox"><summary>按克数算热量（蛋白质 4、碳水 4、脂肪 9 kcal/g）</summary>
     <h3>克数 → 热量</h3>
     <div class="calc">
       <div class="field"><label for="cP">蛋白质 (g)</label><input type="number" id="cP" min="0" step="0.1" inputmode="decimal" placeholder="0"><b id="cPk">0 kcal</b></div>
@@ -1762,7 +1771,7 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
   </section>
   <section class="panel" id="cutBody" aria-label="身体变化">
     <h2>身体变化 <small>早上空腹称，每周至少 3 次；围度每周量 1 次</small></h2>
-    <div class="seg tabseg" role="tablist" aria-label="身体变化"><button type="button" role="tab" data-btab="w" aria-selected="true">体重 · 腰围</button><button type="button" role="tab" data-btab="g" aria-selected="false">围度</button><button type="button" role="tab" data-btab="s" aria-selected="false">力量 · 增肌</button></div>
+    <div class="seg tabseg" role="tablist" aria-label="身体变化"><button type="button" role="tab" data-btab="w" aria-selected="true">体重、腰围</button><button type="button" role="tab" data-btab="g" aria-selected="false">围度</button><button type="button" role="tab" data-btab="s" aria-selected="false">力量、增肌</button></div>
     <div data-bpane="w">
 
     <div class="bodygrid">
@@ -1812,7 +1821,7 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
     <h2>健身日历 <small>点任意一天，直接安排或删除那天的健身</small></h2>
     <div class="cal-nav"><button type="button" id="calPrev" aria-label="往前看">‹</button><span id="calRange"></span><button type="button" id="calToday">本周</button><button type="button" id="calNext" aria-label="往后看">›</button></div>
     <div class="cal4" id="week"></div>
-    <div class="cal-legend note"><span><i class="lv lv0"></i>没记录</span><span><i class="lv lv1"></i>1 项</span><span><i class="lv lv2"></i>2 项</span><span><i class="lv lv3"></i>3 项</span><span><i class="lv lv4"></i>4 项全达标</span><span>四项：训练 · 有氧 · 喝水 · 蛋白质</span><span>未来的日子显示安排的训练</span></div>
+    <div class="cal-legend note"><span><i class="lv lv0"></i>没记录</span><span><i class="lv lv1"></i>1 项</span><span><i class="lv lv2"></i>2 项</span><span><i class="lv lv3"></i>3 项</span><span><i class="lv lv4"></i>4 项全达标</span><span>四项：训练、有氧、喝水、蛋白质</span><span>未来的日子显示安排的训练</span></div>
     <div class="cal-day" id="calDay" aria-live="polite"></div>
     <label class="note cal-sync"><input type="checkbox" id="calSync">同步到日常计划（打开后，这里安排的健身会自动出现在日常计划里，改动和删除也会同步）</label>
   </section>
@@ -1859,7 +1868,7 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
     </details>
 
   <div class="sync" id="sync">正在连接…</div>
-  <div class="sync">页面版本 11/22-1008</div>
+  <div class="sync">页面版本 11/22-1120</div>
   </div>
 
   <div id="plan" class="pl-dayfirst pl-memohide" hidden>
@@ -1926,11 +1935,11 @@ html[data-look="neu"] :is(.sav-stat,.exp-s,.sav-fast){background:none;box-shadow
       <label class="full">放在哪个板块<select id="newGrp"></select></label>
       <label>类型
         <select id="newKind">
-          <option value="cash">好习惯 · 当场省下钱</option>
-          <option value="future">好习惯 · 以后少花钱（估算）</option>
-          <option value="count">好习惯 · 只记次数</option>
-          <option value="bad-cash">坏习惯 · 当场多花钱</option>
-          <option value="bad-future">坏习惯 · 以后多花钱（估算）</option>
+          <option value="cash">好习惯：当场省下钱</option>
+          <option value="future">好习惯：以后少花钱（估算）</option>
+          <option value="count">好习惯：只记次数</option>
+          <option value="bad-cash">坏习惯：当场多花钱</option>
+          <option value="bad-future">坏习惯：以后多花钱（估算）</option>
         </select>
       </label>
       <label>每次金额 <span class="cur-label">AUD</span><input id="newVal" type="number" min="0" step="0.05" value="5"></label>
@@ -2134,7 +2143,7 @@ function render(){
   if(!manage){bar.innerHTML="";bar.appendChild(tb)}
   const mb=document.createElement("button");mb.type="button";mb.className="btn"+(manage?" primary":"");mb.textContent=manage?"完成":"管理习惯";
   mb.onclick=()=>{manage=!manage;render()};
-  if(!manage){const ab=document.createElement("button");ab.type="button";ab.className="btn primary";ab.id="addHabitBtn";ab.textContent="＋ 添加习惯";
+  if(!manage){const ab=document.createElement("button");ab.type="button";ab.className="btn";ab.id="addHabitBtn";ab.textContent="＋ 添加习惯";
     ab.onclick=()=>{showTab("set");setTimeout(()=>{const e=$("secAdd");if(!e)return;if(e.classList.contains("folded")&&e.firstElementChild)e.firstElementChild.click();e.scrollIntoView({block:"start"});const n=$("newName");if(n)n.focus({preventScroll:true})},80)};
     bar.appendChild(ab)}
   bar.appendChild(mb);wrap.appendChild(bar);
@@ -3125,7 +3134,7 @@ function renderCalDay(){
     if(tt)h+=`<p class="cd-line note">有氧 ${recCardio(rec)?"✓":"–"} · 喝水 ${tt.water} ml · 蛋白质 ${tt.pro} g${rec.weight?" · 体重 "+rec.weight+" kg":""}</p>`;
     if(!sc&&!ex.length)h+=`<p class="note">这天没有记录。</p>`;
   }else{
-    h+=`<div class="cd-row"><label for="cdPlan">训练</label><select id="cdPlan">`+[1,2,3,4,5,6,0].map(w=>`<option value="${w}" ${(idx??d.getDay())===w?"selected":""}>${esc(plans()[w].name)}${w===d.getDay()?"（${wkName}默认）":""}</option>`).join("")+`</select>
+    h+=`<div class="cd-row"><label for="cdPlan">训练</label><select id="cdPlan">`+[1,2,3,4,5,6,0].map(w=>`<option value="${w}" ${(idx??d.getDay())===w?"selected":""}>${esc(plans()[w].name)}${w===d.getDay()?`（${wkName}默认）`:""}</option>`).join("")+`</select>
       <input type="time" id="cdTime" value="${esc((rec&&rec.trainAt)||"")}" aria-label="训练时间"><span class="note">时间可不填</span></div>`;
     if(idx!=null&&idx!==d.getDay())h+=`<p class="cd-chg">${k===todayKey?"今天":"这天"}改成了「${esc(p.name)}」，原计划是「${esc((plans()[d.getDay()]||{}).name||"")}」</p>`;
     if(p.ex.length)h+=`<p class="note cd-exs">${p.ex.map((x,j)=>(k===todayKey&&rec&&rec.ex&&rec.ex[j]?"✓ ":"")+esc(x[0])).join(" · ")}</p>`;
@@ -5313,7 +5322,7 @@ render();calc();
     var f=el("form","cy-form");f.noValidate=true;
     var l1=el("label",null,"开始");var i1=el("input");i1.type="date";i1.max=MD.t;l1.appendChild(i1);
     var l2=el("label",null,"结束");var i2=el("input");i2.type="date";i2.max=MD.t;l2.appendChild(i2);
-    var sb=el("button","cy-btn","补记");sb.type="submit";f.appendChild(l1);f.appendChild(l2);f.appendChild(sb);
+    var sb=el("button","cy-btn ghost","补记");sb.type="submit";f.appendChild(l1);f.appendChild(l2);f.appendChild(sb);
     f.onsubmit=function(ev){ev.preventDefault();var s=i1.value,e=i2.value||i1.value;
       if(!s){toast("先选开始日期");return;}if(e<s){toast("结束日期不能早于开始");return;}if(e>MD.t){toast("不能记以后的日子");return;}if(diff(e,s)>11){toast("经期最多记 12 天");return;}
       var set=daySet(),open=hadOpen();for(var k=s;k<=e;k=add(k,1))set[k]=1;fromSet(set,open);changed();toast("已补记 "+fmtD(s)+" 开始的经期");};
