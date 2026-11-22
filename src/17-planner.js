@@ -916,6 +916,9 @@
   $("plGoToday").onclick=function(){viewMode="month";sel=todayKey;viewY=today.getFullYear();viewM=today.getMonth();renderCal();renderPanel();if(calOpen)scrollToToday(true);else panelTop();};
 
   tidyShorts();
+  var TPLN={out:"出门·不化妆",glam:"出门·化妆",home:"在家"};
+  var WASH=["内衣","毛巾睡衣","运动服","工作服袜子"],CLEAN=["吸地拖地","浴室","厨房"];
+  var ckOpen={};
   renderCal();renderPanel();renderMemos();
   try{window.__cut&&window.__cut.rerender()}catch(e){}
   function scrollToToday(smooth){
@@ -933,9 +936,6 @@
   var reAimed=false,userMoved=false;["wheel","touchmove","keydown"].forEach(function(ev){window.addEventListener(ev,function(){userMoved=true;},{passive:true,once:true});});
 
   // ---- 休息日模板（SOP）：出门·不化妆 / 出门·化妆 / 在家。套用后按时段排进当天；长清单收在一项里；家务轮换、备餐、在家达标 ----
-  var TPLN={out:"出门·不化妆",glam:"出门·化妆",home:"在家"};
-  var WASH=["内衣","毛巾睡衣","运动服","工作服袜子"],CLEAN=["吸地拖地","浴室","厨房"];
-  var ckOpen={};
   function saveSop(){write("sop",state.sop);}
   function dayType(k){var l=state.days[k]||[];for(var i=0;i<l.length;i++)if(l[i].tpl)return l[i].tpl;return null;}
   function catFor(id,name){var s=findShort(id);if(s&&!s.hide)return {cat:id,name:""};

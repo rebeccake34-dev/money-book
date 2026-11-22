@@ -174,6 +174,11 @@ async def main():
             check("导入合并", "合并完成" in await pg2.inner_text("#toast"))
             await pg2.click("#bkPaste"); await pg2.fill("#bkPasteTa", txt); await pg2.click("#bkRead"); await pg2.click("#bkDo"); await pg2.wait_for_timeout(600)
             check("重复导入不重复记", "已经一致" in await pg2.inner_text("#toast"))
+            # 选了「今天怎么过」之后重新打开页面（日常计划启动时就要用到模板名）
+            await pg2.click("#tabToday"); await pg2.wait_for_timeout(300)
+            await pg2.get_by_text("出门 · 化妆").first.click(); await pg2.wait_for_timeout(500)
+            await pg2.reload(); await pg2.wait_for_timeout(1500)
+            check("选了今天的安排后重新打开不报错", not pg2.errs)
             check("没有脚本报错", not pg.errs and not pg2.errs)
             if pg.errs or pg2.errs: print(pg.errs, pg2.errs)
         await b.close()
